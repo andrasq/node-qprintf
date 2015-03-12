@@ -1,9 +1,8 @@
 {
   "name": "qprintf",
-  "version": "0.1.0",
-  "bin": { "qunit": "./bin/qunit" },
+  "version": "0.1.1",
   "main": "qprintf.js",
-  "description": "simple unit test runner in the spirit of nodeunit and mocha",
+  "description": "simple little printf",
   "author": "andras@andrasq.com",
   "license": "Apache-2.0",
   "repository": {
