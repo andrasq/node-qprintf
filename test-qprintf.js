@@ -1,4 +1,4 @@
-vsprintf = require('../lib/vsprintf');
+vsprintf = require('./qprintf');
 sprintf = vsprintf.sprintf;
 
 module.exports = {
