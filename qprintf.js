@@ -104,6 +104,7 @@ function padValue( padWidth, padChar, rightPad, str ) {
 }
 
 function formatObject( obj, depth ) {
+    // FIXME: it should be possible not recurse at all... but not with util.inspect
     return util.inspect(obj, {depth: depth ? depth : 6});
 }
 
