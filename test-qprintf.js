@@ -84,6 +84,7 @@ module.exports = {
             [ "%O", {a:1,b:{b1:2}}, "{ a: 1, b: { b1: 2 } }" ],
             [ "%200O", {a:1,b:{b1:2}}, "{ a: 1, b: { b1: 2 } }" ],
             [ "%2O", {a:1,b:{c:{d:{e:{f:2}}}}}, "{ a: 1, b: { c: { d: [Object] } } }" ],
+            [ "%0O", {a:1,b:{c:{d:{e:{f:2}}}}}, "{ a: 1, b: [Object] }" ],
         ];
         t.expect(data.length);
         this.runTests(t, data);

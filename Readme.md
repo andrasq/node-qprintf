@@ -31,7 +31,7 @@ be truncated.  The truncating field width specifier `'.'` is not supported.
 - `NNN` - a decimal integer that specifies the field width
 
 The field width of a %O conversion is taken to be the depth for util.inspect
-to recurse down to.  It is not possible to 
+to recurse down to.  Specify 0 to not recurse into sub-objects.
 
 The field width of a %A coversion is taken to be the number of elements to
 show.
@@ -65,3 +65,8 @@ interplate the arguments array into the format string, and return the result
 
 - [printf](https://npmjs.org/package/printf) is a complete printf with extensions, but slow
 - [sprintf-js](https://npmjs.org/package/sprintf-js) is a complete printf with extensions, and ok fast.  Easy to speed up another 30%.
+
+
+## Todo
+
+- should be possible to specify both field width and element count to `%A`

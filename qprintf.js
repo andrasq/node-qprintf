@@ -43,7 +43,7 @@ function vsprintf( fmt, argv ) {
         p++;
 
         // parse the field width specifier, if any
-        var padChar = ' ', padWidth = 0, rightPad = false;
+        var padChar = ' ', padWidth = undefined, rightPad = false;
         var flag = fmt[p];
         if (flag >= '0' && flag <= '9' || flag === '-') {
             if (fmt[p] === '-') { rightPad = true; p++; }
@@ -77,7 +77,6 @@ function vsprintf( fmt, argv ) {
         // the escape character itself
         case '%': str += padValue(padWidth, padChar, rightPad, '%'); break;
         // qunit extensions
-        // TODO: make %A interpret padWidth as the number of elements to print
         case 'A': str += formatArray(getarg(p), padWidth, 6); break;
         case 'O': str += formatObject(getarg(p), padWidth); break;
         default: throw new Error("%" + fmt[p] + ": unsupported conversion"); break;
@@ -104,8 +103,7 @@ function padValue( padWidth, padChar, rightPad, str ) {
 }
 
 function formatObject( obj, depth ) {
-    // FIXME: it should be possible not recurse at all... but not with util.inspect
-    return util.inspect(obj, {depth: depth ? depth : 6});
+    return util.inspect(obj, {depth: depth !== undefined ? depth : 6});
 }
 
 function formatArray( arr, elementLimit, depth ) {
