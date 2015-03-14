@@ -6,6 +6,7 @@ format string and writes them to process.stdout. Recognizes more formats than
 console.log, and is easier to type.
 
         npm install qprintf
+        npm test qprintf
 
 qprintf supports the following conversions:
 
