@@ -56,3 +56,9 @@ interpolate the arguments into the format, and return the result
 ### vsprintf( format, args )
 
 interplate the arguments array into the format string, and return the result
+
+
+## Related Work
+
+- [printf](https://npmjs.org/package/printf) is a complete printf with lots of extensions, but slow
+- [sprintf-js](https://npmjs.org/package/sprintf-js) is a complete printf with some useful extensions, and ok fast
