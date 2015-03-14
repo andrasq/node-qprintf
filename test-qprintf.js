@@ -2,31 +2,102 @@ vsprintf = require('./qprintf');
 sprintf = vsprintf.sprintf;
 
 module.exports = {
+    beforeEach: function(done) {
+        this.runTests = function( t, data ) {
+            for (var i=0; i<data.length; i++) {
+                if (Array.isArray(data[i][1]))
+                    t.equal(vsprintf(data[i][0], data[i][1]), data[i][2]);
+                else
+                    t.equal(sprintf(data[i][0], data[i][1]), data[i][2]);
+            }
+        };
+        done();
+    },
+
     'should interpolate strings': function(t) {
-        t.equal(sprintf("%s", "foo"), "foo");
-        t.equal(sprintf("(%s)", "foo"), "(foo)");
-        t.equal(sprintf("A%sB%sC", "foo", "bar"), "AfooBbarC");
+        var data = [
+            // format, value(s), expected
+            [ "%s", "foo", "foo" ],
+            [ "(%s)", "foo", "(foo)" ],
+            [ "A%sB%sC", ["foo", "bar"], "AfooBbarC" ],
+            [ "%5s", "foo", "  foo" ],
+            [ "%-6s", "foo", "foo   " ],
+        ];
+        t.expect(data.length);
+        this.runTests(t, data);
         t.done();
     },
 
-    'should interpolte integers': function(t) {
-        t.equal(sprintf("%d", 123), "123");
-        t.equal(sprintf("(%d)", 123), "(123)");
-        t.equal(sprintf("A%dB%dC", 123, 456), "A123B456C");
+    'should interpolate numbers': function(t) {
+        var data = [
+            [ "%d", 123, "123" ],
+            [ "(%d)", 123, "(123)" ],
+            [ "A%dB%dC", [123, 456], "A123B456C" ],
+            [ "%5d", 123, "  123" ],
+            [ "%05d", 123, "00123" ],
+            [ "%-6d", 123, "123   " ],
+            [ "%-06d", 123, "123000" ],
+        ];
+        t.expect(data.length);
+        this.runTests(t, data);
+        t.done();
+    },
+
+    'should interpolate integers': function(t) {
+        var data = [
+            [ "%i", 12.5, "12" ],
+            [ "%5i", 12.5, "   12" ],
+            [ "%5o", 12, "   14" ],
+            [ "%5x", 12, "    c" ],
+            [ "%5b", 12, " 1100" ],
+        ];
+        t.expect(data.length);
+        this.runTests(t, data);
+        t.done();
+    },
+
+    'should interpolate floats': function(t) {
+        var data = [
+            [ "%f", 1.23, "1.23" ],
+            [ "%5f", 1.23, " 1.23" ],
+            [ "%-6f", 1.23, "1.23  " ],
+        ];
+        t.expect(data.length);
+        this.runTests(t, data);
         t.done();
     },
 
     'should interpolate chars': function(t) {
-        t.equal(sprintf("%c", 65), 'A');
-        t.equal(sprintf("%c", 97), 'a');
-        t.equal(sprintf("%c", 32), ' ');
+        var data = [
+            [ "%c", 65, "A" ],
+            [ "%c", 97, "a" ],
+            [ "%c", 32, " " ],
+            [ "%c", 27, "\x1B" ],
+        ];
+        t.expect(data.length);
+        this.runTests(t, data);
         t.done();
     },
 
-    'should pad fields': function(t) {
-        t.equal(sprintf("%5d", 123), "  123");
-        t.equal(sprintf("%05d", 123), "00123");
-        t.equal(sprintf("%-05d", 123), "12300");
+    'should interpolate objects': function(t) {
+        var data = [
+            [ "%O", {a:1,b:{b1:2}}, "{ a: 1, b: { b1: 2 } }" ],
+            [ "%200O", {a:1,b:{b1:2}}, "{ a: 1, b: { b1: 2 } }" ],
+            [ "%2O", {a:1,b:{c:{d:{e:{f:2}}}}}, "{ a: 1, b: { c: { d: [Object] } } }" ],
+        ];
+        t.expect(data.length);
+        this.runTests(t, data);
+        t.done();
+    },
+
+    'should interpolate arrays': function(t) {
+        var data = [
+            [ "%A", [[1,2,3]], "[ 1, 2, 3 ]" ],
+            [ "%2A", [[1,2]], "[ 1, 2 ]" ],
+            [ "%2A", [[1,2,3]], "[ 1, 2, ... ]" ],
+        ];
+        t.expect(data.length);
+        this.runTests(t, data);
         t.done();
     },
 

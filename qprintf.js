@@ -78,8 +78,8 @@ function vsprintf( fmt, argv ) {
         case '%': str += padValue(padWidth, padChar, rightPad, '%'); break;
         // qunit extensions
         // TODO: make %A interpret padWidth as the number of elements to print
-        case 'A': str += padValue(padWidth, padChar, rightPad, formatObject(getarg(p), padWidth)); break;
-        case 'O': str += padValue(padWidth, padChar, rightPad, formatObject(getarg(p), padWidth)); break;
+        case 'A': str += formatArray(getarg(p), padWidth, 6); break;
+        case 'O': str += formatObject(getarg(p), padWidth); break;
         default: throw new Error("%" + fmt[p] + ": unsupported conversion"); break;
             // TODO: include full conversion specifier in error... if does not impact speed
         }
@@ -105,4 +105,9 @@ function padValue( padWidth, padChar, rightPad, str ) {
 
 function formatObject( obj, depth ) {
     return util.inspect(obj, {depth: depth ? depth : 6});
+}
+
+function formatArray( arr, elementLimit, depth ) {
+    if (!elementLimit || arr.length <= elementLimit) return util.inspect(arr, depth);
+    else return util.inspect(arr.slice(0, elementLimit), depth).slice(0, -2) + ", ... ]";
 }

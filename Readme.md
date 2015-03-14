@@ -31,16 +31,19 @@ be truncated.  The truncating field width specifier `'.'` is not supported.
 - `NNN` - a decimal integer that specifies the field width
 
 As a special case, the field width of a %O conversion is taken to be the depth
-for util.inspect to recurse down to.  TODO: use a %A field width as the count
-of array elements to print.
+for util.inspect to recurse down to.
+
+As a special case, the field width of a %A coversion is taken to be the number
+of elements to show.
 
 Examples
 
         ("%5d", 123)            => "  123"
-        ("0x%04x", 123)         => "0x007b"
+        ("%05x", 123)           => "0007b"
         ("%10s", "Hello")       => "     Hello"
         ("%-10s", "Hello")      => "Hello     "
-
+        ("%O", {a:1,b:2})       => "{ a: 1, b: 2 }"
+        ("%2A", [1,2,3,4])      => "[ 1, 2, ... ]"
 
 ## Functions
 
