@@ -48,8 +48,10 @@ function vsprintf( fmt, argv ) {
         if (flag >= '0' && flag <= '9' || flag === '-') {
             if (fmt[p] === '-') { rightPad = true; p++; }
             if (fmt[p] === '0') { padChar = '0'; p++; }
-            padWidth = parseInt(fmt.slice(p, p+15), 10);
-            while (fmt[p] >= '0' && fmt[p] <= '9') p++;
+            var ch;
+            for (var p2=p; (ch = fmt.charCodeAt(p2)) >= 0x30 && ch <= 0x39; ) p2++;
+            padWidth = fmt.slice(p, p2) << 0;
+            p = p2;
             // TODO: '.' to truncate the value
             // TODO: '+' to always print sign, ' ' to print - for neg and ' ' for positive
             // TODO: ' ' to print sign for negative or space for positive

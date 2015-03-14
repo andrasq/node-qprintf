@@ -41,12 +41,12 @@ module.exports = {
         }
     },
 
-    'speed of 10k string+num+obj': function(t) {
-        for (var i=0; i<1000; i++) {
-            var s = sprintf("String %s num %05d %O\n", "some string", 123, {a: 1, b: 2.5, c: 'c'});
-            //var s = sprintf("String %s num %d %O\n", "some string", 123, {a: 1, b: 2.5, c: 'c'});
+    'speed of 10k string+num': function(t) {
+        for (var i=0; i<10000; i++) {
+            var s = sprintf("String %s num %05d\n", "some string", 123, {a: 1, b: 2.5, c: 'c'});
         }
-        // 60k/s
+        // 1.28m/s
+        // 70k/s with +obj
         t.done();
     },
 };
