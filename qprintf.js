@@ -56,6 +56,9 @@ function vsprintf( fmt, argv ) {
             // TODO: '+' to always print sign, ' ' to print - for neg and ' ' for positive
             // TODO: ' ' to print sign for negative or space for positive
             // TODO: allow long and long long modifiers, eg %ld and %lld
+            // TODO: '%3$d' to print the 3rd argument
+            // TODO: '%(name)d' to print argv[0].name (printf and sprintf-js compat)
+            // TODO: %e scientific notation ?
             // note: glibc does not zero-pad on the right
         }
 
