@@ -60,5 +60,5 @@ interplate the arguments array into the format string, and return the result
 
 ## Related Work
 
-- [printf](https://npmjs.org/package/printf) is a complete printf with lots of extensions, but slow
-- [sprintf-js](https://npmjs.org/package/sprintf-js) is a complete printf with some useful extensions, and ok fast
+- [printf](https://npmjs.org/package/printf) is a complete printf with extensions, but slow
+- [sprintf-js](https://npmjs.org/package/sprintf-js) is a complete printf with extensions, and ok fast.  Easy to speed up another 30%.
