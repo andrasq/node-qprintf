@@ -2,7 +2,7 @@ vsprintf = require('./qprintf');
 sprintf = vsprintf.sprintf;
 
 module.exports = {
-    beforeEach: function(done) {
+    before: function(done) {
         this.runTests = function( t, data ) {
             for (var i=0; i<data.length; i++) {
                 if (Array.isArray(data[i][1]))
@@ -12,6 +12,11 @@ module.exports = {
             }
         };
         done();
+    },
+
+    'package.json should be valid': function(t) {
+        require('./package.json');
+        t.done();
     },
 
     'should interpolate strings': function(t) {
