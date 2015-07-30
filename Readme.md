@@ -8,6 +8,8 @@ console.log, and is easier to type.
         npm install qprintf
         npm test qprintf
 
+## Conversions
+
 qprintf supports the following conversions:
 
 - `%s` - interpolate a string into the output
@@ -37,27 +39,39 @@ to recurse down to.  Specify 0 to not recurse into sub-objects.
 The field width of a %A coversion is taken to be the number of elements to
 show.
 
-Examples
+## Examples
 
-        ("%5d", 123)            => "  123"
-        ("%05x", 123)           => "0007b"
-        ("%10s", "Hello")       => "     Hello"
-        ("%-10s", "Hello")      => "Hello     "
-        ("%O", {a:1,b:2})       => "{ a: 1, b: 2 }"
-        ("%2A", [1,2,3,4])      => "[ 1, 2, ... ]"
+        var qprintf = require('qprintf')
+        var sprintf = qprintf.sprintf
+
+        sprintf("%5d", 123)             => "  123"
+        sprintf("%05x", 123)            => "0007b"
+        sprintf("%10s", "Hello")        => "     Hello"
+        sprintf("%-10s", "Hello")       => "Hello     "
+        sprintf("%O", {a:1,b:2})        => "{ a: 1, b: 2 }"
+        sprintf("%2A", [1,2,3,4])       => "[ 1, 2, ... ]"
+
+## Benchmark
+
+        sprintf("%s %04d %s", "Hello", 123, "world")
+
+        // printf 100k 'Hello 0123 world' ms:  1179
+        // sprintfjs 100k 'Hello 0123 world' ms:  191
+        // qsprintf 100k 'Hello 0123 world' ms:  92
+        
 
 ## Functions
 
-### printf( format, [arg ...] )
+### qprintf.printf( format, [arg ...] )
 
 interpolate the arguments into the format string, and write the result to
 process.stdout
 
-### sprintf( format, [arg ...] )
+### qprintf.sprintf( format, [arg1, arg2, ...] )
 
 interpolate the arguments into the format, and return the result
 
-### vsprintf( format, args )
+### qprintf.vsprintf( format, argsArray )
 
 interplate the arguments array into the format string, and return the result
 

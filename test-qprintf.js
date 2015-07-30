@@ -1,5 +1,6 @@
-vsprintf = require('./qprintf');
-sprintf = vsprintf.sprintf;
+qprintf = require('./qprintf');
+vsprintf = qprintf.vsprintf;
+sprintf = qprintf.sprintf;
 
 module.exports = {
     before: function(done) {
@@ -16,6 +17,23 @@ module.exports = {
 
     'package.json should be valid': function(t) {
         require('./package.json');
+        t.done();
+    },
+
+    'should export printf': function(t) {
+        t.equal(typeof qprintf.printf, 'function');
+        t.done();
+    },
+
+    'sprintf should interpolate arg': function(t) {
+        var s = qprintf.sprintf("[%04d %s]", 123, "abc");
+        t.equal(s, "[0123 abc]");
+        t.done();
+    },
+
+    'vsprintf should interpolate args array': function(t) {
+        var s = qprintf.vsprintf("[%04d %s]", [123, "abc"]);
+        t.equal(s, "[0123 abc]");
         t.done();
     },
 

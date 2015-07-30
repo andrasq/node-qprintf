@@ -11,7 +11,7 @@
 
 'use strict';
 
-module.exports = vsprintf;
+module.exports.vsprintf = vsprintf;
 module.exports.printf = printf;
 module.exports.sprintf = sprintf;
 
