@@ -43,7 +43,7 @@ function vsprintf( fmt, argv ) {
         p++;
 
         // parse the field width specifier, if any
-        var padChar = ' ', padWidth = undefined, rightPad = false;
+        var padChar = ' ', padWidth = undefined, rightPad = false, precision = false;
         var flag = fmt[p];
         if (flag >= '0' && flag <= '9' || flag === '-') {
             if (fmt[p] === '-') { rightPad = true; p++; }
@@ -52,6 +52,11 @@ function vsprintf( fmt, argv ) {
             for (var p2=p; (ch = fmt.charCodeAt(p2)) >= 0x30 && ch <= 0x39; ) p2++;
             padWidth = fmt.slice(p, p2) << 0;
             p = p2;
+            if (fmt[p] === '.') {
+                for (var p2=p+1; (ch = fmt.charCodeAt(p2)) >= 0x30 && ch <= 0x39; p2++) ;
+                precision = (p2 > p) ? (fmt.slice(p + 1, p2) << 0) : 0;
+                p = p2;
+            }
             // TODO: '.' to truncate the value
             // TODO: '+' to always print sign, ' ' to print - for neg and ' ' for positive
             // TODO: ' ' to print sign for negative or space for positive
@@ -71,7 +76,7 @@ function vsprintf( fmt, argv ) {
         case 'b': str += padValue(padWidth, padChar, rightPad, Math.floor(getarg(p)).toString(2)); break;
         case 'c': str += String.fromCharCode(getarg(p)); break;
         // float types
-        case 'f': str += padValue(padWidth, padChar, rightPad, getarg(p).toString(10)); break;
+        case 'f': str += padValue(padWidth, padChar, rightPad, formatFloat(getarg(p), precision)); break;
         // string types
         case 's': str += padValue(padWidth, padChar, rightPad, getarg(p)); break;
         // the escape character itself
@@ -100,6 +105,20 @@ function padValue( padWidth, padChar, rightPad, str ) {
     var n;
     if (!padWidth || (n = padWidth - str.length) <= 0) return str;
     return rightPad ? str + str_repeat(padChar, n) : str_repeat(padChar, n) + str;
+}
+
+function formatFloat( v, precision ) {
+    if (precision === false) return v.toString(10);
+
+    // 0 decimal digits also omits the decimal point
+    if (precision <= 0) return Math.floor(v + 0.5).toString(10);
+
+    // return precision digits of the fraction, rounded
+    // (note: both C and PHP render ("%5.2f", 1.275) as " 1.27", because of the IEEE representation
+    var scale = Math.pow(10, precision);
+    v = v * scale + 0.5;
+    var i = Math.floor(v / scale), f = Math.floor(v) % scale;
+    return i + "." + padValue(precision, '0', false, f + "");
 }
 
 function formatObject( obj, depth ) {
