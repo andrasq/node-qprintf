@@ -45,6 +45,10 @@ module.exports = {
             [ "A%sB%sC", ["foo", "bar"], "AfooBbarC" ],
             [ "%5s", "foo", "  foo" ],
             [ "%-6s", "foo", "foo   " ],
+            [ "%6.2s", "foo", "    fo" ],
+            [ "%-6.2s", "foo", "fo    " ],
+            [ "%06.2s", "foo", "0000fo" ],
+            [ "%-06.2s", "foo", "fo0000" ],
         ];
         t.expect(data.length);
         this.runTests(t, data);
@@ -59,7 +63,7 @@ module.exports = {
             [ "%5d", 123, "  123" ],
             [ "%05d", 123, "00123" ],
             [ "%-6d", 123, "123   " ],
-            [ "%-06d", 123, "123000" ],
+            [ "%-06d", 123, "123000" ],         // note: C pads on right with spaces, not zeros
         ];
         t.expect(data.length);
         this.runTests(t, data);
@@ -89,9 +93,13 @@ module.exports = {
             [ "%-5.2f", 1.278, "1.28 " ],
             [ "%05.2f", 1.278, "01.28" ],
             [ "%-05.2f", 1.278, "1.280" ],
+            [ "%-05.3f", 1.278, "1.278" ],
             [ "%6.2f", 1, "  1.00" ],
             [ "%6.2f", -1, " -1.00" ],
-            // FIXME: test negative values!
+            [ "%06.2f", 1, "001.00" ],
+            [ "%6.2f", -1, " -1.00" ],
+            [ "%-08.2f", -1, "-1.00000" ],
+            // NOTE: C pads on right with spaces, not zeros
         ];
         t.expect(data.length);
         this.runTests(t, data);

@@ -43,7 +43,7 @@ function vsprintf( fmt, argv ) {
         p++;
 
         // parse the field width specifier, if any
-        var padChar = ' ', padWidth = undefined, rightPad = false, precision = false;
+        var padChar = ' ', padWidth = undefined, rightPad = false, precision = undefined;
         var flag = fmt[p];
         if (flag >= '0' && flag <= '9' || flag === '-') {
             if (fmt[p] === '-') { rightPad = true; p++; }
@@ -76,9 +76,16 @@ function vsprintf( fmt, argv ) {
         case 'b': str += padValue(padWidth, padChar, rightPad, Math.floor(getarg(p)).toString(2)); break;
         case 'c': str += String.fromCharCode(getarg(p)); break;
         // float types
-        case 'f': str += padValue(padWidth, padChar, rightPad, formatFloat(getarg(p), precision)); break;
+        case 'f':
+            var val = getarg(p);
+            if (val < 0 && padWidth !== undefined && padChar === '0') str += '-' + padValue(padWidth - 1, padChar, rightPad, formatFloat(-val, precision));
+            else str += padValue(padWidth, padChar, rightPad, formatFloat(val, precision));
+            break;
         // string types
-        case 's': str += padValue(padWidth, padChar, rightPad, getarg(p)); break;
+        case 's':
+            if (precision !== undefined) str += padValue(padWidth, padChar, rightPad, (getarg(p) + "").slice(0, precision));
+            else str += padValue(padWidth, padChar, rightPad, getarg(p));
+            break;
         // the escape character itself
         case '%': str += padValue(padWidth, padChar, rightPad, '%'); break;
         // qunit extensions
@@ -105,10 +112,11 @@ function padValue( padWidth, padChar, rightPad, str ) {
     var n;
     if (!padWidth || (n = padWidth - str.length) <= 0) return str;
     return rightPad ? str + str_repeat(padChar, n) : str_repeat(padChar, n) + str;
+    // NOTE: C pads on right with spaces, not zeros
 }
 
 function formatFloat( v, precision ) {
-    if (precision === false) return v.toString(10);
+    if (precision === undefined) return v.toString(10);
 
     // 0 decimal digits also omits the decimal point
     if (precision <= 0) return Math.floor(v + 0.5).toString(10);
