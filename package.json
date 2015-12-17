@@ -14,9 +14,9 @@
     "printf"
   ],
   "scripts": {
-    "test": "qunit test-qprintf.js"
+    "test": "qnit test-qprintf.js"
   },
   "devDependencies": {
-    "node-qunit": "*"
+    "qnit": "*"
   }
 }
