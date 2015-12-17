@@ -25,13 +25,15 @@ qprintf supports the following conversions:
 - `%O` - an object formatted with util.inspect to depth: 6
 
 Printf supports basic conversion flags for field width control, per the regex
-`(-?)(0?)([1-9][0-9]*)`.  E.g., `%20d` will interpolate a number into a field
+`(-?)(0?)([1-9][0-9]*[.]?[0-9]*)`.  E.g., `%20d` will interpolate a number into a field
 20 characters wide.  If the value is wider then the field width, it will not
-be truncated.  The truncating field width specifier `'.'` is not supported.
+be truncated.  The truncating field width specifier `'.'` is supported for
+strings and numbers.
 
 - `-` - left-align the value in the field
 - `0` - zero pad the field (default is to pad with spaces)
 - `NNN` - a decimal integer that specifies the field width
+- `NNN.PP` - a decimal field width followed by the precision
 
 The field width of a %O conversion is taken to be the depth for util.inspect
 to recurse down to.  Specify 0 to not recurse into sub-objects.
@@ -39,12 +41,15 @@ to recurse down to.  Specify 0 to not recurse into sub-objects.
 The field width of a %A coversion is taken to be the number of elements to
 show.
 
+Unlike C, zero padding uses zeroes for left-aligned fields, too.
+
 ## Examples
 
         var qprintf = require('qprintf')
         var sprintf = qprintf.sprintf
 
         sprintf("%5d", 123)             => "  123"
+        sprintf("%5.2f", 1.238)         => " 1.24"
         sprintf("%05x", 123)            => "0007b"
         sprintf("%10s", "Hello")        => "     Hello"
         sprintf("%-10s", "Hello")       => "Hello     "
