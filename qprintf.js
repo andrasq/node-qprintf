@@ -57,7 +57,6 @@ function vsprintf( fmt, argv ) {
                 precision = (p2 > p) ? (fmt.slice(p + 1, p2) << 0) : 0;
                 p = p2;
             }
-            // TODO: '.' to truncate the value
             // TODO: '+' to always print sign, ' ' to print - for neg and ' ' for positive
             // TODO: ' ' to print sign for negative or space for positive
             // TODO: allow long and long long modifiers, eg %ld and %lld
@@ -75,22 +74,27 @@ function vsprintf( fmt, argv ) {
         case 'o': str += padValue(padWidth, padChar, rightPad, Math.floor(getarg(p)).toString(8)); break;
         case 'b': str += padValue(padWidth, padChar, rightPad, Math.floor(getarg(p)).toString(2)); break;
         case 'c': str += String.fromCharCode(getarg(p)); break;
+
         // float types
         case 'f':
             var val = getarg(p);
             if (val < 0 && padWidth !== undefined && padChar === '0') str += '-' + padValue(padWidth - 1, padChar, rightPad, formatFloat(-val, precision));
             else str += padValue(padWidth, padChar, rightPad, formatFloat(val, precision));
             break;
+
         // string types
         case 's':
             if (precision !== undefined) str += padValue(padWidth, padChar, rightPad, (getarg(p) + "").slice(0, precision));
             else str += padValue(padWidth, padChar, rightPad, getarg(p));
             break;
+
         // the escape character itself
         case '%': str += padValue(padWidth, padChar, rightPad, '%'); break;
+
         // qunit extensions
         case 'A': str += formatArray(getarg(p), padWidth, 6); break;
         case 'O': str += formatObject(getarg(p), padWidth); break;
+
         default: throw new Error("%" + fmt[p] + ": unsupported conversion"); break;
             // TODO: include full conversion specifier in error... if does not impact speed
         }
