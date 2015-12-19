@@ -98,19 +98,15 @@ function vsprintf( fmt, argv ) {
 
         switch (fmt[p]) {
         // integer types
-        case 'd': str += padInteger(padWidth, padChar, rightPad, getarg(p)); break;
-        case 'i': str += padInteger(padWidth, padChar, rightPad, Math.floor(getarg(p))); break;
-        case 'x': str += padIntegerBase(padWidth, padChar, rightPad, Math.floor(getarg(p)), 16); break;
-        case 'o': str += padIntegerBase(padWidth, padChar, rightPad, Math.floor(getarg(p)), 8); break;
-        case 'b': str += padIntegerBase(padWidth, padChar, rightPad, Math.floor(getarg(p)), 2); break;
+        case 'd': str += convertInteger(padWidth, padChar, rightPad, getarg(p)); break;
+        case 'i': str += convertInteger(padWidth, padChar, rightPad, Math.floor(getarg(p))); break;
+        case 'x': str += convertIntegerBase(padWidth, padChar, rightPad, Math.floor(getarg(p)), 16); break;
+        case 'o': str += convertIntegerBase(padWidth, padChar, rightPad, Math.floor(getarg(p)), 8); break;
+        case 'b': str += convertIntegerBase(padWidth, padChar, rightPad, Math.floor(getarg(p)), 2); break;
         case 'c': str += String.fromCharCode(getarg(p)); break;
 
         // float types
-        case 'f':
-            var val = getarg(p);
-            if (val < 0 && padWidth !== undefined && padChar === '0') str += '-' + padValue(padWidth - 1, padChar, rightPad, formatFloat(-val, precision));
-            else str += padValue(padWidth, padChar, rightPad, formatFloat(val, precision));
-            break;
+        case 'f': str += convertFloat(padWidth, padChar, rightPad, getarg(p), precision); break;
 
         // string types
         case 's':
@@ -158,14 +154,19 @@ function padValue( padWidth, padChar, rightPad, str ) {
     // NOTE: C pads on right with spaces, not zeros
 }
 
-function padInteger( width, padChar, rightPad, v ) {
+function convertInteger( width, padChar, rightPad, v ) {
     if (v < 0 && padChar === '0' && !rightPad) return '-' + padValue(width-1, '0', false, (-v) + "");
     else return padValue(width, padChar, rightPad, v + "");
 }
 
-function padIntegerBase( width, padChar, rightPad, v, base ) {
+function convertIntegerBase( width, padChar, rightPad, v, base ) {
     if (v < 0 && padChar === '0' && !rightPad) return '-' + padValue(width-1, '0', false, (-v).toString(base));
     else return padValue(width, padChar, rightPad, v.toString(base));
+}
+
+function convertFloat( width, padChar, rightPad, v, precision ) {
+    if (v < 0 && padChar === '0' && !rightPad) return '-' + padValue(width-1, '0', false, formatFloat(v, precision));
+    else return padValue(width, padChar, rightPad, formatFloat(v, precision));
 }
 
 function formatFloat( v, precision ) {
