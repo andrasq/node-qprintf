@@ -98,13 +98,12 @@ function vsprintf( fmt, argv ) {
 
         switch (fmt[p]) {
         // integer types
-        case 'd': str += padValue(padWidth, padChar, rightPad, getarg(p).toString(10)); break;
-        case 'i': str += padValue(padWidth, padChar, rightPad, Math.floor(getarg(p)).toString(10)); break;
-        case 'x': str += padValue(padWidth, padChar, rightPad, Math.floor(getarg(p)).toString(16)); break;
-        case 'o': str += padValue(padWidth, padChar, rightPad, Math.floor(getarg(p)).toString(8)); break;
-        case 'b': str += padValue(padWidth, padChar, rightPad, Math.floor(getarg(p)).toString(2)); break;
+        case 'd': str += padInteger(padWidth, padChar, rightPad, getarg(p)); break;
+        case 'i': str += padInteger(padWidth, padChar, rightPad, Math.floor(getarg(p))); break;
+        case 'x': str += padIntegerBase(padWidth, padChar, rightPad, Math.floor(getarg(p)), 16); break;
+        case 'o': str += padIntegerBase(padWidth, padChar, rightPad, Math.floor(getarg(p)), 8); break;
+        case 'b': str += padIntegerBase(padWidth, padChar, rightPad, Math.floor(getarg(p)), 2); break;
         case 'c': str += String.fromCharCode(getarg(p)); break;
-        // FIXME: -010d
 
         // float types
         case 'f':
@@ -157,6 +156,16 @@ function padValue( padWidth, padChar, rightPad, str ) {
     if (!padWidth || (n = padWidth - str.length) <= 0) return str;
     return rightPad ? str + str_repeat(padChar, n) : str_repeat(padChar, n) + str;
     // NOTE: C pads on right with spaces, not zeros
+}
+
+function padInteger( width, padChar, rightPad, v ) {
+    if (v < 0 && padChar === '0' && !rightPad) return '-' + padValue(width-1, '0', false, (-v) + "");
+    else return padValue(width, padChar, rightPad, v + "");
+}
+
+function padIntegerBase( width, padChar, rightPad, v, base ) {
+    if (v < 0 && padChar === '0' && !rightPad) return '-' + padValue(width-1, '0', false, (-v).toString(base));
+    else return padValue(width, padChar, rightPad, v.toString(base));
 }
 
 function formatFloat( v, precision ) {
