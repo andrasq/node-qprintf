@@ -45,27 +45,44 @@ function vsprintf( fmt, argv ) {
     }
 
     var p0 = 0, p, str = "";
-    var scanned = { end: undefined, val: undefined, next: undefined };
+    var scanned = { end: undefined, val: undefined };
     while ((p = fmt.indexOf('%', p0)) >= 0) {
         if (p > 0) str += fmt.slice(p0, p);
         p++;
 
         // parse the field width specifier, if any
         argN = undefined;
-        var padChar = ' ', padWidth = undefined, rightPad = false, precision = undefined;
+        var padChar = ' ', padWidth = undefined, rightPad = false, precision = undefined, plusSign = undefined;
         var flag = fmt[p];
+        var checkForWidth = true;
         if (flag >= '0' && flag <= '9' || flag === '-') {
             // extract the N$ argument specifier, if any
             scanDigits(fmt, p, scanned);
-            if (scanned.next === '$') {
+            if (fmt[scanned.end] === '$') {
+                // found arg specifier
                 argN = getargN(scanned.val);
                 p = scanned.end + 1;
             }
-            if (fmt[p] === '-') { rightPad = true; p++; }
-            if (fmt[p] === '0') { padChar = '0'; p++; }
-            scanDigits(fmt, p, scanned);
-            padWidth = scanned.val;
-            if (scanned.next === '.') {
+            else if (scanned.end > p) {
+                // found field width, with at most a numeric '0' flag
+                if (fmt[p] === '0') padChar = '0';
+                padWidth = scanned.val;
+                checkForWidth = false;
+                p = scanned.end;
+            }
+            if (checkForWidth) {
+                // look for both flags and width
+                while (true) {
+                    if (fmt[p] === '-') { rightPad = true; p++; }
+                    else if (fmt[p] === '0') { padChar = '0'; p++; }
+                    //else if (fmt[0] === ' ') { plusSign = ' '; p++; }
+                    //else if (fmt[0] === '+') { plusSign = '+'; p++; }
+                    else break;
+                }
+                scanDigits(fmt, p, scanned);
+                padWidth = scanned.val;
+            }
+            if (fmt[scanned.end] === '.') {
                 scanDigits(fmt, scanned.end+1, scanned);
                 precision = scanned.val;
             }
@@ -87,6 +104,7 @@ function vsprintf( fmt, argv ) {
         case 'o': str += padValue(padWidth, padChar, rightPad, Math.floor(getarg(p)).toString(8)); break;
         case 'b': str += padValue(padWidth, padChar, rightPad, Math.floor(getarg(p)).toString(2)); break;
         case 'c': str += String.fromCharCode(getarg(p)); break;
+        // FIXME: -010d
 
         // float types
         case 'f':
@@ -120,13 +138,11 @@ function vsprintf( fmt, argv ) {
 
 function scanDigits( str, p, ret ) {
     var ch, val = 0;
-    for (var p2=p; (ch = str.charCodeAt(p2)) >= 0x30 && ch <= 0x39; ) {
-        p2++;
+    for (var p2=p; (ch = str.charCodeAt(p2)) >= 0x30 && ch <= 0x39; p2++) {
         val = val * 10 + ch - 0x30;
     }
     ret.end = p2;
     ret.val = val;
-    ret.next = str[p2];
 }
 
 function str_repeat( str, n ) {

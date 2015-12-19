@@ -77,6 +77,7 @@ module.exports = {
             [ "%5o", 12, "   14" ],
             [ "%5x", 12, "    c" ],
             [ "%5b", 12, " 1100" ],
+            // FIXME: [ "%05i", -12.5, "-0012" ],
         ];
         t.expect(data.length);
         this.runTests(t, data);
