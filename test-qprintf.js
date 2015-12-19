@@ -141,6 +141,20 @@ module.exports = {
         t.done();
     },
 
+    'should interpolate N-th argument': function(t) {
+        var tests = [
+            ["%2$d", [1, 2, 3], "2"],
+            ["%2$3d", [1, 2, 3], "  2"],
+            ["%2$-3d", [1, 2, 3], "2  "],
+            ["%2$03d", [1, 2, 3], "002"],
+            ["%2$-03d", [1, 2, 3], "200"],      // note: C pads on right with spaces
+        ];
+        for (var i=0; i<tests.length; i++) {
+            t.equal(vsprintf(tests[i][0], tests[i][1]), tests[i][2]);
+        }
+        t.done();
+    },
+
     'should reject unknown conversions': function(t) {
         try {
             sprintf("%z", 3);
@@ -148,6 +162,17 @@ module.exports = {
         }
         catch (err) {
             t.ok(true);
+            t.done();
+        }
+    },
+
+    'should reject out of bounds argument': function(t) {
+        try {
+            var s = sprintf("%2$d", 1);
+            t.fail();
+        }
+        catch (err) {
+            t.ok(err.message.indexOf("missing argument") >= 0);
             t.done();
         }
     },

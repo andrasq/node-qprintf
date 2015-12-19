@@ -32,38 +32,51 @@ function sprintf( fmt ) {
 
 function vsprintf( fmt, argv ) {
     var argi = 0, nargs = argv.length;
+    var argN = undefined;
     function getarg( p ) {
+        if (argN !== undefined) return argN;
         if (argi >= nargs) throw new Error("missing argument for %" + fmt[p] + " conversion");
         return argv[argi++];
     }
+    function getargN( n ) {
+        if (n > nargs) throw new Error("missing argument for % conversion");
+        if (n < 1) throw new Error("invalid $ argument specifier for % conversion");
+        return argv[n-1];
+    }
 
     var p0 = 0, p, str = "";
+    var scanned = { end: undefined, val: undefined, next: undefined };
     while ((p = fmt.indexOf('%', p0)) >= 0) {
         if (p > 0) str += fmt.slice(p0, p);
         p++;
 
         // parse the field width specifier, if any
+        argN = undefined;
         var padChar = ' ', padWidth = undefined, rightPad = false, precision = undefined;
         var flag = fmt[p];
         if (flag >= '0' && flag <= '9' || flag === '-') {
+            // extract the N$ argument specifier, if any
+            scanDigits(fmt, p, scanned);
+            if (scanned.next === '$') {
+                argN = getargN(scanned.val);
+                p = scanned.end + 1;
+            }
             if (fmt[p] === '-') { rightPad = true; p++; }
             if (fmt[p] === '0') { padChar = '0'; p++; }
-            var ch;
-            for (var p2=p; (ch = fmt.charCodeAt(p2)) >= 0x30 && ch <= 0x39; ) p2++;
-            padWidth = fmt.slice(p, p2) << 0;
-            p = p2;
-            if (fmt[p] === '.') {
-                for (var p2=p+1; (ch = fmt.charCodeAt(p2)) >= 0x30 && ch <= 0x39; p2++) ;
-                precision = (p2 > p) ? (fmt.slice(p + 1, p2) << 0) : 0;
-                p = p2;
+            scanDigits(fmt, p, scanned);
+            padWidth = scanned.val;
+            if (scanned.next === '.') {
+                scanDigits(fmt, scanned.end+1, scanned);
+                precision = scanned.val;
             }
+            p = scanned.end;
             // TODO: '+' to always print sign, ' ' to print - for neg and ' ' for positive
             // TODO: ' ' to print sign for negative or space for positive
             // TODO: allow long and long long modifiers, eg %ld and %lld
-            // TODO: '%3$d' to print the 3rd argument
             // TODO: '%(name)d' to print argv[0].name (printf and sprintf-js compat)
             // TODO: %e scientific notation ?
             // note: glibc does not zero-pad on the right
+            // TODO: time .match( /^%((\d+)\$)?((\d+)([.](\d+)?))/ )
         }
 
         switch (fmt[p]) {
@@ -104,6 +117,17 @@ function vsprintf( fmt, argv ) {
     return str;
 }
 
+
+function scanDigits( str, p, ret ) {
+    var ch, val = 0;
+    for (var p2=p; (ch = str.charCodeAt(p2)) >= 0x30 && ch <= 0x39; ) {
+        p2++;
+        val = val * 10 + ch - 0x30;
+    }
+    ret.end = p2;
+    ret.val = val;
+    ret.next = str[p2];
+}
 
 function str_repeat( str, n ) {
     var ret = "";

@@ -18,6 +18,7 @@ for (var loop=0; loop<10; loop++) {
         var call = calls[callName];
         var t1 = Date.now();
         for (var i=0; i<100000; i++) z = call("%s %04d %s", "Hello", 123, "world");
+        //for (var i=0; i<100000; i++) z = call("%s %04d %s %4$5.2f", "Hello", 123, "world", 12.345);
         var t2 = Date.now();
         console.log("%s 100k '%s' ms: ", callName, z, t2-t1);
     }

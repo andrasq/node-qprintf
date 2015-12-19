@@ -27,13 +27,17 @@ qprintf supports the following conversions:
 Printf supports basic conversion flags for field width control, per the regex
 `(-?)(0?)([1-9][0-9]*[.]?[0-9]*)`.  E.g., `%20d` will interpolate a number into a field
 20 characters wide.  If the value is wider then the field width, it will not
-be truncated.  The truncating field width specifier `'.'` is supported for
-strings and numbers.
+be truncated.  The precision specifier `'.'` is supported for strings and numbers.
 
-- `-` - left-align the value in the field
-- `0` - zero pad the field (default is to pad with spaces)
-- `NNN` - a decimal integer that specifies the field width
-- `NNN.PP` - a decimal field width followed by the precision
+The conversion specifier is constructed as (values in [ ] square brackets are optional)
+`% [argNum $] [minusFlag] [zeroFlag] [width [.precision]] conversion`
+Examples: `%d`, `%10d`, `%2$d`, `%2$-010d`.
+
+- `I$` - argNum: interpolate the I-th argument with this conversion
+- `-` - minusFlag: left-align the value in the field
+- `0` - zeroFlag: zero pad the field (default is to pad with spaces)
+- `NNN` - width: a decimal integer that specifies the field width
+- `NNN.PP` - width.precision: a decimal field width followed by the precision
 
 The field width of a %O conversion is taken to be the depth for util.inspect
 to recurse down to.  Specify 0 to not recurse into sub-objects.
@@ -41,7 +45,7 @@ to recurse down to.  Specify 0 to not recurse into sub-objects.
 The field width of a %A coversion is taken to be the number of elements to
 show.
 
-Unlike C, zero padding uses zeroes for left-aligned fields, too.
+Unlike C, zero padding uses zeroes for left-aligned numbers and strings as well.
 
 ## Examples
 
