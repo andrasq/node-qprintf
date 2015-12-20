@@ -38,6 +38,7 @@ Examples: `%d`, `%10d`, `%2$d`, `%2$-010d`.
 - `0` - zeroFlag: zero pad the field (default is to pad with spaces)
 - `NNN` - width: a decimal integer that specifies the field width
 - `NNN.PP` - width.precision: a decimal field width followed by the precision
+- `C` - conversion: conversion type specifier character
 
 The field width of a %O conversion is taken to be the depth for util.inspect
 to recurse down to.  Specify 0 to not recurse into sub-objects.
