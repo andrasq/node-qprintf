@@ -50,7 +50,7 @@ function vsprintf( fmt, argv ) {
         if (p > 0) str += fmt.slice(p0, p);
         p++;
 
-        // parse the field width specifier, if any
+        // parse the conversion spec
         argN = undefined;
         var padChar = ' ', padWidth = undefined, rightPad = false, precision = undefined, plusSign = undefined;
         var flag = fmt[p];
@@ -83,6 +83,7 @@ function vsprintf( fmt, argv ) {
                 padWidth = scanned.val;
             }
             if (fmt[scanned.end] === '.') {
+                // gather precision if included with width
                 scanDigits(fmt, scanned.end+1, scanned);
                 precision = scanned.val;
             }
@@ -102,6 +103,7 @@ function vsprintf( fmt, argv ) {
         case 'o': str += convertIntegerBase(padWidth, padChar, rightPad, Math.floor(getarg(p)), 8); break;
         case 'b': str += convertIntegerBase(padWidth, padChar, rightPad, Math.floor(getarg(p)), 2); break;
         case 'c': str += String.fromCharCode(getarg(p)); break;
+        // TODO: js floor() truncates toward -Infinity, not zero
 
         // float types
         case 'f': str += convertFloat(padWidth, padChar, rightPad, getarg(p), precision); break;
