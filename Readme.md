@@ -65,9 +65,9 @@ Unlike C, zero padding uses zeroes for left-aligned numbers and strings as well.
 
         sprintf("%s %04d %s", "Hello", 123, "world")
 
-        // printf 100k 'Hello 0123 world' ms:  1179
-        // sprintfjs 100k 'Hello 0123 world' ms:  191
-        // qsprintf 100k 'Hello 0123 world' ms:  92
+        // printf-0.2.3 100k 'Hello 0123 world' ms:  1138
+        // sprintf-js-1.0.3 100k 'Hello 0123 world' ms:  593
+        // qprintf-0.4.1 100k 'Hello 0123 world' ms:  86
         
 
 ## Functions
