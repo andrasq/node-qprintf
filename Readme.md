@@ -67,6 +67,7 @@ Unlike C, zero padding uses zeroes for left-aligned numbers and strings as well.
 
         // printf-0.2.3 100k 'Hello 0123 world' ms:  1138
         // sprintf-js-1.0.3 100k 'Hello 0123 world' ms:  593
+        // sprintf-js-git 100k 'Hello 0123 world' ms:  301
         // qprintf-0.4.1 100k 'Hello 0123 world' ms:  86
         
 
@@ -89,7 +90,7 @@ interplate the arguments array into the format string, and return the result
 ## Related Work
 
 - [printf](https://npmjs.org/package/printf) is a complete printf with extensions, but slow
-- [sprintf-js](https://npmjs.org/package/sprintf-js) is a complete printf with extensions, and ok fast.  Easy to speed up another 30%.
+- [sprintf-js](https://npmjs.org/package/sprintf-js) is a complete printf with extensions, and ok fast.  Use the git master for 2x more speed.
 
 
 ## Todo
