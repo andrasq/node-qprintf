@@ -142,7 +142,12 @@ function scanDigits( str, p, ret ) {
     ret.val = val;
 }
 
+var _pads = {
+  ' ': [ '', ' ', '  ', '   ', '    ', '     ', '      ', '       ', '        ' ],
+  '0': [ '', '0', '00', '000', '0000', '00000', '000000', '0000000', '00000000' ],
+}
 function str_repeat( str, n ) {
+    if (n <= 8 && _pads[str]) return _pads[str][n];
     var ret = "";
     while (n >= 3) { ret += str + str + str; n -= 3; }
     while (n > 0) { ret += str; n -= 1; }
@@ -150,10 +155,10 @@ function str_repeat( str, n ) {
 }
 
 function padValue( padWidth, padChar, rightPad, str ) {
-    var n;
-    if (!padWidth || (n = padWidth - str.length) <= 0) return str;
+    if (!padWidth) return str;
+    var n = padWidth - str.length;
+    if (n <= 0) return str;
     return rightPad ? str + str_repeat(padChar, n) : str_repeat(padChar, n) + str;
-    // NOTE: C pads on right with spaces, not zeros
 }
 
 function convertInteger( width, padChar, rightPad, signChar, v ) {
