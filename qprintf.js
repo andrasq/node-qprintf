@@ -47,7 +47,7 @@ function vsprintf( fmt, argv ) {
     var p0 = 0, p, str = "";
     var scanned = { end: undefined, val: undefined };
     while ((p = fmt.indexOf('%', p0)) >= 0) {
-        if (p > 0) str += fmt.slice(p0, p);
+        if (p > p0) str += fmt.slice(p0, p);
         p++;
 
         // parse the conversion spec
