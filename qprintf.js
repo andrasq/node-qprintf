@@ -108,7 +108,7 @@ function vsprintf( fmt, argv ) {
         // note that C prints hex and octal as unsigned, while we print as signed
 
         // float types
-        case 'f': str += convertFloat(padWidth, padChar, rightPad, plusSign, getarg(p), precision); break;
+        case 'f': str += convertFloat(padWidth, padChar, rightPad, plusSign, getarg(p), precision >= 0 ? precision : 6); break;
 
         // string types
         case 's':
