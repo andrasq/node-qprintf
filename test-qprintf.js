@@ -225,6 +225,23 @@ module.exports = {
         }
     },
 
+    'should handle edge cases': function(t) {
+        var tests = [
+            [ "", [1, 2, 3], "" ],
+            [ "%", [1, 2, 3], "%" ],
+            [ "%%", [1, 2, 3], "%" ],
+            [ "%%%", [1, 2, 3], "%%" ],
+            [ "%%a", [1, 2, 3], "%a" ],
+            [ "%%%%", [1, 2, 3], "%%" ],
+            [ "%%a%%", [1, 2, 3], "%a%" ],
+            [ "%d%d%d", [1, 2, 3], "123" ],
+        ];
+        for (var i=0; i<tests.length; i++) {
+            t.equal(vsprintf(tests[i][0], tests[i][1]), tests[i][2]);
+        }
+        t.done();
+    },
+
     'speed of 10k string+num': function(t) {
         for (var i=0; i<10000; i++) {
             var s = sprintf("String %s num %05d\n", "some string", 123, {a: 1, b: 2.5, c: 'c'});

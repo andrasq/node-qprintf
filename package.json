@@ -1,6 +1,6 @@
 {
   "name": "qprintf",
-  "version": "0.7.3",
+  "version": "0.7.4",
   "main": "qprintf.js",
   "description": "simple little printf",
   "author": "andras@andrasq.com",

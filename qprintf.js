@@ -123,10 +123,12 @@ function vsprintf( fmt, argv ) {
         case 'A': str += formatArray(getarg(p), padWidth, 6); break;
         case 'O': str += formatObject(getarg(p), padWidth); break;
 
-        default: throw new Error("%" + fmt[p] + ": unsupported conversion"); break;
+        default:
+            if (p >= fmt.length) { str += '%'; break; }
+            throw new Error("%" + fmt[p] + ": unsupported conversion"); break;
             // TODO: include full conversion specifier in error... if does not impact speed
         }
-        p0 = p + 1;
+        p0 = ++p;
     }
     if (p0 < fmt.length) str += fmt.slice(p0);
     return str;
