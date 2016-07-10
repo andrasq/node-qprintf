@@ -59,8 +59,9 @@ function vsprintf( fmt, argv ) {
             // extract the N$ argument specifier, if any
             scanDigits(fmt, p, scanned);
             if (fmt[scanned.end] === '$') {
-                // found arg specifier
+                // found an N$ arg specifier, might also have width
                 argN = getargN(scanned.val);
+                checkForWidth = true;
                 p = scanned.end + 1;
             }
             else if (scanned.end > p) {
@@ -117,7 +118,7 @@ function vsprintf( fmt, argv ) {
         // the escape character itself
         case '%': str += padValue(padWidth, padChar, rightPad, '%'); break;
 
-        // qunit extensions
+        // qnit extensions
         case 'A': str += formatArray(getarg(p), padWidth, 6); break;
         case 'O': str += formatObject(getarg(p), padWidth); break;
 
@@ -180,7 +181,13 @@ function formatFloat( v, precision ) {
     var scale = Math.pow(10, precision);
     v = v * scale + 0.5;
     var i = Math.floor(v / scale), f = Math.floor(v) % scale;
+    // FIXME: should scale 0.5 down, to not overflow on mpy:
+    // v += 0.5 / scale;
+    // i = v - (v % 1); f = Math.floor(v * scale);
+    // NOTE: -1.24 % 1 errors out (positive reals only)
     return i + "." + padValue(precision, '0', false, f + "");
+    // TODO: alternate: time:
+    // return i + "." + ("" + (v - v % 1/scale)).slice(2);
 }
 
 function formatObject( obj, depth ) {
