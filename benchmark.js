@@ -1,5 +1,7 @@
 // qprintf benchmark, see git://github.com/andrasq/node-qprintf
 
+var util = require('util');
+
 var qsprintf = require('./qprintf').sprintf;
 var sprintfjs = require('sprintf-js').sprintf;
 var printf = require('printf');
@@ -12,6 +14,7 @@ for (var loop=0; loop<10; loop++) {
         printf: printf,
         sprintfjs: sprintfjs,
         qsprintf: qsprintf,
+        util_format: util.format,
     };
 
     for (var callName in calls) {

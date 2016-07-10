@@ -13,9 +13,10 @@ console.log, and is easier to type.
 qprintf supports the following conversions:
 
 - `%s` - interpolate a string into the output
-- `%d` - a decimal number.  Unlike traditional `printf`, this will print floats as floats.
+- `%d` - a decimal number.  Unlike traditional `printf`, this conversion behaves
+like `util.format` and prints floats as floats.  Use `%i` to truncate to integer.
 - `%f` - a floating-point value
-- `%i` - a decimal integer.  The integer conversions truncate the value.
+- `%i` - a decimal integer.  The integer conversions truncate the value toward zero (like php).
 - `%x` - a hexadecimal integer
 - `%o` - an octal integer
 - `%b` - a binary integer
@@ -24,21 +25,30 @@ qprintf supports the following conversions:
 - `%A` - an array formatted with util.inspect
 - `%O` - an object formatted with util.inspect to depth: 6
 
-Printf supports basic conversion flags for field width control, per the regex
-`(-?)(0?)([1-9][0-9]*[.]?[0-9]*)`.  E.g., `%20d` will interpolate a number into a field
-20 characters wide.  If the value is wider then the field width, it will not
-be truncated.  The precision specifier `'.'` is supported for strings and numbers.
-
+Printf supports basic conversion flags for field width control.
 The conversion specifier is constructed as (values in [ ] square brackets are optional)
-`% [argNum $] [minusFlag] [zeroFlag] [width [.precision]] conversion`
+`% [argNum $] [minusFlag] [zeroFlag] [plusFlag] [spaceFlag] [width [.precision]] conversion`
 Examples: `%d`, `%10d`, `%2$d`, `%2$-010d`.
 
 - `I$` - argNum: interpolate the I-th argument with this conversion
 - `-` - minusFlag: left-align the value in the field
 - `0` - zeroFlag: zero pad the field (default is to pad with spaces)
+- `+` - plusFlag: always print the sign, + for positive and - for negative
+- ` ` - spaceFlag: always print the sign, ' ' (space) for positive and - for negative
 - `NNN` - width: a decimal integer that specifies the field width
 - `NNN.PP` - width.precision: a decimal field width followed by the precision
 - `C` - conversion: conversion type specifier character
+
+E.g., `%3$+12d` will interpolate the 3rd argument into a field 12 characters wide,
+preceded by the sign (+ for positive and - for negative), and padded with enough
+spaces on the right for the formatted value to be at least 12 characters.  If the
+value with sign is wider then the field width of 12, it will not be truncated,
+rather more than 12 characters will be output.
+
+The precision specifier `'.'` is supported for strings and numbers.  For numbers,
+`.4` prints a decimal point followed by 4 decimal digits.  `.0` omits the decimal
+point and prints no decimals.  For strings, the precision specifies the maximum
+length for the string before it is truncated.v
 
 The field width of a %O conversion is taken to be the depth for util.inspect
 to recurse down to.  Specify 0 to not recurse into sub-objects.
@@ -63,6 +73,10 @@ Unlike C, zero padding uses zeroes for left-aligned numbers and strings as well.
 
 ## Benchmark
 
+The included benchmark loops 100,000 times and formats the test string.
+
+node-v0.10:
+
         sprintf("%s %04d %s", "Hello", 123, "world")
 
         // printf-0.2.3 100k 'Hello 0123 world' ms:  1138
@@ -70,6 +84,13 @@ Unlike C, zero padding uses zeroes for left-aligned numbers and strings as well.
         // sprintf-js-git 100k 'Hello 0123 world' ms:  301
         // qprintf-0.4.1 100k 'Hello 0123 world' ms:  86
         
+node-v6.2.1:
+
+        sprintf("%s %04d %s", "Hello", 123, "world")
+
+        // printf-0.2.5 100k 'Hello 0123 world' ms:  1630
+        // sprintf-js-1.0.3 100k 'Hello 0123 world' ms:  1051
+        // qprintf-0.6.0 100k 'Hello 0123 world' ms:  46
 
 ## Functions
 
@@ -96,3 +117,6 @@ interplate the arguments array into the format string, and return the result
 ## Todo
 
 - should be possible to specify both field width and element count to `%A`
+- %X (uppercase hexadecimal) is not supported yet
+- %e, %g, %E and %G are not supported yet
+
