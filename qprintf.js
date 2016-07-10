@@ -44,9 +44,10 @@ function vsprintf( fmt, argv ) {
         return argv[n-1];
     }
 
-    var p0 = 0, p, str = "";
+    var p0 = 0, p = 0, str = "";
     var scanned = { end: undefined, val: undefined };
-    while ((p = fmt.indexOf('%', p0)) >= 0) {
+    while (p < fmt.length) {
+        if (fmt.charCodeAt(p) != 0x25) { p++; continue; }       // scan until %
         if (p > p0) str += fmt.slice(p0, p);
         p++;
 
