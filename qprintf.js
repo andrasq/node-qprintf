@@ -53,11 +53,10 @@ function vsprintf( fmt, argv ) {
 
         // parse the conversion spec
         argN = undefined;
-        var padChar = ' ', padWidth = undefined, rightPad = false, precision = undefined, plusSign = undefined;
+        var padChar = ' ', padWidth = undefined, rightPad = false, precision = undefined, plusSign = '';
         var flag = fmt[p];
         var checkForWidth = true;
-        if (flag >= '0' && flag <= '9' || flag === '-') {
-            // extract the N$ argument specifier, if any
+        if (flag >= '0' && flag <= '9' || flag === '-' || flag === '+' || flag === ' ') {
             scanDigits(fmt, p, scanned);
             if (fmt[scanned.end] === '$') {
                 // found an N$ arg specifier, might also have width
@@ -77,8 +76,8 @@ function vsprintf( fmt, argv ) {
                 while (true) {
                     if (fmt[p] === '-') { rightPad = true; p++; }
                     else if (fmt[p] === '0') { padChar = '0'; p++; }
-                    //else if (fmt[0] === ' ') { plusSign = ' '; p++; }
-                    //else if (fmt[0] === '+') { plusSign = '+'; p++; }
+                    else if (fmt[p] === '+') { plusSign = '+'; p++; }
+                    else if (fmt[p] === ' ') { plusSign = ' '; p++; }
                     else break;
                 }
                 scanDigits(fmt, p, scanned);
@@ -99,16 +98,16 @@ function vsprintf( fmt, argv ) {
 
         switch (fmt[p]) {
         // integer types
-        case 'd': str += convertInteger(padWidth, padChar, rightPad, getarg(p)); break;
-        case 'i': str += convertInteger(padWidth, padChar, rightPad, Math.floor(getarg(p))); break;
-        case 'x': str += convertIntegerBase(padWidth, padChar, rightPad, Math.floor(getarg(p)), 16); break;
-        case 'o': str += convertIntegerBase(padWidth, padChar, rightPad, Math.floor(getarg(p)), 8); break;
-        case 'b': str += convertIntegerBase(padWidth, padChar, rightPad, Math.floor(getarg(p)), 2); break;
+        case 'd': str += convertInteger(padWidth, padChar, rightPad, plusSign, getarg(p)); break;
+        case 'i': str += convertInteger(padWidth, padChar, rightPad, plusSign, Math.floor(getarg(p))); break;
+        case 'x': str += convertIntegerBase(padWidth, padChar, rightPad, plusSign, Math.floor(getarg(p)), 16); break;
+        case 'o': str += convertIntegerBase(padWidth, padChar, rightPad, plusSign, Math.floor(getarg(p)), 8); break;
+        case 'b': str += convertIntegerBase(padWidth, padChar, rightPad, plusSign, Math.floor(getarg(p)), 2); break;
         case 'c': str += String.fromCharCode(getarg(p)); break;
         // TODO: js floor() truncates toward -Infinity, not zero
 
         // float types
-        case 'f': str += convertFloat(padWidth, padChar, rightPad, getarg(p), precision); break;
+        case 'f': str += convertFloat(padWidth, padChar, rightPad, plusSign, getarg(p), precision); break;
 
         // string types
         case 's':
@@ -156,19 +155,26 @@ function padValue( padWidth, padChar, rightPad, str ) {
     // NOTE: C pads on right with spaces, not zeros
 }
 
-function convertInteger( width, padChar, rightPad, v ) {
-    if (v < 0 && padChar === '0' && !rightPad) return '-' + padValue(width-1, '0', false, (-v) + "");
-    else return padValue(width, padChar, rightPad, v + "");
+function convertInteger( width, padChar, rightPad, signChar, v ) {
+    var s = (v < 0 ? "" + -v : "" + v);
+    return padNumber(width, padChar, rightPad, signChar, v, s);
 }
 
-function convertIntegerBase( width, padChar, rightPad, v, base ) {
-    if (v < 0 && padChar === '0' && !rightPad) return '-' + padValue(width-1, '0', false, (-v).toString(base));
-    else return padValue(width, padChar, rightPad, v.toString(base));
+function convertIntegerBase( width, padChar, rightPad, signChar, v, base ) {
+    var s = (v < 0 ? (-v).toString(base) : v.toString(base));
+    return padNumber(width, padChar, rightPad, signChar, v, s);
 }
 
-function convertFloat( width, padChar, rightPad, v, precision ) {
-    if (v < 0 && padChar === '0' && !rightPad) return '-' + padValue(width-1, '0', false, formatFloat(v, precision));
-    else return padValue(width, padChar, rightPad, formatFloat(v, precision));
+function convertFloat( width, padChar, rightPad, signChar, v, precision ) {
+    var s = (v < 0 ? formatFloat(-v, precision) : formatFloat(v, precision))
+    return padNumber(width, padChar, rightPad, signChar, v, s);
+}
+
+function padNumber( width, padChar, rightPad, signChar, v, numberString ) {
+    if (v < 0) signChar = '-';
+    return (signChar && padChar === '0')
+        ? signChar + padValue(width - 1, padChar, rightPad, numberString)
+        : padValue(width, padChar, rightPad, signChar + numberString);
 }
 
 function formatFloat( v, precision ) {
