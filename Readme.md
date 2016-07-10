@@ -83,16 +83,20 @@ node-v0.10:
         // sprintf-js-1.0.3 100k 'Hello 0123 world' ms:  593
         // sprintf-js-git 100k 'Hello 0123 world' ms:  301
         // qprintf-0.4.1 100k 'Hello 0123 world' ms:  86
+        // qprintf-0.7.2 100k 'Hello 0123 world' ms:  68
         
-Under node v6.0.0 and up sprintf-js runs much slower than before:
+Under node v6.0.0 and up sprintf-js runs much slower than before.
+Check the git repo before using sprintf-js, it has not been published to npm since July 2015
+(a year ago) and the version in the repo contains some major performance optimizations.
 
 node-v6.2.1:
 
         sprintf("%s %04d %s", "Hello", 123, "world")
 
-        // printf-0.2.5 100k 'Hello 0123 world' ms:  1601
-        // sprintf-js-1.0.3 100k 'Hello 0123 world' ms:  1022
-        // qprintf-0.6.0 100k 'Hello 0123 world' ms:  46
+        // printf-0.2.5 100k 'Hello 0123 world' ms:  1571
+        // sprintf-js-1.0.3 100k 'Hello 0123 world' ms:  1007
+        // sprintf-js-git 100k 'Hello 0123 world' ms:  467
+        // qprintf-0.7.2 100k 'Hello 0123 world' ms:  46
 
 ## Functions
 
