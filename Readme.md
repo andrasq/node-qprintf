@@ -46,9 +46,9 @@ value with sign is wider then the field width of 12, it will not be truncated,
 rather more than 12 characters will be output.
 
 The precision specifier `'.'` is supported for strings and numbers.  For numbers,
-`.4` prints a decimal point followed by 4 decimal digits.  `.0` omits the decimal
-point and prints no decimals.  For strings, the precision specifies the maximum
-length for the string before it is truncated.v
+`.N` prints a decimal point followed by exactly N decimal digits.  `.` and `.0`
+omit the decimal point and prints no decimals.  For strings, the precision
+specifies the maximum number of characters of the string included in the output.
 
 The field width of a %O conversion is taken to be the depth for util.inspect
 to recurse down to.  Specify 0 to not recurse into sub-objects.
@@ -84,12 +84,14 @@ node-v0.10:
         // sprintf-js-git 100k 'Hello 0123 world' ms:  301
         // qprintf-0.4.1 100k 'Hello 0123 world' ms:  86
         
+Under node v6.0.0 and up sprintf-js runs much slower than before:
+
 node-v6.2.1:
 
         sprintf("%s %04d %s", "Hello", 123, "world")
 
-        // printf-0.2.5 100k 'Hello 0123 world' ms:  1630
-        // sprintf-js-1.0.3 100k 'Hello 0123 world' ms:  1051
+        // printf-0.2.5 100k 'Hello 0123 world' ms:  1601
+        // sprintf-js-1.0.3 100k 'Hello 0123 world' ms:  1022
         // qprintf-0.6.0 100k 'Hello 0123 world' ms:  46
 
 ## Functions
@@ -111,7 +113,8 @@ interplate the arguments array into the format string, and return the result
 ## Related Work
 
 - [printf](https://npmjs.org/package/printf) is a complete printf with extensions, but slow
-- [sprintf-js](https://npmjs.org/package/sprintf-js) is a complete printf with extensions, and ok fast.  Use the git master for 2x more speed.
+- [sprintf-js](https://npmjs.org/package/sprintf-js) is a complete printf with extensions, also slow
+- [qprintf](https://github.com/andrasq/node-qprintf) this one
 
 
 ## Todo
