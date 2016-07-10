@@ -184,18 +184,24 @@ function formatFloat( v, precision ) {
     // 0 decimal digits also omits the decimal point
     if (precision <= 0) return Math.floor(v + 0.5).toString(10);
 
-    // return precision digits of the fraction, rounded
+    // avoid surprises, work with positive values
+    var neg = (v < 0);
+    if (v < 0) v = -v;
+
+    var scale = pow10(precision);
+    v += (0.5 / scale);                         // round to convert
+    var i = Math.floor(v);                      // all digits of the integer part
+    var f = Math.floor((v - i) * scale);        // first `precision` digits of the fraction
+
     // (note: both C and PHP render ("%5.2f", 1.275) as " 1.27", because of the IEEE representation
-    var scale = Math.pow(10, precision);
-    v = v * scale + 0.5;
-    var i = Math.floor(v / scale), f = Math.floor(v) % scale;
-    // FIXME: should scale 0.5 down, to not overflow on mpy:
-    // v += 0.5 / scale;
-    // i = v - (v % 1); f = Math.floor(v * scale);
-    // NOTE: -1.24 % 1 errors out (positive reals only)
-    return i + "." + padValue(precision, '0', false, f + "");
-    // TODO: alternate: time:
-    // return i + "." + ("" + (v - v % 1/scale)).slice(2);
+    var s = i + "." + padValue(precision, '0', false, f + '');
+    return neg ? ("-" + s) : s;
+}
+
+// 10^n optimized for small values of n
+var _pow10 = new Array(40); for (var i=0; i<_pow10.length; i++) _pow10[i] = Math.pow(10, i);
+function pow10( n ) {
+    return _pow10[n] || Math.pow(10, n);
 }
 
 function formatObject( obj, depth ) {
