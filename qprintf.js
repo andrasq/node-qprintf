@@ -98,7 +98,7 @@ function vsprintf( fmt, argv ) {
 
         switch (fmt[p]) {
         // integer types
-        case 'd': str += convertInteger(padWidth, padChar, rightPad, plusSign, getarg(p)); break;
+        case 'd': str += convertNumber(padWidth, padChar, rightPad, plusSign, getarg(p)); break;
         case 'i': str += convertIntegerBase(padWidth, padChar, rightPad, plusSign, getarg(p), 10); break;
         case 'x': str += convertIntegerBase(padWidth, padChar, rightPad, plusSign, getarg(p), 16); break;
         case 'o': str += convertIntegerBase(padWidth, padChar, rightPad, plusSign, getarg(p), 8); break;
@@ -161,7 +161,7 @@ function padValue( padWidth, padChar, rightPad, str ) {
     return rightPad ? str + str_repeat(padChar, n) : str_repeat(padChar, n) + str;
 }
 
-function convertInteger( width, padChar, rightPad, signChar, v ) {
+function convertNumber( width, padChar, rightPad, signChar, v ) {
     var s = (v < 0 ? "" + -v : "" + v);
     return padNumber(width, padChar, rightPad, signChar, v, s);
 }
@@ -203,7 +203,7 @@ function formatFloat( v, precision ) {
     return neg ? ("-" + s) : s;
 }
 
-// 10^n optimized for small values of n
+// 10^n optimized for small integer values of n
 var _pow10 = new Array(40); for (var i=0; i<_pow10.length; i++) _pow10[i] = Math.pow(10, i);
 function pow10( n ) {
     return _pow10[n] || Math.pow(10, n);
