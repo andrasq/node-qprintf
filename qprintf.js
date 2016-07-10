@@ -76,6 +76,7 @@ function vsprintf( fmt, argv ) {
                 while (true) {
                     if (fmt[p] === '-') { rightPad = true; p++; }
                     else if (fmt[p] === '0') { padChar = '0'; p++; }
+                    // '+' to always print sign, ' ' to print - for neg and ' ' for positive
                     else if (fmt[p] === '+') { plusSign = '+'; p++; }
                     else if (fmt[p] === ' ') { plusSign = ' '; p++; }
                     else break;
@@ -89,7 +90,6 @@ function vsprintf( fmt, argv ) {
                 precision = scanned.val;
             }
             p = scanned.end;
-            // TODO: '+' to always print sign, ' ' to print - for neg and ' ' for positive
             // TODO: '%(name)d' to print argv[0].name (printf and sprintf-js compat)
             // TODO: %e scientific notation ?
             // note: glibc does not zero-pad on the right
@@ -99,12 +99,13 @@ function vsprintf( fmt, argv ) {
         switch (fmt[p]) {
         // integer types
         case 'd': str += convertInteger(padWidth, padChar, rightPad, plusSign, getarg(p)); break;
-        case 'i': str += convertInteger(padWidth, padChar, rightPad, plusSign, Math.floor(getarg(p))); break;
-        case 'x': str += convertIntegerBase(padWidth, padChar, rightPad, plusSign, Math.floor(getarg(p)), 16); break;
-        case 'o': str += convertIntegerBase(padWidth, padChar, rightPad, plusSign, Math.floor(getarg(p)), 8); break;
-        case 'b': str += convertIntegerBase(padWidth, padChar, rightPad, plusSign, Math.floor(getarg(p)), 2); break;
+        case 'i': str += convertIntegerBase(padWidth, padChar, rightPad, plusSign, getarg(p), 10); break;
+        case 'x': str += convertIntegerBase(padWidth, padChar, rightPad, plusSign, getarg(p), 16); break;
+        case 'o': str += convertIntegerBase(padWidth, padChar, rightPad, plusSign, getarg(p), 8); break;
+        case 'b': str += convertIntegerBase(padWidth, padChar, rightPad, plusSign, getarg(p), 2); break;
         case 'c': str += String.fromCharCode(getarg(p)); break;
-        // TODO: js floor() truncates toward -Infinity, not zero
+        // we truncate %i toward zero like php, ie -1.9 prints as -1
+        // note that C prints hex and octal as unsigned, while we print as signed
 
         // float types
         case 'f': str += convertFloat(padWidth, padChar, rightPad, plusSign, getarg(p), precision); break;
@@ -161,7 +162,7 @@ function convertInteger( width, padChar, rightPad, signChar, v ) {
 }
 
 function convertIntegerBase( width, padChar, rightPad, signChar, v, base ) {
-    var s = (v < 0 ? (-v).toString(base) : v.toString(base));
+    var s = (v < 0 ? (Math.floor(-v)).toString(base) : Math.floor(v).toString(base));
     return padNumber(width, padChar, rightPad, signChar, v, s);
 }
 
