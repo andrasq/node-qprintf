@@ -1,6 +1,6 @@
 {
   "name": "qprintf",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "main": "qprintf.js",
   "description": "simple little printf",
   "author": "andras@andrasq.com",
@@ -14,10 +14,10 @@
     "printf"
   ],
   "scripts": {
-    "coverage": "nyc npm run test",
+    "coverage": "nyc --cache qnit test-*",
     "test": "qnit test-qprintf.js"
   },
   "devDependencies": {
-    "qnit": "*"
+    "qnit": "^0.11.0"
   }
 }
