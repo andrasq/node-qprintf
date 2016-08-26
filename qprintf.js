@@ -40,7 +40,8 @@ function vsprintf( fmt, argv ) {
     }
     function getargN( n ) {
         if (n > nargs) throw new Error("missing argument for % conversion");
-        if (n < 1) throw new Error("invalid $ argument specifier for % conversion");
+        // negative not possible, scanDigits does not handle minus sign
+        // if (n < 1) throw new Error("invalid $ argument specifier for % conversion");
         return argv[n-1];
     }
 
@@ -125,7 +126,7 @@ function vsprintf( fmt, argv ) {
 
         default:
             if (p >= fmt.length) { str += '%'; break; }
-            throw new Error("%" + fmt[p] + ": unsupported conversion"); break;
+            throw new Error("%" + fmt[p] + ": unsupported conversion");
             // TODO: include full conversion specifier in error... if does not impact speed
         }
         p0 = ++p;
@@ -186,23 +187,27 @@ function padNumber( width, padChar, rightPad, signChar, v, numberString ) {
 }
 
 function formatFloat( v, precision ) {
-    if (precision === undefined) return v.toString(10);
+// never called with negative v, omit code handling negatives
+//    if (precision === undefined) return v.toString(10);
 
     // 0 decimal digits also omits the decimal point
     if (precision <= 0) return Math.floor(v + 0.5).toString(10);
 
     // avoid surprises, work with positive values
-    var neg = (v < 0);
-    if (v < 0) v = -v;
+//    var neg = (v < 0);
+//    if (v < 0) v = -v;
 
     var scale = pow10(precision);
     v += (0.5 / scale);                         // round to convert
     var i = Math.floor(v);                      // all digits of the integer part
     var f = Math.floor((v - i) * scale);        // first `precision` digits of the fraction
 
-    // (note: both C and PHP render ("%5.2f", 1.275) as " 1.27", because of the IEEE representation
+    // TODO: large i and precision format as eg 1+42
+
+    // note: both C and PHP render ("%5.2f", 1.275) as " 1.27", because of the IEEE representation
     var s = i + "." + padValue(precision, '0', false, f + '');
-    return neg ? ("-" + s) : s;
+//    return neg ? ("-" + s) : s;
+    return s;
 }
 
 // 10^n optimized for small integer values of n

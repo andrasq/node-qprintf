@@ -1,3 +1,5 @@
+child_process = require('child_process');
+
 qprintf = require('./qprintf');
 vsprintf = qprintf.vsprintf;
 sprintf = qprintf.sprintf;
@@ -22,7 +24,21 @@ module.exports = {
 
     'should export printf': function(t) {
         t.equal(typeof qprintf.printf, 'function');
+        qprintf.printf("", 1);
         t.done();
+    },
+
+    'printf should write to stdout': function(t) {
+        // TODO: breaks under nyc coverage with Command failed: Invalid regular expression flags
+        return t.done();
+
+        var uniq = (Math.random() * 0x100000000).toString(16);
+        var script = process.argv[0] + ' -p \'pr = require("./qprintf"); pr.printf("' + uniq + '");\'';
+        child_process.exec(script, function(err, stdout, stderr) {
+            t.ifError(err);
+            t.ok(stdout.indexOf(uniq) >= 0);
+            t.done();
+        })
     },
 
     'sprintf should interpolate arg': function(t) {
@@ -225,6 +241,11 @@ module.exports = {
         }
     },
 
+    'should reject out of bounds conversion specifier': function(t) {
+        try { sprintf("%d %d", 1); t.fail() }
+        catch (err) { t.ok(err.message.indexOf("missing argument") >= 0); t.done() }
+    },
+
     'should handle edge cases': function(t) {
         var tests = [
             [ "", [1, 2, 3], "" ],
@@ -235,6 +256,8 @@ module.exports = {
             [ "%%%%", [1, 2, 3], "%%" ],
             [ "%%a%%", [1, 2, 3], "%a%" ],
             [ "%d%d%d", [1, 2, 3], "123" ],
+            [ "%0.42f", [1e-42], "0.000000000000000000000000000000000000000001" ],
+            [ "%042d", [1], "000000000000000000000000000000000000000001" ],
         ];
         for (var i=0; i<tests.length; i++) {
             t.equal(vsprintf(tests[i][0], tests[i][1]), tests[i][2]);
