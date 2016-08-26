@@ -120,6 +120,7 @@ interplate the arguments array into the format string, and return the result
 
 - [printf](https://npmjs.org/package/printf) is a complete printf with extensions, but slow
 - [sprintf-js](https://npmjs.org/package/sprintf-js) is a complete printf with extensions, also slow
+- [extsprintf])(https://npmjs.org/package/extsprintf) a limited printf, also slow
 - [qprintf](https://github.com/andrasq/node-qprintf) this one
 
 
