@@ -3,7 +3,7 @@
  *
  * Implements a basic subset of C printf conversions, including field widths.
  *
- * Copyright (C) 2015 Andras Radics
+ * Copyright (C) 2015-2016 Andras Radics
  * Licensed under the Apache License, Version 2.0
  *
  * 2015-02-24 - AR.
@@ -204,7 +204,7 @@ function formatFloat( v, precision ) {
 
     // TODO: large i and precision format as eg 1+42
 
-    // note: both C and PHP render ("%5.2f", 1.275) as " 1.27", because of the IEEE representation
+    // note: both C and PHP render ("%5.2f", 1.275) as "1.27", because of the IEEE representation
     var s = i + "." + padValue(precision, '0', false, f + '');
 //    return neg ? ("-" + s) : s;
     return s;
