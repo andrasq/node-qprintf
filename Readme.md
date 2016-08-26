@@ -95,8 +95,10 @@ node-v6.2.1:
 
         // printf-0.2.5 100k 'Hello 0123 world' ms:  1571
         // sprintf-js-1.0.3 100k 'Hello 0123 world' ms:  1007
+        // extsprintf-1.3.0 100k 'Hello 0123 world' ms:  893
         // sprintf-js-git 100k 'Hello 0123 world' ms:  467
         // qprintf-0.7.2 100k 'Hello 0123 world' ms:  46
+        // qprintf-0.8.0 100k 'Hello 0123 world' ms:  44
 
 ## Functions
 

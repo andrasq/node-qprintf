@@ -4,13 +4,16 @@ var util = require('util');
 
 var qsprintf = require('./qprintf').sprintf;
 var sprintfjs = require('sprintf-js').sprintf;
+//var sprintfjs = require('/home/andras/src/sprintf-js.git/').sprintf;
 var printf = require('printf');
+var extsprintf = require('extsprintf');
 
 console.log("forever loop, kill with ^C...");
 
 for (var loop=0; loop<10; loop++) {
     var z;
     var calls = {
+        extsprintf: extsprintf.sprintf,
         printf: printf,
         sprintfjs: sprintfjs,
         qsprintf: qsprintf,
