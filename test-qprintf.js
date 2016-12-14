@@ -1,3 +1,5 @@
+child_process = require('child_process');
+
 qprintf = require('./qprintf');
 vsprintf = qprintf.vsprintf;
 sprintf = qprintf.sprintf;
@@ -22,7 +24,21 @@ module.exports = {
 
     'should export printf': function(t) {
         t.equal(typeof qprintf.printf, 'function');
+        qprintf.printf("", 1);
         t.done();
+    },
+
+    'printf should write to stdout': function(t) {
+        // TODO: breaks under nyc coverage with Command failed: Invalid regular expression flags
+        return t.done();
+
+        var uniq = (Math.random() * 0x100000000).toString(16);
+        var script = process.argv[0] + ' -p \'pr = require("./qprintf"); pr.printf("' + uniq + '");\'';
+        child_process.exec(script, function(err, stdout, stderr) {
+            t.ifError(err);
+            t.ok(stdout.indexOf(uniq) >= 0);
+            t.done();
+        })
     },
 
     'sprintf should interpolate arg': function(t) {
@@ -64,6 +80,16 @@ module.exports = {
             [ "%05d", 123, "00123" ],
             [ "%-6d", 123, "123   " ],
             [ "%-06d", 123, "123000" ],         // note: C pads on right with spaces, not zeros
+            [ "%6d", 123, "   123" ],
+            [ "%06d", 123, "000123" ],
+            [ "% 6d", 123, "   123" ],
+            [ "%+6d", 123, "  +123" ],
+            [ "%+06d", 123, "+00123" ],
+            [ "%6d", -123, "  -123" ],
+            [ "%06d", -123, "-00123" ],
+            [ "% 6d", -123, "  -123" ],
+            [ "%+6d", -123, "  -123" ],
+            [ "%+06d", -123, "-00123" ],
         ];
         t.expect(data.length);
         this.runTests(t, data);
@@ -77,10 +103,18 @@ module.exports = {
             [ "%5o", 12, "   14" ],
             [ "%5o", -12, "  -14" ],
             [ "%5x", 12, "    c" ],
+            [ "%05x", 12, "0000c" ],
+            [ "%+5x", 12, "   +c" ],
+            [ "%+05x", 12, "+000c" ],
             [ "%5x", -12, "   -c" ],
+            [ "%05x", -12, "-000c" ],
+            [ "%+5x", -12, "   -c" ],
+            [ "%+05x", -12, "-000c" ],
             [ "%5b", 12, " 1100" ],
-            [ "%5i", -12.2, "  -13" ],
-            [ "%05i", -12.2, "-0013" ],
+            [ "%5i", -12.2, "  -12" ],
+            [ "%05i", -12.2, "-0012" ],
+            [ "%5x", -12.2, "   -c" ],
+            [ "%05x", -12.2, "-000c" ],
         ];
         t.expect(data.length);
         this.runTests(t, data);
@@ -89,21 +123,47 @@ module.exports = {
 
     'should interpolate floats': function(t) {
         var data = [
-            [ "%f", 1.23, "1.23" ],
-            [ "%5f", 1.23, " 1.23" ],
-            [ "%-6f", 1.23, "1.23  " ],
-            [ "%5.f", 1.278, "    1" ],
+            [ "%f", 1.23, "1.230000" ],
+            [ "%10f", 1.23, "  1.230000" ],
+            [ "%-10f", 1.23, "1.230000  " ],
+            [ "%+10f", 1.23, " +1.230000" ],
+            [ "%-+10f", 1.23, "+1.230000 " ],
+            [ "%-+010f", 1.23, "+1.2300000" ],
+
+            [ "%5f", 1.23, "1.230000" ],
+            [ "%7.4f", 1.23, " 1.2300" ],
+            [ "%5.8f", 1.23, "1.23000000" ],
+            [ "%5.f", 1.23, "    1" ],
+            [ "%5.0f", 1.23, "    1" ],
+            [ "%5.1f", 1.23, "  1.2" ],
+            [ "%5.1f", -1.23, " -1.2" ],
+
             [ "%5.2f", 1.278, " 1.28" ],
             [ "%-5.2f", 1.278, "1.28 " ],
             [ "%05.2f", 1.278, "01.28" ],
             [ "%-05.2f", 1.278, "1.280" ],
             [ "%-05.3f", 1.278, "1.278" ],
+
             [ "%6.2f", 1, "  1.00" ],
             [ "%6.2f", -1, " -1.00" ],
             [ "%06.2f", 1, "001.00" ],
             [ "%6.2f", -1, " -1.00" ],
             [ "%-08.2f", -1, "-1.00000" ],
             // NOTE: C pads on right with spaces, not zeros
+
+            [ "%7.2f", 1.278, "   1.28" ],
+            [ "%07.2f", 1.278, "0001.28" ],
+            [ "% 7.2f", 1.278, "   1.28" ],
+            [ "% 07.2f", 1.278, " 001.28" ],
+            [ "%+7.2f", 1.278, "  +1.28" ],
+            [ "%+07.2f", 1.278, "+001.28" ],
+
+            [ "%7.2f", -1.278, "  -1.28" ],
+            [ "%07.2f", -1.278, "-001.28" ],
+            [ "% 7.2f", -1.278, "  -1.28" ],
+            [ "% 07.2f", -1.278, "-001.28" ],
+            [ "%+7.2f", -1.278, "  -1.28" ],
+            [ "%+07.2f", -1.278, "-001.28" ],
         ];
         t.expect(data.length);
         this.runTests(t, data);
@@ -179,6 +239,30 @@ module.exports = {
             t.ok(err.message.indexOf("missing argument") >= 0);
             t.done();
         }
+    },
+
+    'should reject out of bounds conversion specifier': function(t) {
+        try { sprintf("%d %d", 1); t.fail() }
+        catch (err) { t.ok(err.message.indexOf("missing argument") >= 0); t.done() }
+    },
+
+    'should handle edge cases': function(t) {
+        var tests = [
+            [ "", [1, 2, 3], "" ],
+            [ "%", [1, 2, 3], "%" ],
+            [ "%%", [1, 2, 3], "%" ],
+            [ "%%%", [1, 2, 3], "%%" ],
+            [ "%%a", [1, 2, 3], "%a" ],
+            [ "%%%%", [1, 2, 3], "%%" ],
+            [ "%%a%%", [1, 2, 3], "%a%" ],
+            [ "%d%d%d", [1, 2, 3], "123" ],
+            [ "%0.42f", [1e-42], "0.000000000000000000000000000000000000000001" ],
+            [ "%042d", [1], "000000000000000000000000000000000000000001" ],
+        ];
+        for (var i=0; i<tests.length; i++) {
+            t.equal(vsprintf(tests[i][0], tests[i][1]), tests[i][2]);
+        }
+        t.done();
     },
 
     'speed of 10k string+num': function(t) {
