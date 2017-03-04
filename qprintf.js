@@ -27,14 +27,14 @@ var CH_DOT = '.'.charCodeAt(0);
 var CH_DOLLAR = '$'.charCodeAt(0);
 
 function printf( fmt ) {
-    var argv = new Array();
-    for (var i=1; i<arguments.length; i++) argv.push(arguments[i]);
-    process.stdout.write(vsprintf(fmt, argv));
+    var args = new Array(arguments.length - 1);
+    for (var i=1; i<arguments.length; i++) args[i - 1] = arguments[i];
+    process.stdout.write(vsprintf(fmt, args));
 }
 
 function sprintf( fmt ) {
-    var args = new Array();
-    for (var i=1; i<arguments.length; i++) args.push(arguments[i]);
+    var args = new Array(arguments.length - 1);
+    for (var i=1; i<arguments.length; i++) args[i - 1] = arguments[i];
     return vsprintf(fmt, args);
 }
 
@@ -49,6 +49,7 @@ function vsprintf( fmt, argv ) {
 
     var p0 = 0, p = 0, str = "";
     var scanned = { end: undefined, val: undefined };
+
     while (p < fmt.length) {
         if (fmt.charCodeAt(p) != 0x25) { p++; continue; }       // scan until %
         if (p > p0) str += fmt.slice(p0, p);
@@ -133,7 +134,7 @@ function vsprintf( fmt, argv ) {
         }
         p0 = ++p;
     }
-    if (p0 < fmt.length) str += fmt.slice(p0);
+    return (p0 === 0) ? fmt : (p0 < fmt.length) ? str + fmt.slice(p0) : str;
     return str;
 }
 
