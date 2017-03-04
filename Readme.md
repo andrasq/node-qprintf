@@ -103,6 +103,8 @@ node-v6.2.1:
 Newer benchmarks, this time on a 4520 MHz i7-6700k (the previous runtimes were on a
 3600 GHz Phenom II):
 
+    // 
+
 node-v6.2.1:
 
     sprintf("%s %04d %s", "Hello", 123, "world")
@@ -113,6 +115,9 @@ node-v6.2.1:
     // sprintf-0.1.5 100k 'Hello 0123 world' ms:  336
     // qsprintf-0.8.0 100k 'Hello 0123 world' ms:  21
     // qsprintf-0.9.2 100k 'Hello 0123 world' ms:  17
+
+Under node v7.0.0 and the slowdown that affected `sprintf-js` and its fork
+`sprintf` is gone, they're fast again.
 
 node-v7.5.0:
 
