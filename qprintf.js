@@ -30,20 +30,27 @@ function sprintf( fmt ) {
     return vsprintf(fmt, args);
 }
 
+function getarg( argz, p ) {
+    if (argz.argN !== undefined) return argz.argN;
+    if (argz.argi >= argz.nargs) throw new Error("missing argument for %" + argz.fmt[p] + " conversion");
+    return argz.argv[argz.argi++];
+}
+
+function getargN( argz, n ) {
+    if (n > argz.nargs) throw new Error("missing argument for % conversion");
+    // negative not possible, scanDigits does not handle minus sign
+    // if (n < 1) throw new Error("invalid $ argument specifier for % conversion");
+    return argz.argv[n-1];
+}
+
 function vsprintf( fmt, argv ) {
-    var argi = 0, nargs = argv.length;
-    var argN = undefined;
-    function getarg( p ) {
-        if (argN !== undefined) return argN;
-        if (argi >= nargs) throw new Error("missing argument for %" + fmt[p] + " conversion");
-        return argv[argi++];
-    }
-    function getargN( n ) {
-        if (n > nargs) throw new Error("missing argument for % conversion");
-        // negative not possible, scanDigits does not handle minus sign
-        // if (n < 1) throw new Error("invalid $ argument specifier for % conversion");
-        return argv[n-1];
-    }
+    var argz = {
+        fmt: fmt,
+        argv: argv,
+        argi: 0,
+        nargs: argv.length,
+        argN: undefined,
+    };
 
     var p0 = 0, p = 0, str = "";
     var scanned = { end: undefined, val: undefined };
@@ -53,7 +60,7 @@ function vsprintf( fmt, argv ) {
         p++;
 
         // parse the conversion spec
-        argN = undefined;
+        argz.argN = undefined;
         var padChar = ' ', padWidth = undefined, rightPad = false, precision = undefined, plusSign = '';
         var flag = fmt[p];
         var checkForWidth = true;
@@ -61,7 +68,7 @@ function vsprintf( fmt, argv ) {
             scanDigits(fmt, p, scanned);
             if (fmt[scanned.end] === '$') {
                 // found an N$ arg specifier, might also have width
-                argN = getargN(scanned.val);
+                argz.argN = getargN(argz, scanned.val);
                 checkForWidth = true;
                 p = scanned.end + 1;
             }
@@ -99,30 +106,30 @@ function vsprintf( fmt, argv ) {
 
         switch (fmt[p]) {
         // integer types
-        case 'd': str += convertNumber(padWidth, padChar, rightPad, plusSign, getarg(p)); break;
-        case 'i': str += convertIntegerBase(padWidth, padChar, rightPad, plusSign, getarg(p), 10); break;
-        case 'x': str += convertIntegerBase(padWidth, padChar, rightPad, plusSign, getarg(p), 16); break;
-        case 'o': str += convertIntegerBase(padWidth, padChar, rightPad, plusSign, getarg(p), 8); break;
-        case 'b': str += convertIntegerBase(padWidth, padChar, rightPad, plusSign, getarg(p), 2); break;
-        case 'c': str += String.fromCharCode(getarg(p)); break;
+        case 'd': str += convertNumber(padWidth, padChar, rightPad, plusSign, getarg(argz, p)); break;
+        case 'i': str += convertIntegerBase(padWidth, padChar, rightPad, plusSign, getarg(argz, p), 10); break;
+        case 'x': str += convertIntegerBase(padWidth, padChar, rightPad, plusSign, getarg(argz, p), 16); break;
+        case 'o': str += convertIntegerBase(padWidth, padChar, rightPad, plusSign, getarg(argz, p), 8); break;
+        case 'b': str += convertIntegerBase(padWidth, padChar, rightPad, plusSign, getarg(argz, p), 2); break;
+        case 'c': str += String.fromCharCode(getarg(argz, p)); break;
         // we truncate %i toward zero like php, ie -1.9 prints as -1
         // note that C prints hex and octal as unsigned, while we print as signed
 
         // float types
-        case 'f': str += convertFloat(padWidth, padChar, rightPad, plusSign, getarg(p), precision >= 0 ? precision : 6); break;
+        case 'f': str += convertFloat(padWidth, padChar, rightPad, plusSign, getarg(argz, p), precision >= 0 ? precision : 6); break;
 
         // string types
         case 's':
-            if (precision !== undefined) str += padValue(padWidth, padChar, rightPad, (getarg(p) + "").slice(0, precision));
-            else str += padValue(padWidth, padChar, rightPad, getarg(p));
+            if (precision !== undefined) str += padValue(padWidth, padChar, rightPad, (getarg(argz, p) + "").slice(0, precision));
+            else str += padValue(padWidth, padChar, rightPad, getarg(argz, p));
             break;
 
         // the escape character itself
         case '%': str += padValue(padWidth, padChar, rightPad, '%'); break;
 
         // qnit extensions
-        case 'A': str += formatArray(getarg(p), padWidth, 6); break;
-        case 'O': str += formatObject(getarg(p), padWidth); break;
+        case 'A': str += formatArray(getarg(argz, p), padWidth, 6); break;
+        case 'O': str += formatObject(getarg(argz, p), padWidth); break;
 
         default:
             if (p >= fmt.length) { str += '%'; break; }
