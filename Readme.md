@@ -1,7 +1,7 @@
 qprintf
 =======
 
-quick little printf-like output formatter, interpolates the arguments into the
+Very quick little printf-like output formatter, interpolates the arguments into the
 format string and writes them to process.stdout. Recognizes more formats than
 console.log, and is easier to type.
 

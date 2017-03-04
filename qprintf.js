@@ -3,7 +3,7 @@
  *
  * Implements a basic subset of C printf conversions, including field widths.
  *
- * Copyright (C) 2015-2016 Andras Radics
+ * Copyright (C) 2015-2017 Andras Radics
  * Licensed under the Apache License, Version 2.0
  *
  * 2015-02-24 - AR.
@@ -62,7 +62,7 @@ function vsprintf( fmt, argv ) {
         if (flag >= CH_0 && flag <= CH_9 || flag === CH_MINUS || flag === CH_PLUS || flag === CH_SPACE) {
             scanDigits(fmt, p, scanned);
             if (fmt.charCodeAt(scanned.end) === CH_DOLLAR) {
-                // found an N$ arg specifier, might also have width
+                // found an N$ arg specifier, but might also have width
                 setargN(argz, scanned.val);
                 checkForWidth = true;
                 p = scanned.end + 1;

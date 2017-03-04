@@ -2,7 +2,7 @@
   "name": "qprintf",
   "version": "0.9.1",
   "main": "qprintf.js",
-  "description": "simple little printf",
+  "description": "very quick little printf",
   "author": "andras@andrasq.com",
   "license": "Apache-2.0",
   "repository": {
@@ -10,6 +10,8 @@
     "type": "git"
   },
   "keywords": [
+    "fast",
+    "sprintf",
     "Andras",
     "printf"
   ],
