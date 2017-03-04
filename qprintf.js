@@ -24,6 +24,7 @@ var CH_MINUS = '-'.charCodeAt(0);
 var CH_PLUS = '+'.charCodeAt(0);
 var CH_SPACE = ' '.charCodeAt(0);
 var CH_DOT = '.'.charCodeAt(0);
+var CH_DOLLAR = '$'.charCodeAt(0);
 
 function printf( fmt ) {
     var argv = new Array();
@@ -60,7 +61,7 @@ function vsprintf( fmt, argv ) {
         var checkForWidth = true;
         if (flag >= CH_0 && flag <= CH_9 || flag === CH_MINUS || flag === CH_PLUS || flag === CH_SPACE) {
             scanDigits(fmt, p, scanned);
-            if (fmt[scanned.end] === '$') {
+            if (fmt.charCodeAt(scanned.end) === CH_DOLLAR) {
                 // found an N$ arg specifier, might also have width
                 setargN(argz, scanned.val);
                 checkForWidth = true;
