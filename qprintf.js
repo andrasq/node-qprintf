@@ -139,7 +139,6 @@ function vsprintf( fmt, argv ) {
         p0 = ++p;
     }
     return (p0 === 0) ? fmt : (p0 < fmt.length) ? str + fmt.slice(p0) : str;
-    return str;
 }
 
 
@@ -207,7 +206,8 @@ function padNumber( width, padChar, rightPad, signChar, v, numberString ) {
         : padValue(width, padChar, rightPad, signChar + numberString);
 }
 
-function formatFloat( v, precision ) {
+/**
+function formatFloatOriginal( v, precision ) {
 // never called with negative v, omit code handling negatives
 //    if (precision === undefined) return v.toString(10);
 
@@ -228,6 +228,22 @@ function formatFloat( v, precision ) {
     // note: both C and PHP render ("%5.2f", 1.275) as "1.27", because of the IEEE representation
     var s = i + "." + padValue(precision, '0', false, f + '');
 //    return neg ? ("-" + s) : s;
+    return s;
+}
+**/
+
+// streamlined version of the above, to fit into 600 chars
+// works for positive values only, but thats all we use
+function formatFloat( v, precision ) {
+    if (precision <= 0) return Math.floor(v + 0.5).toString(10);
+
+    var scale = pow10(precision);
+    v += (0.5 / scale);    // round to convert
+    var i = Math.floor(v); // all digits of the integer part
+    var f = Math.floor((v - i) * scale);  // first `precision` digits of the fraction
+    // TODO: large i and precision format as eg 1+42
+
+    var s = i + "." + padValue(precision, '0', false, f + '');
     return s;
 }
 
