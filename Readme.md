@@ -5,8 +5,9 @@ Very quick little printf-like output formatter, interpolates the arguments into 
 format string and writes them to process.stdout. Recognizes more formats than
 console.log, and is easier to type.
 
-    npm install qprintf
-    npm test qprintf
+    var printf = require('qprintf').printf;
+    printf("%s%7s %05d!", "Hello", "world", 123);
+    // => Hello  world 00123!
 
 ## Conversions
 
@@ -58,6 +59,7 @@ show.
 
 Unlike C, zero padding uses zeroes for left-aligned numbers and strings as well.
 
+
 ## Examples
 
     var qprintf = require('qprintf')
@@ -70,6 +72,7 @@ Unlike C, zero padding uses zeroes for left-aligned numbers and strings as well.
     sprintf("%-10s", "Hello")       => "Hello     "
     sprintf("%O", {a:1,b:2})        => "{ a: 1, b: 2 }"
     sprintf("%2A", [1,2,3,4])       => "[ 1, 2, ... ]"
+
 
 ## Benchmark
 
@@ -85,9 +88,13 @@ node-v0.10:
     // qprintf-0.4.1 100k 'Hello 0123 world' ms:  86
     // qprintf-0.7.2 100k 'Hello 0123 world' ms:  68
     
-Under node v6.0.0 and up sprintf-js runs much slower than before.
-Check the git repo before using sprintf-js, it has not been published to npm since July 2015
-(a year ago) and the version in the repo contains some major performance optimizations.
+    // on 4522 MHz i7-6700k
+    // qprintf-0.4.1 100k 'Hello 0123 world' ms:  38
+    // qprintf-0.7.2 100k 'Hello 0123 world' ms:  29
+
+Under node v6.0.0 and up `sprintf-js` runs much slower than before.
+It is a fork of `sprintf`, which was similarly affected.  The slowdown
+cleared up starting with node version v7.0.0.
 
 node-v6.2.1:
 
@@ -99,11 +106,9 @@ node-v6.2.1:
     // sprintf-js-git 100k 'Hello 0123 world' ms:  467
     // qprintf-0.7.2 100k 'Hello 0123 world' ms:  46
     // qprintf-0.8.0 100k 'Hello 0123 world' ms:  44
-
-Newer benchmarks, this time on a 4520 MHz i7-6700k (the previous runtimes were on a
+    
+Newer benchmarks, this time on a 4520 MHz i7-6700k (the previous runtimes were from a
 3600 GHz Phenom II):
-
-    // 
 
 node-v6.2.1:
 
@@ -113,11 +118,15 @@ node-v6.2.1:
     // sprintfjs-1.0.3 100k 'Hello 0123 world' ms:  523
     // extsprintf-1.3.0 100k 'Hello 0123 world' ms:  372
     // sprintf-0.1.5 100k 'Hello 0123 world' ms:  336
-    // qsprintf-0.8.0 100k 'Hello 0123 world' ms:  21
-    // qsprintf-0.9.2 100k 'Hello 0123 world' ms:  17
+    // qprintf-0.9.2 100k 'Hello 0123 world' ms:  17
 
-Under node v7.0.0 and the slowdown that affected `sprintf-js` and its fork
-`sprintf` is gone, they're fast again.
+    // qprintf-0.4.1 100k 'Hello 0123 world' ms:  33
+    // qprintf-0.7.2 100k 'Hello 0123 world' ms:  20
+    // qprintf-0.8.0 100k 'Hello 0123 world' ms:  21
+    // qprintf-0.9.2 100k 'Hello 0123 world' ms:  17
+
+Under node v7.0.0 and the slowdown that affected `sprintf-js` and `sprintf` is gone,
+they're fast(er) again.
 
 node-v7.5.0:
 
@@ -127,8 +136,13 @@ node-v7.5.0:
     // sprintfjs-1.0.3 100k 'Hello 0123 world' ms:  169
     // extsprintf-1.3.0 100k 'Hello 0123 world' ms:  342
     // sprintf-0.1.5 100k 'Hello 0123 world' ms:  113
-    // qsprintf-0.8.0 100k 'Hello 0123 world' ms:  23
-    // qsprintf-0.9.2 100k 'Hello 0123 world' ms:  17
+    // qprintf-0.9.2 100k 'Hello 0123 world' ms:  17
+
+    // qprintf-0.4.1 100k 'Hello 0123 world' ms:  33
+    // qprintf-0.7.2 100k 'Hello 0123 world' ms:  22
+    // qprintf-0.8.0 100k 'Hello 0123 world' ms:  22
+    // qprintf-0.9.2 100k 'Hello 0123 world' ms:  17
+
 
 ## Functions
 

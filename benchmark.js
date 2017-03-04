@@ -19,7 +19,7 @@ for (var loop=0; loop<10; loop++) {
         'sprintfjs-1.0.3': sprintfjs,
         'extsprintf-1.3.0': extsprintf,         // does not handle floating-point or %4$
         'sprintf-0.1.5': sprintf,
-        'qsprintf-0.9.2': qsprintf,
+        'qprintf-0.9.2': qsprintf,
         'util_format': util.format,             // does not handle %04 or %4$
     };
 
