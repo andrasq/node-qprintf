@@ -12,12 +12,12 @@ var extsprintf = require('extsprintf');
 for (var loop=0; loop<10; loop++) {
     var z;
     var calls = {
-        extsprintf: extsprintf.sprintf,
-        printf: printf,
-        sprintfjs: sprintfjs,
-        sprintf: sprintf,
-        qsprintf: qsprintf,
-        util_format: util.format,
+        'extsprintf-1.3.0': extsprintf.sprintf,
+        'printf-0.2.5': printf,
+        'sprintfjs-1.0.3': sprintfjs,
+        'sprintf-0.1.5': sprintf,
+        'qsprintf-0.9.2': qsprintf,
+        'util_format': util.format,
     };
 
     for (var callName in calls) {
