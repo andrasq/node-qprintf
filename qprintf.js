@@ -30,19 +30,6 @@ function sprintf( fmt ) {
     return vsprintf(fmt, args);
 }
 
-function getarg( argz, p ) {
-    if (argz.argN !== undefined) return argz.argN;
-    if (argz.argi >= argz.nargs) throw new Error("missing argument for %" + argz.fmt[p] + " conversion");
-    return argz.argv[argz.argi++];
-}
-
-function getargN( argz, n ) {
-    if (n > argz.nargs) throw new Error("missing argument for % conversion");
-    // negative not possible, scanDigits does not handle minus sign
-    // if (n < 1) throw new Error("invalid $ argument specifier for % conversion");
-    return argz.argv[n-1];
-}
-
 function vsprintf( fmt, argv ) {
     var argz = {
         fmt: fmt,
@@ -142,6 +129,19 @@ function vsprintf( fmt, argv ) {
     return str;
 }
 
+
+function getarg( argz, p ) {
+    if (argz.argN !== undefined) return argz.argN;
+    if (argz.argi >= argz.nargs) throw new Error("missing argument for %" + argz.fmt[p] + " conversion");
+    return argz.argv[argz.argi++];
+}
+
+function setargN( argz, n ) {
+    if (n > argz.nargs) throw new Error("missing argument $" + n + " for % conversion");
+    // negative n never passed in, scanDigits does not handle minus sign
+    // if (n < 1) throw new Error("invalid $ argument specifier for % conversion");
+    return argz.argN = argz.argv[n-1];
+}
 
 function scanDigits( str, p, ret ) {
     var ch, val = 0;
