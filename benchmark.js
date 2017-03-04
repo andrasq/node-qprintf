@@ -20,11 +20,11 @@ for (var loop=0; loop<10; loop++) {
         'extsprintf-1.3.0': extsprintf,         // does not handle floating-point or %4$
         'sprintf-0.1.5': sprintf,
         'qprintf-0.9.2': qsprintf,
-        'util_format': util.format,             // does not handle %04 or %4$
+//        'util_format': util.format,             // does not handle %04 or %4$
     };
 
-    for (var nloops=0; nloops<3; nloops++) {
     for (var f=0; f<2; f++) {
+    for (var nloops=0; nloops<5; nloops++) {
         for (var callName in calls) {
             var call = calls[callName];
             var t1 = Date.now();
