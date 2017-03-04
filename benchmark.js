@@ -9,8 +9,6 @@ var sprintf = require('sprintf').sprintf;
 var printf = require('printf');
 var extsprintf = require('extsprintf');
 
-console.log("forever loop, kill with ^C...");
-
 for (var loop=0; loop<10; loop++) {
     var z;
     var calls = {

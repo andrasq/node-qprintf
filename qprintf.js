@@ -62,7 +62,7 @@ function vsprintf( fmt, argv ) {
             scanDigits(fmt, p, scanned);
             if (fmt[scanned.end] === '$') {
                 // found an N$ arg specifier, might also have width
-                argz.argN = getargN(argz, scanned.val);
+                setargN(argz, scanned.val);
                 checkForWidth = true;
                 p = scanned.end + 1;
             }
@@ -227,7 +227,7 @@ function formatFloat( v, precision ) {
 // 10^n optimized for small integer values of n
 var _pow10 = new Array(40); for (var i=0; i<_pow10.length; i++) _pow10[i] = Math.pow(10, i);
 function pow10( n ) {
-    return _pow10[n] || Math.pow(10, n);
+    return _pow10[n] ? _pow10[n] : Math.pow(10, n);
 }
 
 function formatObject( obj, depth ) {
