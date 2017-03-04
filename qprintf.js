@@ -17,6 +17,13 @@ module.exports.sprintf = sprintf;
 
 var util = require('util');
 
+// ascii char codes
+var CH_0 = '0'.charCodeAt(0);
+var CH_9 = '9'.charCodeAt(0);
+var CH_MINUS = '-'.charCodeAt(0);
+var CH_PLUS = '+'.charCodeAt(0);
+var CH_SPACE = ' '.charCodeAt(0);
+var CH_DOT = '.'.charCodeAt(0);
 
 function printf( fmt ) {
     var argv = new Array();
@@ -49,9 +56,9 @@ function vsprintf( fmt, argv ) {
         // parse the conversion spec
         argz.argN = undefined;
         var padChar = ' ', padWidth = undefined, rightPad = false, precision = undefined, plusSign = '';
-        var flag = fmt[p];
+        var flag = fmt.charCodeAt(p);
         var checkForWidth = true;
-        if (flag >= '0' && flag <= '9' || flag === '-' || flag === '+' || flag === ' ') {
+        if (flag >= CH_0 && flag <= CH_9 || flag === CH_MINUS || flag === CH_PLUS || flag === CH_SPACE) {
             scanDigits(fmt, p, scanned);
             if (fmt[scanned.end] === '$') {
                 // found an N$ arg specifier, might also have width
@@ -61,7 +68,7 @@ function vsprintf( fmt, argv ) {
             }
             else if (scanned.end > p) {
                 // found field width, with at most a numeric '0' flag
-                if (fmt[p] === '0') padChar = '0';
+                if (fmt.charCodeAt(p) === CH_0) padChar = '0';
                 padWidth = scanned.val;
                 checkForWidth = false;
                 p = scanned.end;
@@ -69,17 +76,17 @@ function vsprintf( fmt, argv ) {
             if (checkForWidth) {
                 // look for both flags and width
                 while (true) {
-                    if (fmt[p] === '-') { rightPad = true; p++; }
-                    else if (fmt[p] === '0') { padChar = '0'; p++; }
+                    if (fmt.charCodeAt(p) === CH_MINUS) { rightPad = true; p++; }
+                    else if (fmt.charCodeAt(p) === CH_0) { padChar = '0'; p++; }
                     // '+' to always print sign, ' ' to print - for neg and ' ' for positive
-                    else if (fmt[p] === '+') { plusSign = '+'; p++; }
-                    else if (fmt[p] === ' ') { plusSign = ' '; p++; }
+                    else if (fmt.charCodeAt(p) === CH_PLUS) { plusSign = '+'; p++; }
+                    else if (fmt.charCodeAt(p) === CH_SPACE) { plusSign = ' '; p++; }
                     else break;
                 }
                 scanDigits(fmt, p, scanned);
                 padWidth = scanned.val;
             }
-            if (fmt[scanned.end] === '.') {
+            if (fmt.charCodeAt(scanned.end) === CH_DOT) {
                 // gather precision if included with width
                 scanDigits(fmt, scanned.end+1, scanned);
                 precision = scanned.val;
