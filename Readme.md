@@ -5,8 +5,8 @@ Very quick little printf-like output formatter, interpolates the arguments into 
 format string and writes them to process.stdout. Recognizes more formats than
 console.log, and is easier to type.
 
-        npm install qprintf
-        npm test qprintf
+    npm install qprintf
+    npm test qprintf
 
 ## Conversions
 
@@ -60,16 +60,16 @@ Unlike C, zero padding uses zeroes for left-aligned numbers and strings as well.
 
 ## Examples
 
-        var qprintf = require('qprintf')
-        var sprintf = qprintf.sprintf
+    var qprintf = require('qprintf')
+    var sprintf = qprintf.sprintf
 
-        sprintf("%5d", 123)             => "  123"
-        sprintf("%5.2f", 1.238)         => " 1.24"
-        sprintf("%05x", 123)            => "0007b"
-        sprintf("%10s", "Hello")        => "     Hello"
-        sprintf("%-10s", "Hello")       => "Hello     "
-        sprintf("%O", {a:1,b:2})        => "{ a: 1, b: 2 }"
-        sprintf("%2A", [1,2,3,4])       => "[ 1, 2, ... ]"
+    sprintf("%5d", 123)             => "  123"
+    sprintf("%5.2f", 1.238)         => " 1.24"
+    sprintf("%05x", 123)            => "0007b"
+    sprintf("%10s", "Hello")        => "     Hello"
+    sprintf("%-10s", "Hello")       => "Hello     "
+    sprintf("%O", {a:1,b:2})        => "{ a: 1, b: 2 }"
+    sprintf("%2A", [1,2,3,4])       => "[ 1, 2, ... ]"
 
 ## Benchmark
 
@@ -77,28 +77,53 @@ The included benchmark loops 100,000 times and formats the test string.
 
 node-v0.10:
 
-        sprintf("%s %04d %s", "Hello", 123, "world")
+    sprintf("%s %04d %s", "Hello", 123, "world")
 
-        // printf-0.2.3 100k 'Hello 0123 world' ms:  1138
-        // sprintf-js-1.0.3 100k 'Hello 0123 world' ms:  593
-        // sprintf-js-git 100k 'Hello 0123 world' ms:  301
-        // qprintf-0.4.1 100k 'Hello 0123 world' ms:  86
-        // qprintf-0.7.2 100k 'Hello 0123 world' ms:  68
-        
+    // printf-0.2.3 100k 'Hello 0123 world' ms:  1138
+    // sprintf-js-1.0.3 100k 'Hello 0123 world' ms:  593
+    // sprintf-js-git 100k 'Hello 0123 world' ms:  301
+    // qprintf-0.4.1 100k 'Hello 0123 world' ms:  86
+    // qprintf-0.7.2 100k 'Hello 0123 world' ms:  68
+    
 Under node v6.0.0 and up sprintf-js runs much slower than before.
 Check the git repo before using sprintf-js, it has not been published to npm since July 2015
 (a year ago) and the version in the repo contains some major performance optimizations.
 
 node-v6.2.1:
 
-        sprintf("%s %04d %s", "Hello", 123, "world")
+    sprintf("%s %04d %s", "Hello", 123, "world")
 
-        // printf-0.2.5 100k 'Hello 0123 world' ms:  1571
-        // sprintf-js-1.0.3 100k 'Hello 0123 world' ms:  1007
-        // extsprintf-1.3.0 100k 'Hello 0123 world' ms:  893
-        // sprintf-js-git 100k 'Hello 0123 world' ms:  467
-        // qprintf-0.7.2 100k 'Hello 0123 world' ms:  46
-        // qprintf-0.8.0 100k 'Hello 0123 world' ms:  44
+    // printf-0.2.5 100k 'Hello 0123 world' ms:  1571
+    // sprintf-js-1.0.3 100k 'Hello 0123 world' ms:  1007
+    // extsprintf-1.3.0 100k 'Hello 0123 world' ms:  893
+    // sprintf-js-git 100k 'Hello 0123 world' ms:  467
+    // qprintf-0.7.2 100k 'Hello 0123 world' ms:  46
+    // qprintf-0.8.0 100k 'Hello 0123 world' ms:  44
+
+Newer benchmarks, this time on a 4520 MHz i7-6700k (the previous runtimes were on a
+3600 GHz Phenom II):
+
+node-v6.2.1:
+
+    sprintf("%s %04d %s", "Hello", 123, "world")
+
+    // printf-0.2.5 100k 'Hello 0123 world' ms:  612
+    // sprintfjs-1.0.3 100k 'Hello 0123 world' ms:  523
+    // extsprintf-1.3.0 100k 'Hello 0123 world' ms:  372
+    // sprintf-0.1.5 100k 'Hello 0123 world' ms:  336
+    // qsprintf-0.8.0 100k 'Hello 0123 world' ms:  21
+    // qsprintf-0.9.2 100k 'Hello 0123 world' ms:  17
+
+node-v7.5.0:
+
+    sprintf("%s %04d %s", "Hello", 123, "world")
+
+    // printf-0.2.5 100k 'Hello 0123 world' ms:  589
+    // sprintfjs-1.0.3 100k 'Hello 0123 world' ms:  169
+    // extsprintf-1.3.0 100k 'Hello 0123 world' ms:  342
+    // sprintf-0.1.5 100k 'Hello 0123 world' ms:  113
+    // qsprintf-0.8.0 100k 'Hello 0123 world' ms:  23
+    // qsprintf-0.9.2 100k 'Hello 0123 world' ms:  17
 
 ## Functions
 
