@@ -78,6 +78,7 @@ function vsprintf( fmt, argv ) {
             if (checkForWidth) {
                 // look for both flags and width
                 while (true) {
+                    // this switch is faster with charcodes
                     switch (fmt.charCodeAt(p)) {
                     case CH_MINUS: rightPad = true; p++; continue;
                     case CH_0: padChar = '0'; p++; continue;
@@ -102,6 +103,7 @@ function vsprintf( fmt, argv ) {
             // TODO: time .match( /^%((\d+)\$)?((\d+)([.](\d+)?))/ )
         }
 
+        // this switch is faster with chars, not charcodes
         switch (fmt[p]) {
         // integer types
         case 'd': str += convertNumber(padWidth, padChar, rightPad, plusSign, getarg(argz, p)); break;
@@ -154,6 +156,7 @@ function setargN( argz, n ) {
     return argz.argN = argz.argv[n-1];
 }
 
+// it is faster to not return anything from this function
 function scanDigits( str, p, ret ) {
     var ch, val = 0;
     for (var p2=p; (ch = str.charCodeAt(p2)) >= 0x30 && ch <= 0x39; p2++) {
