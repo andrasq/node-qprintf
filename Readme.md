@@ -125,7 +125,7 @@ node-v6.2.1:
     // qprintf-0.8.0 100k 'Hello 0123 world' ms:  21
     // qprintf-0.9.2 100k 'Hello 0123 world' ms:  17
 
-Under node v7.0.0 and the slowdown that affected `sprintf-js` and `sprintf` is gone,
+Under node v7.0.0 the slowdown that affected `sprintf-js` and `sprintf` is gone,
 they're fast(er) again.
 
 node-v7.5.0:
