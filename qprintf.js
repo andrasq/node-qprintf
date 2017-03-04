@@ -78,12 +78,14 @@ function vsprintf( fmt, argv ) {
             if (checkForWidth) {
                 // look for both flags and width
                 while (true) {
-                    if (fmt.charCodeAt(p) === CH_MINUS) { rightPad = true; p++; }
-                    else if (fmt.charCodeAt(p) === CH_0) { padChar = '0'; p++; }
+                    switch (fmt.charCodeAt(p)) {
+                    case CH_MINUS: rightPad = true; p++; continue;
+                    case CH_0: padChar = '0'; p++; continue;
                     // '+' to always print sign, ' ' to print - for neg and ' ' for positive
-                    else if (fmt.charCodeAt(p) === CH_PLUS) { plusSign = '+'; p++; }
-                    else if (fmt.charCodeAt(p) === CH_SPACE) { plusSign = ' '; p++; }
-                    else break;
+                    case CH_PLUS: plusSign = '+'; p++; continue;
+                    case CH_SPACE: plusSign = ' '; p++; continue;
+                    }
+                    break;
                 }
                 scanDigits(fmt, p, scanned);
                 padWidth = scanned.val;
