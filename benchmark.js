@@ -44,7 +44,7 @@ for (var loop=0; loop<10; loop++) {
         'sprintfjs-1.0.3': function(){ z = sprintfjs(fmt1, "Hello", 123, "world") },
         'extsprintf-1.3.0': function(){ z = extsprintf(fmt1, "Hello", 123, "world") },
         'sprintf-0.1.5': function(){ z = sprintf(fmt1, "Hello", 123, "world") },
-        'qsprintf-0.9.2': function(){ z = qsprintf(fmt1, "Hello", 123, "world") },
+        'qprintf-0.9.2': function(){ z = qsprintf(fmt1, "Hello", 123, "world") },
         //'util_format': function(){ util.format(fmt1, "Hello", 123, "world") },
     };
     var bench2 = {
@@ -52,7 +52,7 @@ for (var loop=0; loop<10; loop++) {
         'sprintfjs-1.0.3': function(){ z = sprintfjs(fmt2, "Hello", 123, "world", 12.345) },
         'extsprintf-1.3.0': function(){ z = extsprintf(fmt2, "Hello", 123, "world", 12.345) },
         'sprintf-0.1.5': function(){ z = sprintf(fmt2, "Hello", 123, "world", 12.345) },
-        'qsprintf-0.9.2': function(){ z = qsprintf(fmt2, "Hello", 123, "world", 12.345) },
+        'qprintf-0.9.2': function(){ z = qsprintf(fmt2, "Hello", 123, "world", 12.345) },
         //'util_format': function(){ util.format(fmt2, "Hello", 123, "world", 12.345) },
     };
 
