@@ -115,6 +115,7 @@ module.exports = {
             [ "%05i", -12.2, "-0012" ],
             [ "%5x", -12.2, "   -c" ],
             [ "%05x", -12.2, "-000c" ],
+            [ "%05X", -12.2, "-000C" ],
         ];
         t.expect(data.length);
         this.runTests(t, data);
