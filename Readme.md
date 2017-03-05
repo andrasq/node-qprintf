@@ -1,7 +1,7 @@
 qprintf
 =======
 
-Very quick little printf-like output formatter, interpolates the arguments into the
+Very quick printf-like output formatter, interpolates the arguments into the
 format string and writes them to process.stdout. Recognizes more formats than
 console.log, and is easier to type.
 
@@ -25,6 +25,8 @@ like `util.format` and prints floats as floats.  Use `%i` to truncate to integer
 - `%%` - the `%` escape character itself
 - `%A` - an array formatted with util.inspect
 - `%O` - an object formatted with util.inspect to depth: 6
+- `%e` - a number in exponential notation, eg 1230 => "1.230e+03" (does not remove trailing zeros)
+- `%g` - a number in either %f or %e notation, depending on its size
 
 Printf supports basic conversion flags for field width control.
 The conversion specifier is constructed as (values in [ ] square brackets are optional)

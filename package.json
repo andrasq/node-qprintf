@@ -1,8 +1,8 @@
 {
   "name": "qprintf",
-  "version": "0.9.3-dev",
+  "version": "0.10.0",
   "main": "qprintf.js",
-  "description": "very quick little printf",
+  "description": "very quick printf",
   "author": "andras@andrasq.com",
   "license": "Apache-2.0",
   "repository": {

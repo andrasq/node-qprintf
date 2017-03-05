@@ -117,6 +117,10 @@ function vsprintf( fmt, argv ) {
 
         // float types
         case 'f': str += convertFloat(padWidth, padChar, rightPad, plusSign, getarg(argz, p), precision >= 0 ? precision : 6); break;
+        case 'e': str += convertFloatExp(padWidth, padChar, rightPad, plusSign, getarg(argz, p), precision >= 0 ? precision : 6, 'e'); break;
+        case 'E': str += convertFloatExp(padWidth, padChar, rightPad, plusSign, getarg(argz, p), precision >= 0 ? precision : 6, 'E'); break;
+        case 'g': str += convertFloatG(padWidth, padChar, rightPad, plusSign, getarg(argz, p), precision >= 0 ? precision : 6, 'e'); break;
+        case 'G': str += convertFloatG(padWidth, padChar, rightPad, plusSign, getarg(argz, p), precision >= 0 ? precision : 6, 'E'); break;
 
         // string types
         case 's':
@@ -197,6 +201,42 @@ function convertIntegerBase( width, padChar, rightPad, signChar, v, base ) {
 function convertFloat( width, padChar, rightPad, signChar, v, precision ) {
     var s = (v < 0 ? formatFloat(-v, precision) : formatFloat(v, precision))
     return padNumber(width, padChar, rightPad, signChar, v, s);
+}
+
+function formatExp( exp, e ) {
+    return (
+        (exp <= -10) ? e+"-" + -exp :
+        (exp < 0) ? e+"-0" + -exp :
+        (exp >= 10) ? e+"+" + exp :
+        (exp > 0) ? e+"+0" + exp :
+        e+"+00"
+    );
+}
+
+function convertFloatExp( width, padChar, rightPad, signChar, v, precision, eSym ) {
+    var exp = 0;
+    if (v < 0) { signChar = "-"; v = -v }
+
+    // TODO: find a faster way of computing the exponent, maybe Math.log10
+    // eg something like Math.log(v) / Math.log(10), except .1 => -0.999...998
+    if (v >= 10) {
+        while (v > 10000) { exp += 4; v *= .0001 }
+        while (v >= 10) { exp += 1; v *= .1 }
+    }
+    else if (v < 1) {
+        while (v < .0001) { exp -= 4; v *= 10000 }
+        while (v < 1) { exp -= 1; v *= 10 }
+    }
+
+    return padNumber(width, padChar, rightPad, signChar, v, formatFloat(v, precision) + formatExp(exp, eSym));
+}
+
+function convertFloatG( width, padChar, rightPad, signChar, v, precision, eSym ) {
+    // if the exponent is >= -4 and < precision, format as a float %f
+    if (v >= .0001 && v < pow10(precision)) return convertFloat(width, padChar, rightPad, signChar, v, precision);
+
+    // otherwise format as an exponential %e
+    return convertFloatExp(width, padChar, rightPad, signChar, v, precision, eSym);
 }
 
 function padNumber( width, padChar, rightPad, signChar, v, numberString ) {
