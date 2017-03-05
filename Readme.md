@@ -184,6 +184,3 @@ interplate the arguments array into the format string, and return the result
 ## Todo
 
 - should be possible to specify both field width and element count to `%A`
-- %X (uppercase hexadecimal) is not supported yet
-- %e, %g, %E and %G are not supported yet
-
