@@ -2,8 +2,8 @@ qprintf
 =======
 
 Very quick printf-like output formatter, interpolates the arguments into the
-format string and writes them to process.stdout. Recognizes more formats than
-console.log, and is easier to type.
+format string and writes them to `process.stdout`.  Recognizes almost all
+traditional C output conversions (but not `%n` and `%p`).
 
     var printf = require('qprintf').printf;
     printf("%s%7s %05d!", "Hello", "world", 123);
@@ -11,28 +11,33 @@ console.log, and is easier to type.
 
 ## Conversions
 
-qprintf supports the following conversions:
+Traditional conversions:
 
 - `%s` - interpolate a string into the output
+- `%c` - the character (1-char string) represented by the given unicode code point
+
 - `%d` - a decimal number.  Unlike traditional `printf`, this conversion behaves
 like `util.format` and prints floats as floats.  Use `%i` to truncate to integer.
-- `%f` - a floating-point value
 - `%i` - a decimal integer.  The integer conversions truncate the value toward zero (like php).
 - `%x` - a hexadecimal integer printed lowercase [0-9a-f]
 - `%X` - a hex integer printed using uppercase [0-9A-F]
 - `%o` - an octal integer
-- `%b` - a binary integer
-- `%c` - the character represented by the given unicode code point
-- `%%` - the `%` escape character itself
-- `%A` - an array formatted with util.inspect
-- `%O` - an object formatted with util.inspect to depth: 6
+- `%u` - an unsigned integer.  The native JavaScript number is converted to
+a 32-bit two's-complement unsigned integer with `>>>` and printed as %i.
+
+- `%f` - a floating-point value "1.23"
 - `%e` - a number in exponential notation, eg "1.23e+02"
 - `%E` - like %e but printed with a capital E, "1.23E+02"
 - `%g` - a number in either %f or %e notation, depending on its size
 - `%G` - like %g but in %f or %E notation
 
-The %f, %e, %E, %g and %G floating-point conversions do not remove trailing zeros
-after the decimal point.
+- `%%` - the `%` escape character itself
+
+Qprintf additional conversions:
+
+- `%b` - a binary integer, eg 13 => "1011"
+- `%A` - an array formatted with `util.inspect`
+- `%O` - an object formatted with `util.inspect` to `depth:6`
 
 Printf supports basic conversion flags for field width control.
 The conversion specifier is constructed as (values in [ ] square brackets are optional)
@@ -66,6 +71,9 @@ The field width of a %A coversion is taken to be the number of elements to
 show.
 
 Unlike C, zero padding uses zeroes for left-aligned numbers and strings as well.
+
+Unlike C, the %f, %e, %E, %g and %G floating-point conversions do not remove
+trailing zeros after the decimal point.
 
 
 ## Examples

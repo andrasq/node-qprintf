@@ -105,16 +105,17 @@ function vsprintf( fmt, argv ) {
         switch (fmt[p]) {
         // integer types
         case 'd': str += convertNumber(padWidth, padChar, rightPad, plusSign, getarg(argz, p)); break;
+        // TODO: make %d truncate to integer like traditional C -- a breaking change!
         case 'i': str += convertIntegerBase(padWidth, padChar, rightPad, plusSign, getarg(argz, p), 10); break;
+        // we truncate %i toward zero like php, ie -1.9 prints as -1
         case 'x': str += convertIntegerBase(padWidth, padChar, rightPad, plusSign, getarg(argz, p), 16); break;
         case 'X': str += convertIntegerBase(padWidth, padChar, rightPad, plusSign, getarg(argz, p), 16).toUpperCase(); break;
         case 'o': str += convertIntegerBase(padWidth, padChar, rightPad, plusSign, getarg(argz, p), 8); break;
-        case 'b': str += convertIntegerBase(padWidth, padChar, rightPad, plusSign, getarg(argz, p), 2); break;
-        case 'c': str += String.fromCharCode(getarg(argz, p)); break;
-        // we truncate %i toward zero like php, ie -1.9 prints as -1
         // note that C prints hex and octal as unsigned, while we print as signed
-
-        // TODO: 'u' conversion ?  is that meaningful even for floats, not twos-complement integers?
+        case 'b': str += convertIntegerBase(padWidth, padChar, rightPad, plusSign, getarg(argz, p), 2); break;
+        // %b binary is our extension
+        case 'u': str += convertIntegerBase(padWidth, padChar, rightPad, plusSign, getarg(argz, p) >>> 0, 10); break;
+        // %u is vague in js, we first convert the float to 32-bit twos-complement unsigned
 
         // float types
         case 'f': str += convertFloat(padWidth, padChar, rightPad, plusSign, getarg(argz, p), precision >= 0 ? precision : 6); break;
@@ -124,6 +125,7 @@ function vsprintf( fmt, argv ) {
         case 'G': str += convertFloatG(padWidth, padChar, rightPad, plusSign, getarg(argz, p), precision >= 0 ? precision : 6, 'E'); break;
 
         // string types
+        case 'c': str += String.fromCharCode(getarg(argz, p)); break;
         case 's':
             if (precision !== undefined) str += padValue(padWidth, padChar, rightPad, (getarg(argz, p) + "").slice(0, precision));
             else str += padValue(padWidth, padChar, rightPad, getarg(argz, p));
