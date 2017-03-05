@@ -98,9 +98,7 @@ function vsprintf( fmt, argv ) {
             }
             p = scanned.end;
             // TODO: '%(name)d' to print argv[0].name (printf and sprintf-js compat)
-            // TODO: %e scientific notation ?
             // note: glibc does not zero-pad on the right
-            // TODO: time .match( /^%((\d+)\$)?((\d+)([.](\d+)?))/ )
         }
 
         // this switch is faster with chars, not charcodes
@@ -116,7 +114,7 @@ function vsprintf( fmt, argv ) {
         // we truncate %i toward zero like php, ie -1.9 prints as -1
         // note that C prints hex and octal as unsigned, while we print as signed
 
-        // TODO: 'u' conversion ?
+        // TODO: 'u' conversion ?  is that meaningful even for floats, not twos-complement integers?
 
         // float types
         case 'f': str += convertFloat(padWidth, padChar, rightPad, plusSign, getarg(argz, p), precision >= 0 ? precision : 6); break;
