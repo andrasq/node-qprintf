@@ -16,10 +16,10 @@
     "printf"
   ],
   "scripts": {
-    "coverage": "nyc --cache qnit test-*",
-    "test": "qnit test-qprintf.js"
+    "test": "qnit --version && qnit test* || echo qnit not installed",
+    "coverage": "nyc --version && nyc --reporter text --reporter lcov qnit test* || echo nyc not installed",
+    "clean": "rm -rf .nyc_output coverage"
   },
   "devDependencies": {
-    "qnit": "^0.11.0"
   }
 }
