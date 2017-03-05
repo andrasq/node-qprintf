@@ -18,7 +18,7 @@ Traditional conversions:
 - `%d` - a decimal number.  Unlike traditional `printf`, this conversion behaves
 like `util.format` and prints floats as floats.  Use `%i` to truncate to integer.
 - `%i` - a decimal integer.  The integer conversions truncate the value toward zero (like php).
-- `%x` - a hexadecimal integer printed lowercase [0-9a-f]
+- `%x` - a hexadecimal integer printed using lowercase [0-9a-f]
 - `%X` - a hex integer printed using uppercase [0-9A-F]
 - `%o` - an octal integer
 - `%u` - an unsigned integer.  The native JavaScript number is converted to
