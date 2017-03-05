@@ -60,7 +60,7 @@ function vsprintf( fmt, argv ) {
         var padChar = ' ', padWidth = undefined, rightPad = false, precision = undefined, plusSign = '';
         var flag = fmt.charCodeAt(p);
         var checkForWidth = true;
-        if (flag >= CH_0 && flag <= CH_9 || flag === CH_MINUS || flag === CH_PLUS || flag === CH_SPACE || flag === CH_DOT) {
+        if (flag >= 0x30 && flag <= 0x39 || flag === CH_DOT || flag === CH_MINUS || flag === CH_PLUS || flag === CH_SPACE) {
             scanDigits(fmt, p, scanned);
             if (fmt.charCodeAt(scanned.end) === CH_DOLLAR) {
                 // found an N$ arg specifier, but might also have width
