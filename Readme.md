@@ -15,7 +15,6 @@ Traditional conversions:
 
 - `%s` - interpolate a string into the output
 - `%c` - the character (1-char string) represented by the given unicode code point
-
 - `%d` - a decimal number.  Unlike traditional `printf`, this conversion behaves
 like `util.format` and prints floats as floats.  Use `%i` to truncate to integer.
 - `%i` - a decimal integer.  The integer conversions truncate the value toward zero (like php).
@@ -24,16 +23,14 @@ like `util.format` and prints floats as floats.  Use `%i` to truncate to integer
 - `%o` - an octal integer
 - `%u` - an unsigned integer.  The native JavaScript number is converted to
 a 32-bit two's-complement unsigned integer with `>>>` and printed as %i.
-
 - `%f` - a floating-point value "1.23"
 - `%e` - a number in exponential notation, eg "1.23e+02"
 - `%E` - like %e but printed with a capital E, "1.23E+02"
 - `%g` - a number in either %f or %e notation, depending on its size
 - `%G` - like %g but in %f or %E notation
-
 - `%%` - the `%` escape character itself
 
-Qprintf additional conversions:
+Qprintf extensions, additional conversions:
 
 - `%b` - a binary integer, eg 13 => "1011"
 - `%A` - an array formatted with `util.inspect`
