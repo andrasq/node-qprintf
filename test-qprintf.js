@@ -65,6 +65,7 @@ module.exports = {
             [ "%-6.2s", "foo", "fo    " ],
             [ "%06.2s", "foo", "0000fo" ],
             [ "%-06.2s", "foo", "fo0000" ],
+            [ "%.2s", "foo", "fo" ],
         ];
         t.expect(data.length);
         this.runTests(t, data);
