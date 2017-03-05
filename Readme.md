@@ -18,15 +18,21 @@ qprintf supports the following conversions:
 like `util.format` and prints floats as floats.  Use `%i` to truncate to integer.
 - `%f` - a floating-point value
 - `%i` - a decimal integer.  The integer conversions truncate the value toward zero (like php).
-- `%x` - a hexadecimal integer
+- `%x` - a hexadecimal integer printed lowercase [0-9a-f]
+- `%X` - a hex integer printed using uppercase [0-9A-F]
 - `%o` - an octal integer
 - `%b` - a binary integer
 - `%c` - the character represented by the given unicode code point
 - `%%` - the `%` escape character itself
 - `%A` - an array formatted with util.inspect
 - `%O` - an object formatted with util.inspect to depth: 6
-- `%e` - a number in exponential notation, eg 1230 => "1.230e+03" (does not remove trailing zeros)
+- `%e` - a number in exponential notation, eg "1.23e+02"
+- `%E` - like %e but printed with a capital E, "1.23E+02"
 - `%g` - a number in either %f or %e notation, depending on its size
+- `%G` - like %g but in %f or %E notation
+
+The %f, %e, %E, %g and %G floating-point conversions do not remove trailing zeros
+after the decimal point.
 
 Printf supports basic conversion flags for field width control.
 The conversion specifier is constructed as (values in [ ] square brackets are optional)
