@@ -1,13 +1,32 @@
 qprintf
 =======
 
-Very quick printf-like output formatter, interpolates the arguments into the
-format string and writes them to `process.stdout`.  Recognizes almost all
-traditional C output conversions (but not `%n` and `%p`).
+Qprintf is a very fast standard C `printf` compatible output formatter, supporting
+the full set of integer, float, and string conversions with field width, alignment
+and precision, along with some extensions.
+
+Recognizes all traditional output conversions (but not `%n` and `%p`).
 
     var printf = require('qprintf').printf;
-    printf("%s%7s %05d!", "Hello", "world", 123);
-    // => Hello  world 00123!
+    printf("%s (%-7s) %05d!", "Hello", "world", 123);
+    // => Hello (world  ) 00123!
+
+
+## API
+
+### qprintf.printf( format, [arg ...] )
+
+Interpolate the arguments into the format string, and write the result to
+`process.stdout`.
+
+### qprintf.sprintf( format, [arg1, arg2, ...] )
+
+Interpolate the arguments into the format, and return the result.
+
+### qprintf.vsprintf( format, argsArray )
+
+Interplate the arguments array into the format string, and return the result.
+
 
 ## Conversions
 
@@ -36,22 +55,26 @@ Qprintf extensions, additional conversions:
 - `%A` - an array formatted with `util.inspect`
 - `%O` - an object formatted with `util.inspect` to `depth:6`
 
-Printf supports basic conversion flags for field width control.
-The conversion specifier is constructed as
-`% [argNum$] [(argName)] [flags] [width][.precision] conversion`,
-with parts in [ ] square brackets optional.
-Examples: `%d`, `%10d`, `%2$d`, `%2$-010d`, `%4.2f`, `%2$(total)+4.3f`.
+Qprintf supports the conversion flags for field width, precision, alignment,
+padding, sign, and argument selection.
 
-- `I$` - argNum: interpolate the I-th argument with this conversion
-- `(name)` - argName: interpolate the named property (of the first argument, by default).
-Named arguments can be be mixed with i-th arguments, but can not be used with positional arguments.
+The conversion specifier is constructed as
+`% [argNum$] [(argName)] [flags] [width][.precision] [modif] conversion`,
+with parts in [ ] square brackets optional.
+Examples: `%d`, `%10ld`, `%2$d`, `%2$-010d`, `%4.2f`, `%2$(total)+4.3f`.
+
+- `I$` - argNum: interpolate the i-th argument with this conversion
+- `(NAME)` - argName: interpolate the named property (of the first argument, by default).
+Named arguments can be be mixed with i-th arguments, but do not work well with positional arguments.
 - `-` - minusFlag: left-align the value in the field
 - `0` - zeroFlag: zero pad the field (default is to pad with spaces)
-- `+` - plusFlag: always print the sign, + for positive and - for negative
-- ` ` - spaceFlag: always print the sign, ' ' (space) for positive and - for negative
+- `+` - plusFlag: always print the sign, `+` for positive and `-` for negative
+- ` ` - spaceFlag: always print the sign, ` ` (space) for positive and `-` for negative
 - `NNN` - width: a decimal integer that specifies the field width
 - `NNN.PP` - width.precision: a decimal field width followed by the precision
 - `.PP` - .precision: a decimal precision with a field width wide enough to fit
+- `l`, `ll`, `h`, `hh`, `L` - modifier: allowed but ignored data size modifier, "long", "long long",
+"short", "char" and "long double".  Invalid usage eg `%Ls` is not checked.
 - `C` - conversion: conversion type specifier character
 
 E.g., `%3$-+12d` will interpolate the 3rd argument into a field 12 characters wide,
@@ -159,22 +182,6 @@ node-v7.5.0:
     // qprintf-0.7.2 100k 'Hello 0123 world' ms:  22
     // qprintf-0.8.0 100k 'Hello 0123 world' ms:  22
     // qprintf-0.9.2 100k 'Hello 0123 world' ms:  17
-
-
-## Functions
-
-### qprintf.printf( format, [arg ...] )
-
-interpolate the arguments into the format string, and write the result to
-process.stdout
-
-### qprintf.sprintf( format, [arg1, arg2, ...] )
-
-interpolate the arguments into the format, and return the result
-
-### qprintf.vsprintf( format, argsArray )
-
-interplate the arguments array into the format string, and return the result
 
 
 ## Related Work
