@@ -143,3 +143,4 @@ whitespace was added to align the second column.)
 
 - should be possible to specify both field width and element count to `%A`
 - should support the `*` field width specifier (meaning read it from the args list)
+- support js-only operation without losing 100% test coverage
