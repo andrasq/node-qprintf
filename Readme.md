@@ -37,9 +37,10 @@ Qprintf extensions, additional conversions:
 - `%O` - an object formatted with `util.inspect` to `depth:6`
 
 Printf supports basic conversion flags for field width control.
-The conversion specifier is constructed as (values in [ ] square brackets are optional)
-`% [argNum $] [minusFlag] [zeroFlag] [plusFlag] [spaceFlag] [width][.precision] conversion`
-Examples: `%d`, `%10d`, `%2$d`, `%2$-010d`, `%4.2f`.
+The conversion specifier is constructed as
+`% [argNum$] [(argName)] [flags] [width][.precision] conversion`,
+with parts in [ ] square brackets optional.
+Examples: `%d`, `%10d`, `%2$d`, `%2$-010d`, `%4.2f`, `%2$(total)+4.3f`.
 
 - `I$` - argNum: interpolate the I-th argument with this conversion
 - `(name)` - argName: interpolate the named property (of the first argument, by default).

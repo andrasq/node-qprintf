@@ -263,8 +263,9 @@ module.exports = {
     'should interpolate named argument': function(t) {
         var tests = [
             [ "%(a1)d %(a2)d", [{a1: 1, a2: 2}], "1 2" ],
-            [ "%1$d %2$(b)d %2$(c)d", [1, {b: 2, c: 3}], "1 2 3" ],
-            [ "%(0)d %(1)d %(2)d", [ [1,2,3] ], "1 2 3" ],
+            [ "%(0)d %(1)d %(2)d", [ [1, 2, 3] ], "1 2 3" ],
+            [ "%(a)03d", [{a: 1}], "001" ],
+            [ "%1$d %2$(b)d %2$(c)d %2$(c)04d", [1, {b: 2, c: 3}], "1 2 3 0003" ],
         ];
         t.throws(function(){ sprintf("%(a", {a: 1}) });
         t.throws(function(){ sprintf("%(b)d", {a: 1}) });

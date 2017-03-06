@@ -57,9 +57,11 @@ function vsprintf( fmt, argv ) {
         if (p > p0) str += fmt.slice(p0, p);
         p++;
 
-        // parse the conversion spec
         argz.argN = undefined;
+
+        // parse the conversion spec
         var padChar = ' ', padWidth = undefined, rightPad = false, precision = undefined, plusSign = '';
+        if (fmt.charCodeAt(p) === CH_LEFTPAREN) p = scanAndSetArgName(fmt, p, argz);
         var flag = fmt.charCodeAt(p);
         var checkForWidth = true;
         if (flag >= 0x30 && flag <= 0x39 || flag === CH_DOT || flag === CH_MINUS || flag === CH_PLUS || flag === CH_SPACE) {
@@ -69,6 +71,7 @@ function vsprintf( fmt, argv ) {
                 setargN(argz, scanned.val, p);
                 checkForWidth = true;
                 p = scanned.end + 1;
+                if (fmt.charCodeAt(p) === CH_LEFTPAREN) p = scanAndSetArgName(fmt, p, argz);
             }
             else if (scanned.end > p) {
                 // found field width, with at most a numeric '0' flag
@@ -100,14 +103,6 @@ function vsprintf( fmt, argv ) {
             }
             p = scanned.end;
             // note: glibc does not zero-pad on the right
-        }
-
-        if (fmt[p] === '(') {
-            q = fmt.indexOf(')', ++p);
-            if (q < 0) throw new Error("unterminated %(named) argument at offset " + p);
-            argName = fmt.slice(p, q);
-            setargM(argz, argName, p);
-            p = q + 1;
         }
 
         // if not followed by a conversion specifier, print it as is
@@ -176,6 +171,14 @@ function setargM( argz, name, p ) {
     var hash = argz.argN ? argz.argN : argz.argv[0];
     if (hash[name] === undefined) throw new Error("missing named argument %(" + name + ") at offset " + p);
     return argz.argN = hash[name];
+}
+
+function scanAndSetArgName( fmt, p, argz ) {
+    var q = fmt.indexOf(')', ++p);
+    if (q < 0) throw new Error("unterminated %(named) argument at offset " + p);
+    var argName = fmt.slice(p, q);
+    setargM(argz, argName, p);
+    return p = q + 1;
 }
 
 // it is faster to not return anything from this function
