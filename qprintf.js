@@ -99,7 +99,6 @@ function vsprintf( fmt, argv ) {
                 precision = scanned.val;
             }
             p = scanned.end;
-            // TODO: '%(name)d' to print argv[0].name (printf and sprintf-js compat)
             // note: glibc does not zero-pad on the right
         }
 
@@ -152,8 +151,7 @@ function vsprintf( fmt, argv ) {
         case 'O': str += formatObject(getarg(argz, p), padWidth); break;
 
         default:
-            throw new Error("%" + fmt[p] + ": unsupported conversion at offset " + p);
-            // TODO: include full conversion specifier in error... if does not impact speed
+            throw new Error(fmt.slice(p0, p+1) + ": unsupported conversion %" + fmt[p] + " at offset " + p);
         }
         p0 = ++p;
     }
@@ -302,7 +300,7 @@ function formatFloat( v, precision ) {
     v += (0.5 / scale);    // round to convert
     var i = Math.floor(v); // all digits of the integer part
     var f = Math.floor((v - i) * scale);  // first `precision` digits of the fraction
-    // TODO: large i and precision format as eg 1+42
+    // TODO: large i and large precision format as eg 1+42
 
     var s = i + "." + padValue(precision, '0', false, f + '');
     return s;
