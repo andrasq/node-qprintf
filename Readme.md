@@ -5,7 +5,7 @@ Qprintf is a very fast standard C `printf` compatible output formatter, supporti
 the full set of integer, float, and string conversions with field width, alignment
 and precision, along with some extensions.
 
-Recognizes all traditional output conversions (but not `%n` and `%p`).
+Recognizes all traditional output conversions and modifiers (but not `%n` or `%p`).
 
     var printf = require('qprintf').printf;
     printf("%s (%-7s) %05d!", "Hello", "world", 123);
