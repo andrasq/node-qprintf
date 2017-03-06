@@ -38,8 +38,8 @@ Qprintf extensions, additional conversions:
 
 Printf supports basic conversion flags for field width control.
 The conversion specifier is constructed as (values in [ ] square brackets are optional)
-`% [argNum $] [minusFlag] [zeroFlag] [plusFlag] [spaceFlag] [width [.precision]] conversion`
-Examples: `%d`, `%10d`, `%2$d`, `%2$-010d`.
+`% [argNum $] [minusFlag] [zeroFlag] [plusFlag] [spaceFlag] [width][.precision] conversion`
+Examples: `%d`, `%10d`, `%2$d`, `%2$-010d`, `%4.2f`.
 
 - `I$` - argNum: interpolate the I-th argument with this conversion
 - `-` - minusFlag: left-align the value in the field
