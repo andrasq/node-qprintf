@@ -64,15 +64,15 @@ The precision specifier `'.'` is supported for strings and numbers.  For numbers
 omit the decimal point and prints no decimals.  For strings, the precision
 specifies the maximum number of characters of the string included in the output.
 
-The field width of a %O conversion is taken to be the depth for util.inspect
+The field width of a `%O` conversion is taken to be the depth for util.inspect
 to recurse down to.  Specify 0 to not recurse into sub-objects.
 
-The field width of a %A coversion is taken to be the number of elements to
+The field width of a `%A` coversion is taken to be the number of elements to
 show.
 
 Unlike C, zero padding uses zeroes for left-aligned numbers and strings as well.
 
-Unlike C, the %f, %e, %E, %g and %G floating-point conversions do not remove
+Unlike C, the `%f`, `%e`, `%E`, `%g` and `%G` floating-point conversions do not remove
 trailing zeros after the decimal point.
 
 
