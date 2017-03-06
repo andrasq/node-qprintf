@@ -25,6 +25,8 @@ var CH_PLUS = '+'.charCodeAt(0);
 var CH_SPACE = ' '.charCodeAt(0);
 var CH_DOT = '.'.charCodeAt(0);
 var CH_DOLLAR = '$'.charCodeAt(0);
+var CH_LEFTPAREN = '('.charCodeAt(0);
+var CH_RIGHTPAREN = ')'.charCodeAt(0);
 
 function printf( fmt ) {
     var args = new Array(arguments.length - 1);
@@ -47,7 +49,7 @@ function vsprintf( fmt, argv ) {
         argN: undefined,
     };
 
-    var p0 = 0, p = 0, str = "";
+    var p0 = 0, p = 0, q, argName, str = "";
     var scanned = { end: undefined, val: undefined };
 
     while (p < fmt.length) {
@@ -64,7 +66,7 @@ function vsprintf( fmt, argv ) {
             scanDigits(fmt, p, scanned);
             if (fmt.charCodeAt(scanned.end) === CH_DOLLAR) {
                 // found an N$ arg specifier, but might also have width
-                setargN(argz, scanned.val);
+                setargN(argz, scanned.val, p);
                 checkForWidth = true;
                 p = scanned.end + 1;
             }
@@ -100,6 +102,17 @@ function vsprintf( fmt, argv ) {
             // TODO: '%(name)d' to print argv[0].name (printf and sprintf-js compat)
             // note: glibc does not zero-pad on the right
         }
+
+        if (fmt[p] === '(') {
+            q = fmt.indexOf(')', ++p);
+            if (q < 0) throw new Error("unterminated %(named) argument at offset " + p);
+            argName = fmt.slice(p, q);
+            setargM(argz, argName, p);
+            p = q + 1;
+        }
+
+        // if not followed by a conversion specifier, print it as is
+        if (p >= fmt.length) break;
 
         // this switch is faster with chars, not charcodes
         switch (fmt[p]) {
@@ -140,7 +153,7 @@ function vsprintf( fmt, argv ) {
 
         default:
             if (p >= fmt.length) { str += '%'; break; }
-            throw new Error("%" + fmt[p] + ": unsupported conversion");
+            throw new Error("%" + fmt[p] + ": unsupported conversion at offset " + p);
             // TODO: include full conversion specifier in error... if does not impact speed
         }
         p0 = ++p;
@@ -151,15 +164,21 @@ function vsprintf( fmt, argv ) {
 
 function getarg( argz, p ) {
     if (argz.argN !== undefined) return argz.argN;
-    if (argz.argi >= argz.nargs) throw new Error("missing argument for %" + argz.fmt[p] + " conversion");
+    if (argz.argi >= argz.nargs) throw new Error("missing argument for %" + argz.fmt[p] + " conversion at offset " + p);
     return argz.argv[argz.argi++];
 }
 
-function setargN( argz, n ) {
-    if (n > argz.nargs) throw new Error("missing argument $" + n + " for % conversion");
+function setargN( argz, n, p ) {
+    if (n > argz.nargs) throw new Error("missing i-th argument " + n + "$ for % conversion at offset " + p);
     // negative n never passed in, scanDigits does not handle minus sign
     // if (n < 1) throw new Error("invalid $ argument specifier for % conversion");
     return argz.argN = argz.argv[n-1];
+}
+
+function setargM( argz, name, p ) {
+    var hash = argz.argN ? argz.argN : argz.argv[0];
+    if (hash[name] === undefined) throw new Error("missing named argument %(" + name + ") at offset " + p);
+    return argz.argN = hash[name];
 }
 
 // it is faster to not return anything from this function

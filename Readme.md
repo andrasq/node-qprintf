@@ -42,6 +42,8 @@ The conversion specifier is constructed as (values in [ ] square brackets are op
 Examples: `%d`, `%10d`, `%2$d`, `%2$-010d`, `%4.2f`.
 
 - `I$` - argNum: interpolate the I-th argument with this conversion
+- `(name)` - argName: interpolate the named property (of the first argument, by default).
+Named arguments can be used with i-th arguments, but can with positional arguments.
 - `-` - minusFlag: left-align the value in the field
 - `0` - zeroFlag: zero pad the field (default is to pad with spaces)
 - `+` - plusFlag: always print the sign, + for positive and - for negative

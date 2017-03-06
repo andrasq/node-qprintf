@@ -1,3 +1,8 @@
+/**
+ * Copyright (C) 2015-2017 Andras Radics
+ * Licensed under the Apache License, Version 2.0
+ */
+
 child_process = require('child_process');
 
 qprintf = require('./qprintf');
@@ -248,6 +253,23 @@ module.exports = {
             ["%2$03d", [1, 2, 3], "002"],
             ["%2$-03d", [1, 2, 3], "200"],      // note: C pads on right with spaces
         ];
+        t.expect(tests.length);
+        for (var i=0; i<tests.length; i++) {
+            t.equal(vsprintf(tests[i][0], tests[i][1]), tests[i][2]);
+        }
+        t.done();
+    },
+
+    'should interpolate named argument': function(t) {
+        var tests = [
+            [ "%(a1)d %(a2)d", [{a1: 1, a2: 2}], "1 2" ],
+            [ "%1$d %2$(b)d %2$(c)d", [1, {b: 2, c: 3}], "1 2 3" ],
+            [ "%(0)d %(1)d %(2)d", [ [1,2,3] ], "1 2 3" ],
+        ];
+        t.throws(function(){ sprintf("%(a", {a: 1}) });
+        t.throws(function(){ sprintf("%(b)d", {a: 1}) });
+        t.equal(sprintf("%(a)", {a: 1}), "%(a)");
+        t.expect(tests.length + 3);
         for (var i=0; i<tests.length; i++) {
             t.equal(vsprintf(tests[i][0], tests[i][1]), tests[i][2]);
         }
@@ -255,25 +277,13 @@ module.exports = {
     },
 
     'should reject unknown conversions': function(t) {
-        try {
-            sprintf("%z", 3);
-            t.fail();
-        }
-        catch (err) {
-            t.ok(true);
-            t.done();
-        }
+        t.throws(function(){ sprintf("%z", 3) }, /unsupported conversion/);
+        t.done();
     },
 
     'should reject out of bounds argument': function(t) {
-        try {
-            var s = sprintf("%2$d", 1);
-            t.fail();
-        }
-        catch (err) {
-            t.ok(err.message.indexOf("missing argument") >= 0);
-            t.done();
-        }
+        t.throws(function(){ sprintf("%2$d", 1) }, /missing/);
+        t.done();
     },
 
     'should reject out of bounds conversion specifier': function(t) {
