@@ -334,8 +334,8 @@ function pow10( n ) {
     return _pow10[n] ? _pow10[n] : Math.pow(10, n);
 }
 
-function formatObject() {};
-function formatArray() {};
+function formatObject() { return "[object]" };
+function formatArray() { return "[array]" };
 
 if (util && util.inspect) {
     formatObject = function formatObject( obj, depth ) {
