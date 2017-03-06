@@ -15,9 +15,8 @@ module.exports.vsprintf = vsprintf;
 module.exports.printf = printf;
 module.exports.sprintf = sprintf;
 
-var util;
 if (typeof require === 'function') {
-    util = require('util');
+    var util = require('util');
 }
 
 // ascii char codes
@@ -34,6 +33,7 @@ var CH_STAR = '*'.charCodeAt(0);
 var CH_L = 'L'.charCodeAt(0);
 var CH_l = 'l'.charCodeAt(0);
 var CH_h = 'h'.charCodeAt(0);
+
 
 function printf( fmt ) {
     var args = new Array(arguments.length - 1);
@@ -173,12 +173,15 @@ function vsprintf( fmt, argv ) {
 }
 
 
+// return the next positional argument
+// positional indexing can be one-shot overridden by setting argz.argN
 function getarg( argz, p ) {
     if (argz.argN !== undefined) return argz.argN;
     if (argz.argi >= argz.nargs) throw new Error("missing argument for %" + argz.fmt[p] + " conversion at offset " + p);
     return argz.argv[argz.argi++];
 }
 
+// override the next argument with argv[n]
 function setargN( argz, n, p ) {
     if (n > argz.nargs) throw new Error("missing i-th argument " + n + "$ for % conversion at offset " + p);
     // negative n never passed in, scanDigits does not handle minus sign
@@ -186,20 +189,14 @@ function setargN( argz, n, p ) {
     return argz.argN = argz.argv[n-1];
 }
 
+// override the next argument with argv[0][name], or argv[argN][name]
 function setargM( argz, name, p ) {
     var hash = argz.argN ? argz.argN : argz.argv[0];
     if (hash[name] === undefined) throw new Error("missing named argument %(" + name + ") at offset " + p);
     return argz.argN = hash[name];
 }
 
-function scanAndSetArgName( fmt, p, argz ) {
-    var q = fmt.indexOf(')', ++p);
-    if (q < 0) throw new Error("unterminated %(named) argument at offset " + p);
-    var argName = fmt.slice(p, q);
-    setargM(argz, argName, p);
-    return p = q + 1;
-}
-
+// scan a decimal number from the string, and update the next-unscanned-char offset
 // it is faster to not return anything from this function
 function scanDigits( str, p, ret ) {
     var ch, val = 0;
@@ -208,6 +205,15 @@ function scanDigits( str, p, ret ) {
     }
     ret.end = p2;
     ret.val = val;
+}
+
+// scan a )-terminated word from the string, update setargM, and update the next-unscanned-char offset
+function scanAndSetArgName( fmt, p, argz ) {
+    var q = fmt.indexOf(')', ++p);
+    if (q < 0) throw new Error("unterminated %(named) argument at offset " + p);
+    var argName = fmt.slice(p, q);
+    setargM(argz, argName, p);
+    return p = q + 1;
 }
 
 var _pads = {
@@ -239,6 +245,7 @@ function convertIntegerBase( width, padChar, rightPad, signChar, v, base ) {
     return padNumber(width, padChar, rightPad, signChar, v, s);
 }
 
+// convert to %f notation
 function convertFloat( width, padChar, rightPad, signChar, v, precision ) {
     var s = (v < 0 ? formatFloat(-v, precision) : formatFloat(v, precision))
     return padNumber(width, padChar, rightPad, signChar, v, s);
@@ -247,13 +254,14 @@ function convertFloat( width, padChar, rightPad, signChar, v, precision ) {
 function formatExp( exp, e ) {
     return (
         (exp <= -10) ? e+"-" + -exp :
-        (exp < 0) ? e+"-0" + -exp :
-        (exp >= 10) ? e+"+" + exp :
-        (exp > 0) ? e+"+0" + exp :
+        (exp < 0)    ? e+"-0" + -exp :
+        (exp >= 10)  ? e+"+" + exp :
+        (exp > 0)    ? e+"+0" + exp :
         e+"+00"
     );
 }
 
+// convert to %e exponential notation
 function convertFloatExp( width, padChar, rightPad, signChar, v, precision, eSym ) {
     var exp = 0;
     if (v < 0) { signChar = "-"; v = -v }
@@ -272,14 +280,17 @@ function convertFloatExp( width, padChar, rightPad, signChar, v, precision, eSym
     return padNumber(width, padChar, rightPad, signChar, v, formatFloat(v, precision) + formatExp(exp, eSym));
 }
 
+// convert to either %f float or %e exponential notation, depending on magnitude
+// if the exponent is >= -4 and < precision, format as a float %f, else %g
 function convertFloatG( width, padChar, rightPad, signChar, v, precision, eSym ) {
-    // if the exponent is >= -4 and < precision, format as a float %f
-    if (v >= .0001 && v < pow10(precision)) return convertFloat(width, padChar, rightPad, signChar, v, precision);
-
-    // otherwise format as an exponential %e
-    return convertFloatExp(width, padChar, rightPad, signChar, v, precision, eSym);
+    if (v >= .0001 && v < pow10(precision)) {
+        return convertFloat(width, padChar, rightPad, signChar, v, precision);
+    } else {
+        return convertFloatExp(width, padChar, rightPad, signChar, v, precision, eSym);
+    }
 }
 
+// apply sign, left/right space/zero padding to the string
 function padNumber( width, padChar, rightPad, signChar, v, numberString ) {
     if (v < 0) signChar = '-';
     return (signChar && padChar === '0')
@@ -334,9 +345,11 @@ function pow10( n ) {
     return _pow10[n] ? _pow10[n] : Math.pow(10, n);
 }
 
+// object and array formatting is only available in nodejs, not pure javascript
 function formatObject() { return "[object]" };
 function formatArray() { return "[array]" };
 
+// under nodejs use util.inspect to format objects and arrays
 if (util && util.inspect) {
     formatObject = function formatObject( obj, depth ) {
         return util.inspect(obj, {depth: depth !== undefined ? depth : 6});
