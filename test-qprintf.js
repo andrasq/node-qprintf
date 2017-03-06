@@ -3,8 +3,6 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-child_process = require('child_process');
-
 qprintf = require('./qprintf');
 vsprintf = qprintf.vsprintf;
 sprintf = qprintf.sprintf;
@@ -33,19 +31,6 @@ module.exports = {
         t.done();
     },
 
-    'printf should write to stdout': function(t) {
-        // TODO: breaks under nyc coverage with Command failed: Invalid regular expression flags
-        return t.done();
-
-        var uniq = (Math.random() * 0x100000000).toString(16);
-        var script = process.argv[0] + ' -p \'pr = require("./qprintf"); pr.printf("' + uniq + '");\'';
-        child_process.exec(script, function(err, stdout, stderr) {
-            t.ifError(err);
-            t.ok(stdout.indexOf(uniq) >= 0);
-            t.done();
-        })
-    },
-
     'sprintf should interpolate arg': function(t) {
         var s = qprintf.sprintf("[%04d %s]", 123, "abc");
         t.equal(s, "[0123 abc]");
@@ -55,6 +40,18 @@ module.exports = {
     'vsprintf should interpolate args array': function(t) {
         var s = qprintf.vsprintf("[%04d %s]", [123, "abc"]);
         t.equal(s, "[0123 abc]");
+        t.done();
+    },
+
+    'printf should write to stdout': function(t) {
+        var spy = t.spy(process.stdout, 'write', function(){});
+
+        var uniq = (Math.random() * 0x100000000).toString(16);
+        qprintf.printf("%d %s %s", 1, uniq, "2");
+        spy.restore();
+
+        t.deepEqual(spy.args[0], ["1 " + uniq + " 2"]);
+
         t.done();
     },
 
