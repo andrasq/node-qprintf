@@ -125,6 +125,11 @@ module.exports = {
 
             [ "%u", -1, "" + 0xFFFFFFFF ],
             [ "%u", -16, "" + 0xFFFFFFF0 ],
+
+            [ "%ld", 1, "1" ],
+            [ "%lld", 1, "1" ],
+            [ "%hd", 1, "1" ],
+            [ "%hhd", 1, "1" ],
         ];
         t.expect(data.length);
         this.runTests(t, data);
@@ -174,6 +179,8 @@ module.exports = {
             [ "% 07.2f", -1.278, "-001.28" ],
             [ "%+7.2f", -1.278, "  -1.28" ],
             [ "%+07.2f", -1.278, "-001.28" ],
+
+            [ "%.2Lf", 1.25, "1.25" ],
         ];
         t.expect(data.length);
         this.runTests(t, data);

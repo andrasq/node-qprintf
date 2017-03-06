@@ -28,6 +28,9 @@ var CH_DOLLAR = '$'.charCodeAt(0);
 var CH_LEFTPAREN = '('.charCodeAt(0);
 var CH_RIGHTPAREN = ')'.charCodeAt(0);
 var CH_STAR = '*'.charCodeAt(0);
+var CH_L = 'L'.charCodeAt(0);
+var CH_l = 'l'.charCodeAt(0);
+var CH_h = 'h'.charCodeAt(0);
 
 function printf( fmt ) {
     var args = new Array(arguments.length - 1);
@@ -62,9 +65,14 @@ function vsprintf( fmt, argv ) {
 
         // parse the conversion spec
         var padChar = ' ', padWidth = undefined, rightPad = false, precision = undefined, plusSign = '';
-        if (fmt.charCodeAt(p) === CH_LEFTPAREN) p = scanAndSetArgName(fmt, p, argz);
+
         var flag = fmt.charCodeAt(p);
+        if (flag === CH_LEFTPAREN) {
+            p = scanAndSetArgName(fmt, p, argz);
+            flag = fmt.charCodeAt(p);
+        }
         var checkForWidth = true;
+
         if (flag >= 0x30 && flag <= 0x39 || flag === CH_DOT || flag === CH_MINUS || flag === CH_PLUS || flag === CH_SPACE) {
             // TODO: if '*' read width as a positional argument, but still accept a precision
             scanDigits(fmt, p, scanned);
@@ -105,6 +113,12 @@ function vsprintf( fmt, argv ) {
             }
             p = scanned.end;
             // note: glibc does not zero-pad on the right
+        }
+
+        var ch = fmt.charCodeAt(p);
+        if (ch === CH_l || ch === CH_h || ch === CH_L) {
+            p++;
+            if (fmt.charCodeAt(p) === CH_l || fmt.charCodeAt(p) === CH_h) p++;
         }
 
         // if not followed by a conversion specifier, print it as is
