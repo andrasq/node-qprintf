@@ -48,12 +48,13 @@ Examples: `%d`, `%10d`, `%2$d`, `%2$-010d`, `%4.2f`.
 - ` ` - spaceFlag: always print the sign, ' ' (space) for positive and - for negative
 - `NNN` - width: a decimal integer that specifies the field width
 - `NNN.PP` - width.precision: a decimal field width followed by the precision
+- `.PP` - .precision: a decimal precision with a field width wide enough to fit
 - `C` - conversion: conversion type specifier character
 
-E.g., `%3$+12d` will interpolate the 3rd argument into a field 12 characters wide,
+E.g., `%3$-+12d` will interpolate the 3rd argument into a field 12 characters wide,
 preceded by the sign (+ for positive and - for negative), and padded with enough
 spaces on the right for the formatted value to be at least 12 characters.  If the
-value with sign is wider then the field width of 12, it will not be truncated,
+value with sign is wider than the field width of 12, it will not be truncated,
 rather more than 12 characters will be output.
 
 The precision specifier `'.'` is supported for strings and numbers.  For numbers,
