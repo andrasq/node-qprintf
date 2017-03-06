@@ -15,7 +15,10 @@ module.exports.vsprintf = vsprintf;
 module.exports.printf = printf;
 module.exports.sprintf = sprintf;
 
-var util = require('util');
+var util;
+if (typeof require === 'function') {
+    util = require('util');
+}
 
 // ascii char codes
 var CH_0 = '0'.charCodeAt(0);
@@ -331,11 +334,16 @@ function pow10( n ) {
     return _pow10[n] ? _pow10[n] : Math.pow(10, n);
 }
 
-function formatObject( obj, depth ) {
-    return util.inspect(obj, {depth: depth !== undefined ? depth : 6});
-}
+function formatObject() {};
+function formatArray() {};
 
-function formatArray( arr, elementLimit, depth ) {
-    if (!elementLimit || arr.length <= elementLimit) return util.inspect(arr, depth);
-    else return util.inspect(arr.slice(0, elementLimit), depth).slice(0, -2) + ", ... ]";
+if (util && util.inspect) {
+    formatObject = function formatObject( obj, depth ) {
+        return util.inspect(obj, {depth: depth !== undefined ? depth : 6});
+    }
+
+    formatArray = function formatArray( arr, elementLimit, depth ) {
+        if (!elementLimit || arr.length <= elementLimit) return util.inspect(arr, depth);
+        else return util.inspect(arr.slice(0, elementLimit), depth).slice(0, -2) + ", ... ]";
+    }
 }
