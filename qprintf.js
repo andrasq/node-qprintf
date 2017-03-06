@@ -152,7 +152,6 @@ function vsprintf( fmt, argv ) {
         case 'O': str += formatObject(getarg(argz, p), padWidth); break;
 
         default:
-            if (p >= fmt.length) { str += '%'; break; }
             throw new Error("%" + fmt[p] + ": unsupported conversion at offset " + p);
             // TODO: include full conversion specifier in error... if does not impact speed
         }
