@@ -64,14 +64,14 @@ function vsprintf( fmt, argv ) {
         if (p > p0) str += fmt.slice(p0, p);
         p++;
 
-        argz.argN = undefined;
+        resetargN(argz);
 
         // parse the conversion spec
         var padChar = ' ', padWidth = undefined, rightPad = false, precision = undefined, plusSign = '';
 
         var flag = fmt.charCodeAt(p);
         if (flag === CH_LEFTPAREN) {
-            p = scanAndSetArgName(fmt, p, argz);
+            p = scanAndSetArgName(argz, fmt, p);
             flag = fmt.charCodeAt(p);
         }
         var checkForWidth = true;
@@ -84,7 +84,7 @@ function vsprintf( fmt, argv ) {
                 setargN(argz, scanned.val, p);
                 checkForWidth = true;
                 p = scanned.end + 1;
-                if (fmt.charCodeAt(p) === CH_LEFTPAREN) p = scanAndSetArgName(fmt, p, argz);
+                if (fmt.charCodeAt(p) === CH_LEFTPAREN) p = scanAndSetArgName(argz, fmt, p);
             }
             else if (scanned.end > p) {
                 // found field width, with at most a numeric '0' flag
@@ -181,6 +181,10 @@ function getarg( argz, p ) {
     return argz.argv[argz.argi++];
 }
 
+function resetargN( argz ) {
+    argz.argN = undefined;
+}
+
 // override the next argument with argv[n]
 function setargN( argz, n, p ) {
     if (n > argz.nargs) throw new Error("missing i-th argument " + n + "$ for % conversion at offset " + p);
@@ -208,7 +212,7 @@ function scanDigits( str, p, ret ) {
 }
 
 // scan a )-terminated word from the string, update setargM, and update the next-unscanned-char offset
-function scanAndSetArgName( fmt, p, argz ) {
+function scanAndSetArgName( argz, fmt, p ) {
     var q = fmt.indexOf(')', ++p);
     if (q < 0) throw new Error("unterminated %(named) argument at offset " + p);
     var argName = fmt.slice(p, q);
