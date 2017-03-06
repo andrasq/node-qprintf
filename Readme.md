@@ -188,3 +188,4 @@ interplate the arguments array into the format string, and return the result
 ## Todo
 
 - should be possible to specify both field width and element count to `%A`
+- should support the `*` field width specifier (meaning read it from the args list)

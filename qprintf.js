@@ -27,6 +27,7 @@ var CH_DOT = '.'.charCodeAt(0);
 var CH_DOLLAR = '$'.charCodeAt(0);
 var CH_LEFTPAREN = '('.charCodeAt(0);
 var CH_RIGHTPAREN = ')'.charCodeAt(0);
+var CH_STAR = '*'.charCodeAt(0);
 
 function printf( fmt ) {
     var args = new Array(arguments.length - 1);
@@ -65,6 +66,7 @@ function vsprintf( fmt, argv ) {
         var flag = fmt.charCodeAt(p);
         var checkForWidth = true;
         if (flag >= 0x30 && flag <= 0x39 || flag === CH_DOT || flag === CH_MINUS || flag === CH_PLUS || flag === CH_SPACE) {
+            // TODO: if '*' read width as a positional argument, but still accept a precision
             scanDigits(fmt, p, scanned);
             if (fmt.charCodeAt(scanned.end) === CH_DOLLAR) {
                 // found an N$ arg specifier, but might also have width
