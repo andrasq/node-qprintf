@@ -31,6 +31,7 @@ var CH_LEFTPAREN = '('.charCodeAt(0);
 var CH_RIGHTPAREN = ')'.charCodeAt(0);
 var CH_STAR = '*'.charCodeAt(0);
 var CH_L = 'L'.charCodeAt(0);
+var CH_a = 'a'.charCodeAt(0);
 var CH_l = 'l'.charCodeAt(0);
 var CH_h = 'h'.charCodeAt(0);
 
@@ -92,7 +93,7 @@ function vsprintf( fmt, argv ) {
                 // found field width, with at most a numeric '0' flag
                 if (fmt.charCodeAt(p) === CH_0) padChar = '0';
                 padWidth = scanned.val;
-                checkForWidth = false;
+                if (fmt.charCodeAt(p+1) >= CH_a) checkForWidth = false; // 'a' or above conversion spec
                 p = scanned.end;
             }
             if (checkForWidth) {
@@ -114,7 +115,7 @@ function vsprintf( fmt, argv ) {
                     padWidth = getwidth(argz, p++);
                     scanned.end = p;
                 }
-                else {
+                else if (padWidth === undefined) {
                     scanDigits(fmt, p, scanned);
                     padWidth = scanned.val;
                 }
@@ -179,8 +180,16 @@ function vsprintf( fmt, argv ) {
         case '%': str += padValue(padWidth, padChar, rightPad, '%'); break;
 
         // qnit extensions
-        case 'A': str += formatArray(getarg(argz, p), padWidth, precision); break;
-        case 'O': str += formatObject(getarg(argz, p), padWidth, precision); break;
+        case 'A':
+            // the 0 in "%0d" is a field width, which matters to %A and %O
+            if (padWidth === undefined && padChar === '0') { padWidth = 0; padChar = ' ' }
+            str += formatArray(getarg(argz, p), padWidth, precision);
+            break;
+        case 'O':
+            // the 0 in "%0d" is a field width, which matters to %A and %O
+            if (padWidth === undefined && padChar === '0') { padWidth = 0; padChar = ' ' }
+            str += formatObject(getarg(argz, p), padWidth, precision);
+            break;
 
         default:
             throw new Error(fmt.slice(p0, p+1) + ": unsupported conversion %" + fmt[p] + " at offset " + p);
@@ -389,8 +398,8 @@ function formatArray( arr, elementLimit, depth ) {
     if (depth === undefined) depth = 2;
     if (util) {
         var options = { depth: depth, breakLength: Infinity };
-        if (arr.length <= elementLimit) return util.inspect(arr, depth);
-        else return util.inspect(arr.slice(0, elementLimit), depth).slice(0, -2).replace('\n', ' ') + ", ... ]";
+        if (arr.length <= elementLimit) return util.inspect(arr, options);
+        else return util.inspect(arr.slice(0, elementLimit), options).slice(0, -2).replace('\n', ' ') + ", ... ]";
     }
     else {
         return inspectArray(arr, elementLimit, depth);

@@ -12,10 +12,17 @@ var sprintf = require('sprintf').sprintf;
 var printf = require('printf');
 var extsprintf = require('extsprintf').sprintf;
 
-var x;
+var x, z;
 qtimeit.bench.timeGoal = 0.4;
+var fmt1 = "%s %d %s";
 qtimeit.bench([
-    function(){ z = qsprintf("%s %04d %s", "Hello", 123, "world") }
+// using a string constant format runs 25% slower and drops all speeds by 5%
+//    function(){ z = qsprintf("%s %04d %s", "Hello", 123, "world") },
+    function(){ z = qsprintf(fmt1, "Hello", 123, "world") },
+    function(){ z = qsprintf("%s %04d %s", "Hello", 123, "world") },
+    function(){ z = qsprintf(fmt1, "Hello", 123, "world") },
+    function(){ z = qsprintf(fmt1, "Hello", 123, "world") },
+    function(){ z = qsprintf(fmt1, "Hello", 123, "world") },
 ]);
 
 var fmt1 = "%s %d %s";
