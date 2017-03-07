@@ -161,8 +161,8 @@ function vsprintf( fmt, argv ) {
         case '%': str += padValue(padWidth, padChar, rightPad, '%'); break;
 
         // qnit extensions
-        case 'A': str += formatArray(getarg(argz, p), padWidth, 6); break;
-        case 'O': str += formatObject(getarg(argz, p), padWidth); break;
+        case 'A': str += formatArray(getarg(argz, p), padWidth, precision); break;
+        case 'O': str += formatObject(getarg(argz, p), padWidth, precision); break;
 
         default:
             throw new Error(fmt.slice(p0, p+1) + ": unsupported conversion %" + fmt[p] + " at offset " + p);
@@ -349,18 +349,35 @@ function pow10( n ) {
     return _pow10[n] ? _pow10[n] : Math.pow(10, n);
 }
 
-// object and array formatting is only available in nodejs, not pure javascript
-function formatObject() { return "[object]" };
-function formatArray() { return "[array]" };
-
-// under nodejs use util.inspect to format objects and arrays
-if (util && util.inspect) {
-    formatObject = function formatObject( obj, depth ) {
-        return util.inspect(obj, {depth: depth !== undefined ? depth : 6});
+function formatObject( obj, elementLimit, depth ) {
+    if (elementLimit === undefined) elementLimit = Infinity;
+    if (depth === undefined) depth = 6;
+    if (util) {
+        var options = { depth: depth, breakLength: Infinity };
+        return util.inspect(obj, options).replace('\n', ' ');
     }
-
-    formatArray = function formatArray( arr, elementLimit, depth ) {
-        if (!elementLimit || arr.length <= elementLimit) return util.inspect(arr, depth);
-        else return util.inspect(arr.slice(0, elementLimit), depth).slice(0, -2) + ", ... ]";
+    else {
+        return inspectObject(obj, elementLimit, depth);
     }
+}
+
+function formatArray( arr, elementLimit, depth ) {
+    if (elementLimit === undefined) elementLimit = 40;
+    if (depth === undefined) depth = 2;
+    if (util) {
+        var options = { depth: depth, breakLength: Infinity };
+        if (arr.length <= elementLimit) return util.inspect(arr, depth);
+        else return util.inspect(arr.slice(0, elementLimit), depth).slice(0, -2).replace('\n', ' ') + ", ... ]";
+    }
+    else {
+        return inspectArray(arr, elementLimit, depth);
+    }
+}
+
+function inspectObject( obj, elementLimit, depth ) {
+    return "[Object]";
+}
+
+function inspectArray( arr, elementLimit, depth ) {
+    return "'[Array]'";
 }

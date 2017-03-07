@@ -52,8 +52,13 @@ a 32-bit two's-complement unsigned integer with `>>>` and printed as %i.
 Qprintf extensions, additional conversions:
 
 - `%b` - a binary integer, eg 13 => "1011"
-- `%A` - an array formatted with `util.inspect`
-- `%O` - an object formatted with `util.inspect` to `depth:6`
+- `%A` - an array formatted with `util.inspect`.  For arrays,
+the field width is the number of elements to show (default 40),
+and the precision is the depth to which to inspect each element (default 2).
+- `%O` - an object formatted with `util.inspect` to `depth:6`.  For objects,
+the field width is the number of properties to show (default all), and
+the precision is the depth to which to inspect each element (default 6).
+Only enumerable "own" properties are included.
 
 Qprintf supports the conversion flags for field width, precision, alignment,
 padding, sign, and argument selection.
@@ -88,13 +93,7 @@ The precision specifier `'.'` is supported for strings and numbers.  For numbers
 omit the decimal point and prints no decimals.  For strings, the precision
 specifies the maximum number of characters of the string included in the output.
 
-The field width of a `%O` conversion is taken to be the depth for util.inspect
-to recurse down to.  Specify 0 to not recurse into sub-objects.
-
-The field width of a `%A` coversion is taken to be the number of elements to
-show.
-
-Unlike C, zero padding uses zeroes for left-aligned numbers and strings as well.
+Unlike C, `%0` zero padding pads with zeroes on the right as well, both numbers and strings.
 
 Unlike C, the `%f`, `%e`, `%E`, `%g` and `%G` floating-point conversions do not remove
 trailing zeros after the decimal point.
