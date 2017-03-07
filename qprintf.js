@@ -85,7 +85,6 @@ function vsprintf( fmt, argv ) {
             if (fmt.charCodeAt(scanned.end) === CH_DOLLAR) {
                 // found an N$ arg specifier, but might also have width
                 setargN(argz, scanned.val, p);
-                checkForWidth = true;
                 p = scanned.end + 1;
                 if (fmt.charCodeAt(p) === CH_LEFTPAREN) p = scanAndSetArgName(argz, fmt, p);
             }
@@ -93,8 +92,8 @@ function vsprintf( fmt, argv ) {
                 // found field width, with at most a numeric '0' flag
                 if (fmt.charCodeAt(p) === CH_0) padChar = '0';
                 padWidth = scanned.val;
-                if (fmt.charCodeAt(p+1) >= CH_a) checkForWidth = false; // 'a' or above conversion spec
                 p = scanned.end;
+                if (fmt.charCodeAt(p) >= CH_a) checkForWidth = false; // 'a' or above is conversion spec
             }
             if (checkForWidth) {
                 // look for flags
@@ -139,6 +138,7 @@ function vsprintf( fmt, argv ) {
             }
             // note: glibc does not zero-pad on the right
         }
+        // left p pointing to the conversion specifier character
 
         var ch = fmt.charCodeAt(p);
         if (ch === CH_l || ch === CH_h || ch === CH_L) {
