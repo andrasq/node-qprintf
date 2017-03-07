@@ -126,14 +126,17 @@ function vsprintf( fmt, argv ) {
                 ch = fmt.charCodeAt(p);
                 if (ch === 0x2a) {  // '*' precision
                     precision = getwidth(argz, p);
-                    scanned.end += 1;
+                    p++;
                 }
                 else {
                     scanDigits(fmt, p, scanned);
                     precision = scanned.val;
+                    p = scanned.end;
                 }
             }
-            p = scanned.end;
+            else {
+                p = scanned.end;
+            }
             // note: glibc does not zero-pad on the right
         }
 

@@ -75,8 +75,11 @@ Named arguments can be be mixed with i-th arguments, but do not work well with p
 - `0` - zeroFlag: zero pad the field (default is to pad with spaces)
 - `+` - plusFlag: always print the sign, `+` for positive and `-` for negative
 - ` ` - spaceFlag: always print the sign, ` ` (space) for positive and `-` for negative
-- `NNN` - width: a decimal integer that specifies the field width
-- `NNN.PP` - width.precision: a decimal field width followed by the precision
+- `NNN` - width: a decimal integer that specifies the field width.  If the width NNN is
+specified as '*' (star), the next argument will be consumed and used as the width.
+- `NNN.PP` - width.precision: a decimal field width followed by the precision.
+If the precision PP is specified as '*' (star), the next argument will be consumed
+and used as the precision.
 - `.PP` - .precision: a decimal precision with a field width wide enough to fit
 - `l`, `ll`, `h`, `hh`, `L` - modifier: allowed but ignored data size modifier, "long", "long long",
 "short", "char" and "long double".  Invalid usage eg `%Ls` is not checked.
