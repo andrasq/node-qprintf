@@ -58,6 +58,7 @@ function vsprintf( fmt, argv ) {
 
     var p0 = 0, p = 0, q, argName, str = "";
     var scanned = { end: undefined, val: undefined };
+    var ch;
 
     while (p < fmt.length) {
         if (fmt.charCodeAt(p) != 0x25) { p++; continue; }       // scan until %
@@ -76,7 +77,8 @@ function vsprintf( fmt, argv ) {
         }
         var checkForWidth = true;
 
-        if (flag >= 0x30 && flag <= 0x39 || flag === CH_DOT || flag === CH_MINUS || flag === CH_PLUS || flag === CH_SPACE) {
+        // runs faster if hexcode tests are at front, followed by vars
+        if (flag >= 0x30 && flag <= 0x39 || flag === 0x2a || flag === CH_DOT || flag === CH_MINUS || flag === CH_PLUS || flag === CH_SPACE) {
             // TODO: if '*' read width as a positional argument, but still accept a precision
             scanDigits(fmt, p, scanned);
             if (fmt.charCodeAt(scanned.end) === CH_DOLLAR) {
@@ -94,10 +96,11 @@ function vsprintf( fmt, argv ) {
                 p = scanned.end;
             }
             if (checkForWidth) {
-                // look for both flags and width
+                // look for flags
                 while (true) {
                     // this switch is faster with charcodes
-                    switch (fmt.charCodeAt(p)) {
+                    ch = fmt.charCodeAt(p);
+                    switch (ch) {
                     case CH_MINUS: rightPad = true; p++; continue;
                     case CH_0: padChar = '0'; p++; continue;
                     // '+' to always print sign, ' ' to print - for neg and ' ' for positive
@@ -106,13 +109,28 @@ function vsprintf( fmt, argv ) {
                     }
                     break;
                 }
-                scanDigits(fmt, p, scanned);
-                padWidth = scanned.val;
+                // gather width, if any
+                if (ch === 0x2a) {  // '*' width
+                    padWidth = getwidth(argz, p++);
+                    scanned.end = p;
+                }
+                else {
+                    scanDigits(fmt, p, scanned);
+                    padWidth = scanned.val;
+                }
             }
             if (fmt.charCodeAt(scanned.end) === CH_DOT) {
-                // gather precision if included with width
-                scanDigits(fmt, scanned.end+1, scanned);
-                precision = scanned.val;
+                // gather precision
+                p = scanned.end + 1;
+                ch = fmt.charCodeAt(p);
+                if (ch === 0x2a) {  // '*' precision
+                    precision = getwidth(argz, p);
+                    scanned.end += 1;
+                }
+                else {
+                    scanDigits(fmt, p, scanned);
+                    precision = scanned.val;
+                }
             }
             p = scanned.end;
             // note: glibc does not zero-pad on the right
@@ -178,6 +196,11 @@ function vsprintf( fmt, argv ) {
 function getarg( argz, p ) {
     if (argz.argN !== undefined) return argz.argN;
     if (argz.argi >= argz.nargs) throw new Error("missing argument for %" + argz.fmt[p] + " conversion at offset " + p);
+    return argz.argv[argz.argi++];
+}
+
+function getwidth( argz, p ) {
+    if (argz.argi >= argz.nargs) throw new Error("missing argument for %* width/precision at offset " + p);
     return argz.argv[argz.argi++];
 }
 
