@@ -339,6 +339,23 @@ module.exports = {
         t.done();
     },
 
+    'should handle readme examples': function(t) {
+        t.equal(sprintf("%5d", 123), "  123");
+        t.equal(sprintf("%5.2f", 1.238), " 1.24");
+        t.equal(sprintf("%05x", 123), "0007b");
+        t.equal(sprintf("%10s", "Hello"), "     Hello");
+        t.equal(sprintf("%-10s", "Hello"), "Hello     ");
+        t.equal(sprintf("%O", {a:1,b:2}), "{ a: 1, b: 2 }");
+        t.equal(sprintf("%2A", [1,2,3,4]), "[ 1, 2, ... ]");
+        t.equal(sprintf("%.f", 12.345), "12");
+        t.equal(sprintf("%*.2f", 2, 12.345), "12.35");
+        t.equal(sprintf("%*.*f", 8, 3, 1.25), "   1.250");
+        t.equal(sprintf("%2$d", 1, 2), "2");
+        t.equal(sprintf("%(x).2f", {x: 1.234}), "1.23");
+        t.equal(sprintf("%2$(x)-4d", {x:1}, {x:2}), "2   ");
+        t.done();
+    },
+
     'speed of 10k string+num': function(t) {
         for (var i=0; i<10000; i++) {
             var s = sprintf("String %s num %05d\n", "some string", 123, {a: 1, b: 2.5, c: 'c'});
