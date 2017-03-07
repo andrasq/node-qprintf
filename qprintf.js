@@ -57,7 +57,7 @@ function vsprintf( fmt, argv ) {
         argN: undefined,
     };
 
-    var p0 = 0, p = 0, q, argName, str = "";
+    var p0 = 0, p = 0, argName, str = "";
     var scanned = { end: undefined, val: undefined };
     var ch;
 
@@ -68,8 +68,15 @@ function vsprintf( fmt, argv ) {
 
         resetargN(argz);
 
+        //
         // parse the conversion spec
-        var padChar = ' ', padWidth = undefined, rightPad = false, precision = undefined, plusSign = '';
+        // `% [argNum$] [(argName)] [flags +|-| |0] [width][.precision] [modifier l|ll|h|hh|L] conversion`,
+        //
+
+        // reset format for each conversion
+        // var format = { padWidth: undefined, precision: undefined, padChar: ' ', rightPad: false, plusSign: '' };
+        var padChar = ' ', rightPad = false, plusSign = '';
+        var padWidth = undefined, precision = undefined;
 
         var flag = fmt.charCodeAt(p);
         if (flag === CH_LEFTPAREN) {
@@ -95,6 +102,7 @@ function vsprintf( fmt, argv ) {
                 p = scanned.end;
                 if (fmt.charCodeAt(p) >= CH_a) checkForWidth = false; // 'a' or above is conversion spec
             }
+
             if (checkForWidth) {
                 // look for flags
                 while (true) {
@@ -107,23 +115,25 @@ function vsprintf( fmt, argv ) {
                     case CH_PLUS: plusSign = '+'; p++; continue;
                     case CH_SPACE: plusSign = ' '; p++; continue;
                     }
+                    // if reached here end of flags, break out of loop
                     break;
                 }
                 // gather width, if any
                 if (ch === 0x2a) {  // '*' width
-                    padWidth = getwidth(argz, p++);
-                    scanned.end = p;
+                    padWidth = getwidth(argz, p);
+                    p++;
                 }
                 else if (padWidth === undefined) {
                     scanDigits(fmt, p, scanned);
                     padWidth = scanned.val;
+                    p = scanned.end;
                 }
             }
-            if (fmt.charCodeAt(scanned.end) === CH_DOT) {
+
+            if (fmt[p] === '.') {
                 // gather precision
-                p = scanned.end + 1;
-                ch = fmt.charCodeAt(p);
-                if (ch === 0x2a) {  // '*' precision
+                p++;
+                if (fmt[p] === '*') {
                     precision = getwidth(argz, p);
                     p++;
                 }
@@ -133,13 +143,10 @@ function vsprintf( fmt, argv ) {
                     p = scanned.end;
                 }
             }
-            else {
-                p = scanned.end;
-            }
-            // note: glibc does not zero-pad on the right
         }
-        // left p pointing to the conversion specifier character
+        // p left pointing to the conversion specifier character
 
+        // 
         var ch = fmt.charCodeAt(p);
         if (ch === CH_l || ch === CH_h || ch === CH_L) {
             p++;
@@ -149,7 +156,11 @@ function vsprintf( fmt, argv ) {
         // if not followed by a conversion specifier, print it as is
         if (p >= fmt.length) break;
 
+        //
+        // the conversion itself
         // this switch is faster with chars, not charcodes
+        // fall-through cases run 5% slower
+        //
         switch (fmt[p]) {
         // integer types
         case 'd': str += convertNumber(padWidth, padChar, rightPad, plusSign, getarg(argz, p)); break;
@@ -184,13 +195,14 @@ function vsprintf( fmt, argv ) {
 
         // qnit extensions
         case 'A':
-            // the 0 in "%0d" is a field width, which matters to %A and %O
-            if (padWidth === undefined && padChar === '0') { padWidth = 0; padChar = ' ' }
+            // the '0' in %0f and %0.3f is a field width, not a flag for zero padding
+            // this matters for arrays and objects, but does not affect numbers
+            // (because a zero-width field will have no padding)
+            if (padChar === '0' && padWidth === undefined) padWidth = 0;
             str += formatArray(getarg(argz, p), padWidth, precision);
             break;
         case 'O':
-            // the 0 in "%0d" is a field width, which matters to %A and %O
-            if (padWidth === undefined && padChar === '0') { padWidth = 0; padChar = ' ' }
+            if (padChar === '0' && padWidth === undefined) padWidth = 0;
             str += formatObject(getarg(argz, p), padWidth, precision);
             break;
 
