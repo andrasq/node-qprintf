@@ -22,7 +22,7 @@ var fmt20 = "%20s %20d %20s";
 qtimeit.bench([
     function(){ z = qsprintf(fmt1, "Hello", 123, "world") },
     // using a string constant format runs 25% slower
-    function(){ z = qsprintf("%s %04d %s", "Hello", 123, "world") },
+//    function(){ z = qsprintf("%s %04d %s", "Hello", 123, "world") },
     function(){ z = qsprintf(fmt1, "Hello", 123, "world") },
     function(){ z = qsprintf(fmt1, "Hello", 123, "world") },
     function(){ z = qsprintf(fmt1, "Hello", 123, "world") },

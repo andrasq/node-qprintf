@@ -34,8 +34,8 @@ var CH_DOLLAR = '$'.charCodeAt(0);
 var CH_LEFTPAREN = '('.charCodeAt(0);
 var CH_RIGHTPAREN = ')'.charCodeAt(0);
 var CH_STAR = '*'.charCodeAt(0);
+var CH_A = 'A'.charCodeAt(0);
 var CH_L = 'L'.charCodeAt(0);
-var CH_a = 'a'.charCodeAt(0);
 var CH_l = 'l'.charCodeAt(0);
 var CH_h = 'h'.charCodeAt(0);
 
@@ -81,27 +81,29 @@ function vsprintf( fmt, argv ) {
         var checkForWidth = true;
         var ch;
 
-        // runs faster if hexcode tests are at front, followed by vars
-        var flag = fmt.charCodeAt(p);
-        if (flag >= 0x30 && flag <= 0x39 || flag === CH_LEFTPAREN ||
-            flag === 0x2a || flag === CH_DOT || flag === CH_MINUS || flag === CH_PLUS || flag === CH_SPACE || flag === CH_LEFTPAREN
-        ) {
-            scanDigits(fmt, p, scanned);
-            if (fmt.charCodeAt(scanned.end) === CH_DOLLAR) {
-                // found an N$ arg specifier, but might also have width
-                if (!scanned.val) throw new Error("missing $ argument at offset " + p);
-                setargN(argz, scanned.val, p);
-                p = scanned.end + 1;
-                if (fmt.charCodeAt(p) === CH_LEFTPAREN) p = scanAndSetArgName(argz, fmt, p);
+        // if not a conversion char, must be flags
+        ch = fmt.charCodeAt(p);
+        if (ch < CH_A) {
+            if (ch >= 0x30 && ch <= 0x39) {
+                scanDigits(fmt, p, scanned);
+                if (scanned.end > p) {
+                    if (fmt.charCodeAt(scanned.end) === CH_DOLLAR) {
+                        // found an N$ arg specifier, but might also have width
+                        if (!scanned.val) throw new Error("missing $ argument at offset " + p);
+                        setargN(argz, scanned.val, p);
+                        p = scanned.end + 1;
+                        if (fmt.charCodeAt(p) === CH_LEFTPAREN) p = scanAndSetArgName(argz, fmt, p);
+                    }
+                    else {
+                        // found field width, with at most a numeric '0' flag
+                        if (fmt.charCodeAt(p) === CH_0) padChar = '0';
+                        padWidth = scanned.val;
+                        p = scanned.end;
+                        if (fmt.charCodeAt(p) >= CH_A) checkForWidth = false; // 'A' or above is conversion spec
+                    }
+                }
             }
-            else if (scanned.end > p) {
-                // found field width, with at most a numeric '0' flag
-                if (fmt.charCodeAt(p) === CH_0) padChar = '0';
-                padWidth = scanned.val;
-                p = scanned.end;
-                if (fmt.charCodeAt(p) >= CH_a) checkForWidth = false; // 'a' or above is conversion spec
-            }
-            else if (fmt.charCodeAt(scanned.end) === CH_LEFTPAREN) {
+            else if (ch === CH_LEFTPAREN) {
                 p = scanAndSetArgName(argz, fmt, p);
             }
 
@@ -121,7 +123,7 @@ function vsprintf( fmt, argv ) {
                     break;
                 }
                 // gather width, if any
-                if (ch === 0x2a) {  // '*' width
+                if (ch === CH_STAR) {
                     padWidth = getwidth(argz, p);
                     p++;
                 }
@@ -134,15 +136,14 @@ function vsprintf( fmt, argv ) {
                 }
             }
 
-            if (fmt[p] === '.') {
-                // gather precision
-                p++;
-                if (fmt[p] === '*') {
-                    precision = getwidth(argz, p);
-                    p++;
+            // look for precision, if any
+            if (fmt.charCodeAt(p) === CH_DOT) {
+                if (fmt.charCodeAt(p+1) === CH_STAR) {
+                    precision = getwidth(argz, p+1);
+                    p += 2;
                 }
                 else {
-                    scanDigits(fmt, p, scanned);
+                    scanDigits(fmt, p+1, scanned);
                     precision = scanned.val;
                     p = scanned.end;
                 }
