@@ -344,9 +344,12 @@ function convertFloatExp( width, padChar, rightPad, signChar, v, precision, eSym
 function convertFloatG( width, padChar, rightPad, signChar, v, precision, eSym ) {
     if (v < 0) { signChar = "-"; v = -v }
     if (v >= .0001 && v < pow10(precision)) {
-        return convertFloat(width, padChar, rightPad, signChar, v, precision);
+        var s = formatFloatMinimal(v, precision, true);
+        return padNumber(width, padChar, rightPad, signChar, 0, s);
     } else {
-        return convertFloatExp(width, padChar, rightPad, signChar, v, precision, eSym);
+        var ve = _normalizeExp(v);
+        var s = formatFloatMinimal(ve.val, precision, true) + _formatExp(ve.exp, eSym);
+        return padNumber(width, padChar, rightPad, signChar, 0, s);
     }
 }
 
@@ -358,8 +361,8 @@ function padNumber( width, padChar, rightPad, signChar, v, numberString ) {
         : padValue(width, padChar, rightPad, signChar + numberString);
 }
 
-/**
-function formatFloatOriginal( v, precision, minimal ) {
+// note: both C and PHP render ("%5.2f", 1.275) as "1.27", because of the IEEE representation
+function formatFloatMinimal( v, precision, minimal ) {
 // never called with negative v, omit code handling negatives
 //    if (precision === undefined) return v.toString(10);
 
@@ -382,13 +385,10 @@ function formatFloatOriginal( v, precision, minimal ) {
     }
     if (minimal && f === 0) return i;
 
-    var s = i + "." + padValue(precision, '0', false, f);
+    var s = i + "." + padValue(precision, '0', false, f + '');
 //    return neg ? ("-" + s) : s;
     return s;
-
-    // note: both C and PHP render ("%5.2f", 1.275) as "1.27", because of the IEEE representation
 }
-**/
 
 // streamlined version of the above, to fit into 600 chars
 // works for positive values only, but thats all we use
