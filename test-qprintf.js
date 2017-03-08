@@ -367,7 +367,7 @@ module.exports = {
         t.equal(sprintf("%O", {a:1,b:2}), "{ a: 1, b: 2 }");
         t.equal(sprintf("%2A", [1,2,3,4]), "[ 1, 2, ... ]");
         t.equal(sprintf("%.f", 12.345), "12");
-        t.equal(sprintf("%*.2f", 2, 12.345), "12.35");
+        t.equal(sprintf("%-*.2f", 7, 12.345), "12.35  ");
         t.equal(sprintf("%*.*f", 8, 3, 1.25), "   1.250");
         t.equal(sprintf("%2$d", 1, 2), "2");
         t.equal(sprintf("%(x).2f", {x: 1.234}), "1.23");
