@@ -101,6 +101,9 @@ The precision specifier `'.'` is supported for strings and numbers.  For numbers
 omit the decimal point and prints no decimals.  For strings, the precision
 specifies the maximum number of characters of the string included in the output.
 
+Unlike C, `%d` can print floats as floats, it does not truncate.  Use `%i` to
+truncate to integer, or `%.0f` to round to integer.
+
 Unlike C, `%0` zero padding pads with zeroes on the right as well, both numbers and strings.
 
 Unlike C, the `%n` conversion takes a callback `cb(int)` and not a pointer to `int`.
