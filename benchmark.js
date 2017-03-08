@@ -16,6 +16,7 @@ var x, z;
 qtimeit.bench.timeGoal = 0.4;
 var fmt1 = "%s %d %s";
 var fmt2 = "%s %04d %s %4$5.2f";
+
 qtimeit.bench([
 // using a string constant format runs 25% slower and drops all speeds by 5%
 //    function(){ z = qsprintf("%s %04d %s", "Hello", 123, "world") },
@@ -26,8 +27,6 @@ qtimeit.bench([
     function(){ z = qsprintf(fmt1, "Hello", 123, "world") },
 ]);
 
-var fmt1 = "%s %d %s";
-var fmt2 = "%s %04d %s %4$5.2f";
 for (var loop=0; loop<10; loop++) {
     var z;
     var calls = {
@@ -40,6 +39,7 @@ for (var loop=0; loop<10; loop++) {
     };
 
     for (var f=0; f<2; f++) {
+if (0)
     for (var nloops=0; nloops<3; nloops++) {
         for (var callName in calls) {
             var call = calls[callName];
@@ -75,6 +75,6 @@ for (var loop=0; loop<10; loop++) {
     qtimeit.bench.timeGoal = 0.4;
     qtimeit.bench(bench1);
     console.log("");
-    qtimeit.bench(bench2);
+//    qtimeit.bench(bench2);
     console.log("");
 }

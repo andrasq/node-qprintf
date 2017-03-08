@@ -6,6 +6,7 @@ the full set of integer, float, and string conversions with field width, alignme
 and precision, along with some extensions.
 
 Recognizes all traditional output conversions and modifiers (but not `%n` or `%p`).
+Behavior follows closely that of C `printf`, including very large number support.
 
     var printf = require('qprintf').printf;
     printf("%s (%-7s) %05d!", "Hello", "world", 123);
@@ -38,12 +39,13 @@ Traditional conversions:
 like `util.format` and prints floats as floats.  Use `%i` to truncate to integer.
 - `%i` - a decimal integer.  The integer conversions truncate the value toward zero (like php).
 - `%x` - a hexadecimal integer printed using lowercase [0-9a-f]
-- `%X` - a hex integer printed using uppercase [0-9A-F]
+- `%X` - a hexadecimal integer printed using uppercase [0-9A-F]
 - `%o` - an octal integer
 - `%u` - an unsigned integer.  The native JavaScript number is converted to
 a 32-bit two's-complement unsigned integer with `>>>` and printed as %i.
-- `%f` - a floating-point value "1.23"
-- `%e` - a number in exponential notation, eg "1.23e+02"
+- `%f` - a floating-point value "1.23" with integer part, decimal point, and fraction.
+This conversion never generates exponential notation; use `%g` for that.
+- `%e` - a number in exponential notation, eg "1.23e+02".
 - `%E` - like %e but printed with a capital E, "1.23E+02"
 - `%g` - a number in either %f or %e notation, depending on its size
 - `%G` - like %g but in %f or %E notation
@@ -71,6 +73,7 @@ Examples: `%d`, `%10ld`, `%2$d`, `%2$-010d`, `%4.2f`, `%2$(total)+4.3f`.
 - `I$` - argNum: interpolate the i-th argument with this conversion
 - `(NAME)` - argName: interpolate the named property (of the first argument, by default).
 Named arguments can be be mixed with i-th arguments, but do not work well with positional arguments.
+Named arguments are a `qprintf` extension.
 - `-` - minusFlag: left-align the value in the field
 - `0` - zeroFlag: zero pad the field (default is to pad with spaces)
 - `+` - plusFlag: always print the sign, `+` for positive and `-` for negative
@@ -120,6 +123,7 @@ after the decimal point.
     sprintf("%2$d", 1, 2)               => "2"
     sprintf("%(x).2f", {x: 1.234})      => "1.23"
     sprintf("%2$(x)-4d", {x:1}, {x:2})  => "2   "
+    sprintf("%-33.f", 1e30)             => "1000000000000000000222784838656  "
 
 
 ## Benchmark
@@ -151,4 +155,5 @@ speed of each relative to `printf`.  Extra whitespace was used to align the colu
 ## Todo
 
 - support js-only operation without losing 100% test coverage
-- %g and %G should leave off trailing zeroes
+- implement %n taking a callback instead of an `int*`
+- factor out the low-level formatting into a separate file
