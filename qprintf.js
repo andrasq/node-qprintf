@@ -411,8 +411,8 @@ function formatFloat( v, precision ) {
     if (precision <= 0) return v < 1e20 ? Math.floor(v + 0.5).toString(10) : formatNumber(Math.floor(v + 0.5));
 
     var scale = pow10(precision);
-    v += (0.5 / scale);    // round to convert
-    var i = Math.floor(v); // all digits of the integer part
+    v += (0.5 / scale);                   // round
+    var i = Math.floor(v);                // all digits of integer part
     var f = Math.floor((v - i) * scale);  // first `precision` digits of the fraction
 
     if (precision <= 0) return i;
@@ -424,8 +424,8 @@ function formatFloat( v, precision ) {
     return s;
 }
 
-// convert a very large number to a string.  Note that a 64-bit float has
-// only about 16 digits precision (53 bits of magnitude).
+// convert a very large number to a string.  Note that a 64-bit float
+// has only about 16 digits (53 bits) precision.    
 // C    => 1000000000000000044885712678075916785549312
 // php  => 1000000000000000044885712678075916785549312
 // ours => 1000000000000000000222784838656961984549312 (1e6, both as /= 1e6 and *= 1e-6)
