@@ -1,7 +1,8 @@
 /**
- * quick little printf-like string interpolator
+ * very quick printf-like string interpolator
  *
- * Implements a basic subset of C printf conversions, including field widths.
+ * Implements all traditional C printf conversions, including field widths,
+ * precision, and very large numbers.
  *
  * Copyright (C) 2015-2017 Andras Radics
  * Licensed under the Apache License, Version 2.0
@@ -87,7 +88,6 @@ function vsprintf( fmt, argv ) {
 
         // runs faster if hexcode tests are at front, followed by vars
         if (flag >= 0x30 && flag <= 0x39 || flag === 0x2a || flag === CH_DOT || flag === CH_MINUS || flag === CH_PLUS || flag === CH_SPACE) {
-            // TODO: if '*' read width as a positional argument, but still accept a precision
             scanDigits(fmt, p, scanned);
             if (fmt.charCodeAt(scanned.end) === CH_DOLLAR) {
                 // found an N$ arg specifier, but might also have width
@@ -318,6 +318,7 @@ function _normalizeExp( v ) {
 
     // TODO: find a faster way of computing the exponent, maybe Math.log10
     // eg something like Math.log(v) / Math.log(10), except .1 => -0.999...998
+    // TODO: double-check the possible error with this approach
     if (v >= 10) {
         while (v > 10000) { exp += 4; v *= .0001 }
         while (v >= 10) { exp += 1; v *= .1 }
@@ -420,7 +421,8 @@ function formatFloat( v, precision ) {
 // (actual difference bounces all over depending on the value, eg)
 //         69999999999999991808402112386240906176108672 (7e43 with 1e6)
 // TODO: find a more accurate way of converting to decimal,
-// this has 10x the error of C/php.
+// this has 10x the error of C/php.  Perhaps could toString(20) and
+// convert base 20 to 10 with carry-outs.
 function formatNumber( n ) {
     if (n === Infinity) return "Infinity";
     var parts = new Array();
