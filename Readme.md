@@ -87,8 +87,9 @@ Examples: `%d`, `%10ld`, `%2$d`, `%2$-010d`, `%4.2f`, `%2$(total)+4.3f`.
 - `NNN.` - width of NNN with precision 0
 - `.PP` - .precision: a decimal precision with a field width wide enough to fit
 - `.` - precision 0 with a field width just wide enough to fit
-- `l`, `ll`, `h`, `hh`, `L` - modifier: allowed but ignored data size modifier, "long", "long long",
-        "short", "char" and "long double".  Invalid usage eg `%Ls` is not checked.
+- `l`, `ll`, `h`, `hh`, `L` - conversion modifiers: allowed but ignored data size modifier,
+        "long", "long long", "short", "char" and "long double".
+        Invalid usage eg `%Ls` is not checked.
 - `C` - conversion: conversion type specifier character
 
 E.g., `%3$-+12d` will interpolate the 3rd argument into a field 12 characters wide,
