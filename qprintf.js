@@ -350,7 +350,7 @@ function padNumber( width, padChar, rightPad, signChar, v, numberString ) {
 }
 
 /**
-function formatFloatOriginal( v, precision ) {
+function formatFloatOriginal( v, precision, minimal ) {
 // never called with negative v, omit code handling negatives
 //    if (precision === undefined) return v.toString(10);
 
@@ -366,12 +366,18 @@ function formatFloatOriginal( v, precision ) {
     var i = Math.floor(v);                      // all digits of the integer part
     var f = Math.floor((v - i) * scale);        // first `precision` digits of the fraction
 
-    // TODO: large i and precision format as eg 1+42
+    // if minimal, trim trailing decimal zeroes
+    if (minimal) while (f && f % 10 === 0) {
+        f = Math.floor(f / 10);
+        precision -= 1;
+    }
+    if (minimal && f === 0) return i;
 
-    // note: both C and PHP render ("%5.2f", 1.275) as "1.27", because of the IEEE representation
-    var s = i + "." + padValue(precision, '0', false, f + '');
+    var s = i + "." + padValue(precision, '0', false, f);
 //    return neg ? ("-" + s) : s;
     return s;
+
+    // note: both C and PHP render ("%5.2f", 1.275) as "1.27", because of the IEEE representation
 }
 **/
 
@@ -401,7 +407,7 @@ function formatObject( obj, elementLimit, depth ) {
     if (depth === undefined) depth = 6;
     if (util) {
         var options = { depth: depth, breakLength: Infinity };
-        return util.inspect(obj, options).replace('\n', ' ');
+        return util.inspect(obj, options);
     }
     else {
         return inspectObject(obj, elementLimit, depth);
@@ -414,7 +420,7 @@ function formatArray( arr, elementLimit, depth ) {
     if (util) {
         var options = { depth: depth, breakLength: Infinity };
         if (arr.length <= elementLimit) return util.inspect(arr, options);
-        else return util.inspect(arr.slice(0, elementLimit), options).slice(0, -2).replace('\n', ' ') + ", ... ]";
+        else return util.inspect(arr.slice(0, elementLimit), options).slice(0, -2) + ", ... ]";
     }
     else {
         return inspectArray(arr, elementLimit, depth);

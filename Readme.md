@@ -98,8 +98,8 @@ specifies the maximum number of characters of the string included in the output.
 
 Unlike C, `%0` zero padding pads with zeroes on the right as well, both numbers and strings.
 
-Unlike C, the `%f`, `%e`, `%E`, `%g` and `%G` floating-point conversions do not remove
-trailing zeros after the decimal point.
+Unlike C, the `%g` and `%G` floating-point conversions do not remove trailing zeros
+after the decimal point.
 
 
 ## Examples
@@ -150,6 +150,5 @@ speed of each relative to `printf`.  Extra whitespace was used to align the colu
 
 ## Todo
 
-- should be possible to specify both field width and element count to `%A`
-- should support the `*` field width specifier (meaning read it from the args list)
 - support js-only operation without losing 100% test coverage
+- %g and %G should leave off trailing zeroes
