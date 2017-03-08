@@ -84,7 +84,9 @@ Examples: `%d`, `%10ld`, `%2$d`, `%2$-010d`, `%4.2f`, `%2$(total)+4.3f`.
 - `NNN.PP` - width.precision: a decimal field width followed by the precision.
         If the precision PP is specified as '*' (star), the next argument will be consumed
         and used as the precision.
+- `NNN.` - width of NNN with precision 0
 - `.PP` - .precision: a decimal precision with a field width wide enough to fit
+- `.` - precision 0 with a field width just wide enough to fit
 - `l`, `ll`, `h`, `hh`, `L` - modifier: allowed but ignored data size modifier, "long", "long long",
         "short", "char" and "long double".  Invalid usage eg `%Ls` is not checked.
 - `C` - conversion: conversion type specifier character
@@ -156,3 +158,4 @@ speed of each relative to `printf`.  Extra whitespace was used to align the colu
 
 - support js-only operation without losing 100% test coverage
 - factor out the low-level formatting into a separate file
+- invoke formatting via a global singleton, to simplify testing
