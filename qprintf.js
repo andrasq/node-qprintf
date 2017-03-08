@@ -302,7 +302,7 @@ function convertFloat( width, padChar, rightPad, signChar, v, precision ) {
     return padNumber(width, padChar, rightPad, signChar, v, s);
 }
 
-function formatExp( exp, e ) {
+function _formatExp( exp, e ) {
     return (
         (exp <= -10) ? e+"-" + -exp :
         (exp < 0)    ? e+"-0" + -exp :
@@ -312,10 +312,9 @@ function formatExp( exp, e ) {
     );
 }
 
-// convert to %e exponential notation
-function convertFloatExp( width, padChar, rightPad, signChar, v, precision, eSym ) {
+var _ve = { val: 0, exp: 0 };
+function _normalizeExp( v ) {
     var exp = 0;
-    if (v < 0) { signChar = "-"; v = -v }
 
     // TODO: find a faster way of computing the exponent, maybe Math.log10
     // eg something like Math.log(v) / Math.log(10), except .1 => -0.999...998
@@ -328,12 +327,22 @@ function convertFloatExp( width, padChar, rightPad, signChar, v, precision, eSym
         while (v < 1) { exp -= 1; v *= 10 }
     }
 
-    return padNumber(width, padChar, rightPad, signChar, v, formatFloat(v, precision) + formatExp(exp, eSym));
+    _ve.val = v;
+    _ve.exp = exp;
+    return _ve;
+}
+
+// convert to %e exponential notation
+function convertFloatExp( width, padChar, rightPad, signChar, v, precision, eSym ) {
+    if (v < 0) { signChar = "-"; v = -v }
+    var ve = _normalizeExp(v);
+    return padNumber(width, padChar, rightPad, signChar, 0, formatFloat(ve.val, precision) + _formatExp(ve.exp, eSym));
 }
 
 // convert to either %f float or %e exponential notation, depending on magnitude
 // if the exponent is >= -4 and < precision, format as a float %f, else %g
 function convertFloatG( width, padChar, rightPad, signChar, v, precision, eSym ) {
+    if (v < 0) { signChar = "-"; v = -v }
     if (v >= .0001 && v < pow10(precision)) {
         return convertFloat(width, padChar, rightPad, signChar, v, precision);
     } else {
