@@ -15,6 +15,9 @@
 module.exports.vsprintf = vsprintf;
 module.exports.printf = printf;
 module.exports.sprintf = sprintf;
+module.exports.lib = {
+    formatNumber: formatNumber,
+};
 
 if (typeof require === 'function') {
     var util = require('util');
@@ -163,10 +166,9 @@ function vsprintf( fmt, argv ) {
         //
         switch (fmt[p]) {
         // integer types
-        case 'd': str += convertNumber(padWidth, padChar, rightPad, plusSign, getarg(argz, p)); break;
-        // TODO: make %d truncate to integer like traditional C -- a breaking change!
+        // we truncate integers toward zero like php, ie -1.9 prints as -1
+        case 'd': str += convertIntegerBase10(padWidth, padChar, rightPad, plusSign, getarg(argz, p)); break;
         case 'i': str += convertIntegerBase(padWidth, padChar, rightPad, plusSign, getarg(argz, p), 10); break;
-        // we truncate %i toward zero like php, ie -1.9 prints as -1
         case 'x': str += convertIntegerBase(padWidth, padChar, rightPad, plusSign, getarg(argz, p), 16); break;
         case 'X': str += convertIntegerBase(padWidth, padChar, rightPad, plusSign, getarg(argz, p), 16).toUpperCase(); break;
         case 'o': str += convertIntegerBase(padWidth, padChar, rightPad, plusSign, getarg(argz, p), 8); break;
@@ -291,14 +293,18 @@ function padValue( padWidth, padChar, rightPad, str ) {
     return rightPad ? str + str_repeat(padChar, n) : str_repeat(padChar, n) + str;
 }
 
-function convertNumber( width, padChar, rightPad, signChar, v ) {
-    var s = (v < 0 ? "" + -v : "" + v);
-    return padNumber(width, padChar, rightPad, signChar, v, s);
+function convertIntegerBase10( width, padChar, rightPad, signChar, v ) {
+    if (v < 0) { signChar = '-'; v = -v; }
+    return (v <= 1e-6 || v >= 1e20)
+        ? padNumber(width, padChar, rightPad, signChar, 0, formatNumber(v))
+        : padNumber(width, padChar, rightPad, signChar, 0, Math.floor(v) + "");
 }
 
 function convertIntegerBase( width, padChar, rightPad, signChar, v, base ) {
-    var s = (v < 0 ? (Math.floor(-v)).toString(base) : Math.floor(v).toString(base));
-    return padNumber(width, padChar, rightPad, signChar, v, s);
+    if (v < 0) { signChar = '-'; v = -v; }
+    return (base === 10 && (v <= 1e-6 || v >= 1e20))
+        ? padNumber(width, padChar, rightPad, signChar, 0, formatNumber(v))
+        : padNumber(width, padChar, rightPad, signChar, 0, Math.floor(v).toString(base));
 }
 
 // convert to %f notation
@@ -431,12 +437,12 @@ function formatFloat( v, precision ) {
 function formatNumber( n ) {
     if (n === Infinity) return "Infinity";
     var parts = new Array();
-    do {
+    while (n > 1e6) {
         parts.push(padValue(6, '0', false, (Math.floor(n) % 1e6).toString(10)));
         n *= 1e-6;
-    } while (n > 1e6);
+    }
     if (n > 0) parts.push(Math.floor(n).toString(10));
-    return parts.reverse().join('');
+    return parts.length > 1 ? parts.reverse().join('') : parts.length ? parts[0] : '0';
 }
 
 // 10^n optimized for small integer values of n

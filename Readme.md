@@ -35,8 +35,7 @@ Traditional conversions:
 
 - `%s` - interpolate a string into the output
 - `%c` - the character (1-char string) represented by the given unicode code point
-- `%d` - a decimal number.  Unlike traditional `printf`, this conversion behaves
-         like `util.format` and prints floats as floats.  Use `%i` to truncate to integer.
+- `%d` - a decimal base 10 integer.
 - `%i` - a decimal integer.  The integer conversions truncate the value toward zero (like php).
 - `%x` - a hexadecimal integer printed using lowercase [0-9a-f]
 - `%X` - a hexadecimal integer printed using uppercase [0-9A-F]
@@ -100,9 +99,6 @@ The precision specifier `'.'` is supported for strings and numbers.  For numbers
 `.N` prints a decimal point followed by exactly N decimal digits.  `.` and `.0`
 omit the decimal point and prints no decimals.  For strings, the precision
 specifies the maximum number of characters of the string included in the output.
-
-Unlike C, `%d` can print floats as floats, it does not truncate.  Use `%i` to
-truncate to integer, or `%.0f` to round to integer.
 
 Unlike C, `%0` zero padding pads with zeroes on the right as well, both numbers and strings.
 

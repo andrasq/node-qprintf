@@ -12,9 +12,9 @@ module.exports = {
         this.runTests = function( t, data ) {
             for (var i=0; i<data.length; i++) {
                 if (Array.isArray(data[i][1]))
-                    t.equal(vsprintf(data[i][0], data[i][1]), data[i][2]);
+                    t.equal(vsprintf(data[i][0], data[i][1]), data[i][2], "on line " + i);
                 else
-                    t.equal(sprintf(data[i][0], data[i][1]), data[i][2]);
+                    t.equal(sprintf(data[i][0], data[i][1]), data[i][2], "on line " + i);
             }
         };
         done();
@@ -74,9 +74,34 @@ module.exports = {
         t.done();
     },
 
+    'should implement flags': function(t) {
+        var data = [
+            [ "%d", 1, "1" ],
+            [ "%04d", 0, "0000" ],
+            [ "%04d", 1, "0001" ],
+            [ "% 04d", 1, " 001" ],
+            [ "%+04d", 1, "+001" ],
+            [ "%-4d", 1, "1   " ],
+            [ "%-04d", 1, "1000" ],     // TODO: should probably not right-pad with zeroes
+
+            [ "%.1f", 1, "1.0" ],
+            [ "%05.1f", 1, "001.0" ],
+            [ "% 05.1f", 1, " 01.0" ],
+            [ "%+05.1f", 1, "+01.0" ],
+            [ "%-5.1f", 1, "1.0  " ],
+            [ "%-05.1f", 1, "1.000" ],  // TODO: right-pad with zeroes??
+        ];
+        t.expect(data.length);
+        this.runTests(t, data);
+        t.done();
+    },
+
     'should interpolate numbers': function(t) {
         var data = [
             [ "%d", 123, "123" ],
+            [ "%05d", 0, "00000" ],
+            [ "% 05d", -0, " 0000" ],
+            [ "%+05d", -0, "+0000" ],
             [ "(%d)", 123, "(123)" ],
             [ "A%dB%dC", [123, 456], "A123B456C" ],
             [ "%5d", 123, "  123" ],
@@ -100,6 +125,21 @@ module.exports = {
         ];
         t.expect(data.length);
         this.runTests(t, data);
+        t.done();
+    },
+
+    'should truncate integers': function(t) {
+        var tests = [
+            [ "%d", 0.00, "0" ],
+            [ "%d", 123.9, "123" ],
+            [ "%d", -123.9, "-123" ],
+            [ "%d", -1.9, "-1" ],
+            [ "%i", -1.9, "-1" ],
+            [ "%x", -1.9, "-1" ],
+            [ "%d", -1e10-.9, "-10000000000" ],
+        ];
+        t.expect(tests.length);
+        this.runTests(t, tests);
         t.done();
     },
 
@@ -339,6 +379,18 @@ module.exports = {
     },
 
     'edge cases': {
+        'should convert large numbers': function(t) {
+            var tests = [
+                [ "%o", 1e42, "26752743047012014100000000000000000000000000000" ],
+                [ "%x", 1e42, "b7abc627050308000000000000000000000" ],
+                [ "%X", 1e42, "B7ABC627050308000000000000000000000" ],
+            ];
+            for (var i=0; i<tests.length; i++) {
+                t.equal(sprintf(tests[i][0], tests[i][1]), tests[i][2]);
+            }
+            t.done();
+        },
+
         'should handle edge cases': function(t) {
             var tests = [
                 [ "", [1, 2, 3], "" ],
@@ -400,6 +452,27 @@ module.exports = {
             t.equal(sprintf("%2$d", 1, 2), "2");
             t.equal(sprintf("%(x).2f", {x: 1.234}), "1.23");
             t.equal(sprintf("%2$(x)-4d", {x:1}, {x:2}), "2   ");
+            t.done();
+        },
+    },
+
+    'formatNumber': {
+        'should convert numbers': function(t) {
+            var tests = [
+                [ 0, "0" ],
+                [ 1, "1" ],
+                [ 11, "11" ],
+                [ 1111, "1111" ],
+                [ 11111111, "11111111" ],
+                [ 1111111111111111, "1111111111111111" ],
+                [ 11111111111111111111111111111111, "11111111111111111111111111111111" ],
+                [ 1e42, "1000000000000000000000000000000000000000000" ],
+                [ 1e77, "100000000000000000000000000000000000000000000000000000000000000000000000000000" ],
+            ];
+            for (var i=0; i<tests.length; i++) {
+                var v = qprintf.lib.formatNumber(tests[i][0]);
+                t.ok(v == tests[i][1] || v-v*1e-16 <= v && v <= v+v*1e-16);
+            }
             t.done();
         },
     },
