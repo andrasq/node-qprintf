@@ -89,7 +89,7 @@ function vsprintf( fmt, argv ) {
             scanDigits(fmt, p, scanned);
             if (fmt.charCodeAt(scanned.end) === CH_DOLLAR) {
                 // found an N$ arg specifier, but might also have width
-                if (scanned.val === undefined) throw new Error("missing $ argument at offset " + p);
+                if (!scanned.val) throw new Error("missing $ argument at offset " + p);
                 setargN(argz, scanned.val, p);
                 p = scanned.end + 1;
                 if (fmt.charCodeAt(p) === CH_LEFTPAREN) p = scanAndSetArgName(argz, fmt, p);
@@ -127,8 +127,10 @@ function vsprintf( fmt, argv ) {
                 }
                 else if (padWidth === undefined) {
                     scanDigits(fmt, p, scanned);
-                    padWidth = scanned.val;
-                    p = scanned.end;
+                    if (scanned.end > p) {
+                        padWidth = scanned.val;
+                        p = scanned.end;
+                    }
                 }
             }
 
@@ -148,7 +150,8 @@ function vsprintf( fmt, argv ) {
         }
         // p left pointing to the conversion specifier character
 
-        // 
+
+        // skip conversion modifiers
         var ch = fmt.charCodeAt(p);
         if (ch === CH_l || ch === CH_h || ch === CH_L) {
             p++;
