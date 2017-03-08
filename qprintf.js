@@ -193,6 +193,11 @@ function vsprintf( fmt, argv ) {
         // the escape character itself
         case '%': str += padValue(padWidth, padChar, rightPad, '%'); break;
 
+        case 'n':
+            var cb = getarg(argz, p);
+            cb(str.length);
+            break;
+
         // qnit extensions
         case 'A':
             // the '0' in %0f and %0.3f is a field width, not a flag for zero padding

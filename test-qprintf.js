@@ -298,81 +298,103 @@ module.exports = {
         t.done();
     },
 
-    'should reject unknown conversions': function(t) {
-        t.throws(function(){ sprintf("%z", 3) }, /unsupported conversion/);
+    'should return chars-written offset': function(t) {
+        t.expect(5);
+        sprintf("foo %n",
+            function(n) { t.equal(n, 4); });
+        sprintf("%8d%n",
+            1, function(n) { t.equal(n, 8); });
+        sprintf("%2s%n",
+            "foobar", function(n) { t.equal(n, 6); });
+        sprintf("%s%n%s%nzed",
+            "foo",
+            function(n) { t.equal(n, 3) },
+            "foobar",
+            function(n) { t.equal(n, 9) });
         t.done();
     },
 
-    'should reject out of bounds argument': function(t) {
-        t.throws(function(){ sprintf("%2$d", 1) }, /missing/);
-        t.done();
+    'errors': {
+        'should reject unknown conversions': function(t) {
+            t.throws(function(){ sprintf("%z", 3) }, /unsupported conversion/);
+            t.done();
+        },
+
+        'should reject out of bounds argument': function(t) {
+            t.throws(function(){ sprintf("%2$d", 1) }, /missing/);
+            t.done();
+        },
+
+        'should reject out of bounds conversion specifier': function(t) {
+            try { sprintf("%d %d", 1); t.fail() }
+            catch (err) { t.ok(err.message.indexOf("missing argument") >= 0); t.done() }
+        },
     },
 
-    'should reject out of bounds conversion specifier': function(t) {
-        try { sprintf("%d %d", 1); t.fail() }
-        catch (err) { t.ok(err.message.indexOf("missing argument") >= 0); t.done() }
+    'edge cases': {
+        'should handle edge cases': function(t) {
+            var tests = [
+                [ "", [1, 2, 3], "" ],
+                [ "%", [1, 2, 3], "%" ],
+                [ "%%", [1, 2, 3], "%" ],
+                [ "%%%", [1, 2, 3], "%%" ],
+                [ "%%a", [1, 2, 3], "%a" ],
+                [ "%%%%", [1, 2, 3], "%%" ],
+                [ "%%a%%", [1, 2, 3], "%a%" ],
+                [ "%d%d%d", [1, 2, 3], "123" ],
+                [ "%042d", [1], "000000000000000000000000000000000000000001" ],
+                [ "%.f", [1.23], "1" ],
+                [ "%-.f", [1.23], "1" ],
+                [ "%-+.f", [1.23], "+1" ],
+                [ "%-0+.f", [1.23], "+1" ],
+
+                [ "%*d", [4, 1], "   1" ],
+                [ "%0*d", [4, 1], "0001" ],
+                [ "%*.*f", [8, 3, 1.25], "   1.250" ],
+                [ "%-+*.*llf", [8, 3, 1.25], "+1.250  " ],
+            ];
+            for (var i=0; i<tests.length; i++) {
+                t.equal(vsprintf(tests[i][0], tests[i][1]), tests[i][2]);
+            }
+            t.done();
+        },
+
+        'should handle very large numbers': function(t) {
+            // expect at least 16 digits of precision
+            var v = sprintf("%.0f", 1e42);
+            t.ok(+v > 0);
+            t.ok(v >= 1e42 - 1e25 && v <= 1e42 + 1e25);
+            t.ok(v.length, 43);
+
+            var v = sprintf("%.42f", 1e-42);
+            t.ok(+v > 0);
+            t.ok(v >= 1e-42 - 1e-25 && v <= 1e-42 + 1e-25);
+            t.ok(v.length, 44);
+
+            var v = sprintf("%.40f", 3e-15);
+            t.ok(/^0.[0-9]{40}$/.test(v));
+            t.equal(v.length, 42);
+            t.done();
+        },
     },
 
-    'should handle edge cases': function(t) {
-        var tests = [
-            [ "", [1, 2, 3], "" ],
-            [ "%", [1, 2, 3], "%" ],
-            [ "%%", [1, 2, 3], "%" ],
-            [ "%%%", [1, 2, 3], "%%" ],
-            [ "%%a", [1, 2, 3], "%a" ],
-            [ "%%%%", [1, 2, 3], "%%" ],
-            [ "%%a%%", [1, 2, 3], "%a%" ],
-            [ "%d%d%d", [1, 2, 3], "123" ],
-            [ "%042d", [1], "000000000000000000000000000000000000000001" ],
-            [ "%.f", [1.23], "1" ],
-            [ "%-.f", [1.23], "1" ],
-            [ "%-+.f", [1.23], "+1" ],
-            [ "%-0+.f", [1.23], "+1" ],
-
-            [ "%*d", [4, 1], "   1" ],
-            [ "%0*d", [4, 1], "0001" ],
-            [ "%*.*f", [8, 3, 1.25], "   1.250" ],
-            [ "%-+*.*llf", [8, 3, 1.25], "+1.250  " ],
-        ];
-        for (var i=0; i<tests.length; i++) {
-            t.equal(vsprintf(tests[i][0], tests[i][1]), tests[i][2]);
-        }
-        t.done();
-    },
-
-    'should handle very large numbers': function(t) {
-        // expect at least 16 digits of precision
-        var v = sprintf("%.0f", 1e42);
-        t.ok(+v > 0);
-        t.ok(v >= 1e42 - 1e25 && v <= 1e42 + 1e25);
-        t.ok(v.length, 43);
-
-        var v = sprintf("%.42f", 1e-42);
-        t.ok(+v > 0);
-        t.ok(v >= 1e-42 - 1e-25 && v <= 1e-42 + 1e-25);
-        t.ok(v.length, 44);
-
-        var v = sprintf("%.40f", 3e-15);
-        t.ok(/^0.[0-9]{40}$/.test(v));
-        t.equal(v.length, 42);
-        t.done();
-    },
-
-    'should handle readme examples': function(t) {
-        t.equal(sprintf("%5d", 123), "  123");
-        t.equal(sprintf("%5.2f", 1.238), " 1.24");
-        t.equal(sprintf("%05x", 123), "0007b");
-        t.equal(sprintf("%10s", "Hello"), "     Hello");
-        t.equal(sprintf("%-10s", "Hello"), "Hello     ");
-        t.equal(sprintf("%O", {a:1,b:2}), "{ a: 1, b: 2 }");
-        t.equal(sprintf("%2A", [1,2,3,4]), "[ 1, 2, ... ]");
-        t.equal(sprintf("%.f", 12.345), "12");
-        t.equal(sprintf("%-*.2f", 7, 12.345), "12.35  ");
-        t.equal(sprintf("%*.*f", 8, 3, 1.25), "   1.250");
-        t.equal(sprintf("%2$d", 1, 2), "2");
-        t.equal(sprintf("%(x).2f", {x: 1.234}), "1.23");
-        t.equal(sprintf("%2$(x)-4d", {x:1}, {x:2}), "2   ");
-        t.done();
+    'examples': {
+        'should handle readme examples': function(t) {
+            t.equal(sprintf("%5d", 123), "  123");
+            t.equal(sprintf("%5.2f", 1.238), " 1.24");
+            t.equal(sprintf("%05x", 123), "0007b");
+            t.equal(sprintf("%10s", "Hello"), "     Hello");
+            t.equal(sprintf("%-10s", "Hello"), "Hello     ");
+            t.equal(sprintf("%O", {a:1,b:2}), "{ a: 1, b: 2 }");
+            t.equal(sprintf("%2A", [1,2,3,4]), "[ 1, 2, ... ]");
+            t.equal(sprintf("%.f", 12.345), "12");
+            t.equal(sprintf("%-*.2f", 7, 12.345), "12.35  ");
+            t.equal(sprintf("%*.*f", 8, 3, 1.25), "   1.250");
+            t.equal(sprintf("%2$d", 1, 2), "2");
+            t.equal(sprintf("%(x).2f", {x: 1.234}), "1.23");
+            t.equal(sprintf("%2$(x)-4d", {x:1}, {x:2}), "2   ");
+            t.done();
+        },
     },
 
     'speed of 10k string+num': function(t) {

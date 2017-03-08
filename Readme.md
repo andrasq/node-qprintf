@@ -5,7 +5,7 @@ Qprintf is a very fast standard C `printf` compatible output formatter, supporti
 the full set of integer, float, and string conversions with field width, alignment
 and precision, along with some extensions.
 
-Recognizes all traditional output conversions and modifiers (but not `%n` or `%p`).
+Recognizes all traditional output conversions and modifiers (but not `%p`).
 Behavior follows closely that of C `printf`, including very large number support.
 
     var printf = require('qprintf').printf;
@@ -36,31 +36,33 @@ Traditional conversions:
 - `%s` - interpolate a string into the output
 - `%c` - the character (1-char string) represented by the given unicode code point
 - `%d` - a decimal number.  Unlike traditional `printf`, this conversion behaves
-like `util.format` and prints floats as floats.  Use `%i` to truncate to integer.
+         like `util.format` and prints floats as floats.  Use `%i` to truncate to integer.
 - `%i` - a decimal integer.  The integer conversions truncate the value toward zero (like php).
 - `%x` - a hexadecimal integer printed using lowercase [0-9a-f]
 - `%X` - a hexadecimal integer printed using uppercase [0-9A-F]
 - `%o` - an octal integer
 - `%u` - an unsigned integer.  The native JavaScript number is converted to
-a 32-bit two's-complement unsigned integer with `>>>` and printed as %i.
+         a 32-bit two's-complement unsigned integer with `>>>` and printed as %i.
 - `%f` - a floating-point value "1.23" with integer part, decimal point, and fraction.
-This conversion never generates exponential notation; use `%g` for that.
+         This conversion never generates exponential notation; use `%g` for that.
 - `%e` - a number in exponential notation, eg "1.23e+02".
 - `%E` - like %e but printed with a capital E, "1.23E+02"
 - `%g` - a number in either %f or %e notation, depending on its size
 - `%G` - like %g but in %f or %E notation
 - `%%` - the `%` escape character itself
+- `%n` - consumes an argument that must be a callback `cb(int)`, and calls it with
+         the number of characters converted so far.  Does not add to the output.
 
 Qprintf extensions, additional conversions:
 
 - `%b` - a binary integer, eg 13 => "1011"
 - `%A` - an array formatted with `util.inspect`.  For arrays,
-the field width is the number of elements to show (default 40),
-and the precision is the depth to which to inspect each element (default 2).
+         the field width is the number of elements to show (default 40),
+         and the precision is the depth to which to inspect each element (default 2).
 - `%O` - an object formatted with `util.inspect` to `depth:6`.  For objects,
-the field width is the number of properties to show (default all), and
-the precision is the depth to which to inspect each element (default 6).
-Only enumerable "own" properties are included.
+         the field width is the number of properties to show (default all), and
+         the precision is the depth to which to inspect each element (default 6).
+         Only enumerable "own" properties are included.
 
 Qprintf supports the conversion flags for field width, precision, alignment,
 padding, sign, and argument selection.
@@ -70,22 +72,22 @@ The conversion specifier is constructed as
 with parts in [ ] square brackets optional.
 Examples: `%d`, `%10ld`, `%2$d`, `%2$-010d`, `%4.2f`, `%2$(total)+4.3f`.
 
-- `I$` - argNum: interpolate the i-th argument with this conversion
+- `N$` - argNum: interpolate the n-th argument with this conversion
 - `(NAME)` - argName: interpolate the named property (of the first argument, by default).
-Named arguments can be be mixed with i-th arguments, but do not work well with positional arguments.
-Named arguments are a `qprintf` extension.
+        Named arguments can be be mixed with n-th arguments, but do not work well with positional arguments.
+        Named arguments are a `qprintf` extension.
 - `-` - minusFlag: left-align the value in the field
 - `0` - zeroFlag: zero pad the field (default is to pad with spaces)
 - `+` - plusFlag: always print the sign, `+` for positive and `-` for negative
 - ` ` - spaceFlag: always print the sign, ` ` (space) for positive and `-` for negative
 - `NNN` - width: a decimal integer that specifies the field width.  If the width NNN is
-specified as '*' (star), the next argument will be consumed and used as the width.
+        specified as '*' (star), the next argument will be consumed and used as the width.
 - `NNN.PP` - width.precision: a decimal field width followed by the precision.
-If the precision PP is specified as '*' (star), the next argument will be consumed
-and used as the precision.
+        If the precision PP is specified as '*' (star), the next argument will be consumed
+        and used as the precision.
 - `.PP` - .precision: a decimal precision with a field width wide enough to fit
 - `l`, `ll`, `h`, `hh`, `L` - modifier: allowed but ignored data size modifier, "long", "long long",
-"short", "char" and "long double".  Invalid usage eg `%Ls` is not checked.
+        "short", "char" and "long double".  Invalid usage eg `%Ls` is not checked.
 - `C` - conversion: conversion type specifier character
 
 E.g., `%3$-+12d` will interpolate the 3rd argument into a field 12 characters wide,
@@ -101,8 +103,7 @@ specifies the maximum number of characters of the string included in the output.
 
 Unlike C, `%0` zero padding pads with zeroes on the right as well, both numbers and strings.
 
-Unlike C, the `%g` and `%G` floating-point conversions do not remove trailing zeros
-after the decimal point.
+Unlike C, the `%n` conversion takes a callback `cb(int)` and not a pointer to `int`.
 
 
 ## Examples
@@ -155,5 +156,4 @@ speed of each relative to `printf`.  Extra whitespace was used to align the colu
 ## Todo
 
 - support js-only operation without losing 100% test coverage
-- implement %n taking a callback instead of an `int*`
 - factor out the low-level formatting into a separate file
