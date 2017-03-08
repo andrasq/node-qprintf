@@ -367,7 +367,7 @@ function formatFloatMinimal( v, precision, minimal ) {
 //    if (precision === undefined) return v.toString(10);
 
     // 0 decimal digits also omits the decimal point
-    if (precision <= 0) return Math.floor(v + 0.5).toString(10);
+    if (precision <= 0) return v < 1e20 ? Math.floor(v + 0.5).toString(10) : formatNumber(Math.floor(v + 0.5));
 
     // avoid surprises, work with positive values
 //    var neg = (v < 0);
@@ -385,6 +385,9 @@ function formatFloatMinimal( v, precision, minimal ) {
     }
     if (minimal && f === 0) return i;
 
+    if (i > 1e20) i = formatNumber(i);
+    if (precision > 1e20) f = formatNumber(f);
+
     var s = i + "." + padValue(precision, '0', false, f + '');
 //    return neg ? ("-" + s) : s;
     return s;
@@ -393,16 +396,40 @@ function formatFloatMinimal( v, precision, minimal ) {
 // streamlined version of the above, to fit into 600 chars
 // works for positive values only, but thats all we use
 function formatFloat( v, precision ) {
-    if (precision <= 0) return Math.floor(v + 0.5).toString(10);
+    if (precision <= 0) return v < 1e20 ? Math.floor(v + 0.5).toString(10) : formatNumber(Math.floor(v + 0.5));
 
     var scale = pow10(precision);
     v += (0.5 / scale);    // round to convert
     var i = Math.floor(v); // all digits of the integer part
     var f = Math.floor((v - i) * scale);  // first `precision` digits of the fraction
-    // TODO: large i and large precision format as eg 1+42
+
+    if (precision <= 0) return i;
+
+    if (i > 1e20) i = formatNumber(i);
+    if (precision > 20) f = formatNumber(f);
 
     var s = i + "." + padValue(precision, '0', false, f + '');
     return s;
+}
+
+// convert a very large number to a string.  Note that a 64-bit float has
+// only about 16 digits precision (53 bits of magnitude).
+// C    => 1000000000000000044885712678075916785549312
+// php  => 1000000000000000044885712678075916785549312
+// ours => 1000000000000000000222784838656961984549312 (1e6, both as /= 1e6 and *= 1e-6)
+// (actual difference bounces all over depending on the value, eg)
+//         69999999999999991808402112386240906176108672 (7e43 with 1e6)
+// TODO: find a more accurate way of converting to decimal,
+// this has 10x the error of C/php.
+function formatNumber( n ) {
+    if (n === Infinity) return "Infinity";
+    var parts = new Array();
+    do {
+        parts.push(padValue(6, '0', false, (Math.floor(n) % 1e6).toString(10)));
+        n *= 1e-6;
+    } while (n > 1e6);
+    if (n > 0) parts.push(Math.floor(n).toString(10));
+    return parts.reverse().join('');
 }
 
 // 10^n optimized for small integer values of n

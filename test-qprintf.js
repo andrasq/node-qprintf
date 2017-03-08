@@ -323,9 +323,6 @@ module.exports = {
             [ "%%%%", [1, 2, 3], "%%" ],
             [ "%%a%%", [1, 2, 3], "%a%" ],
             [ "%d%d%d", [1, 2, 3], "123" ],
-// TODO: a float holds only 16 digits, digits past that are not zeroes
-//            [ "%0.2f", [1e42], "100000000000000000000000000000000000000000.00" ],
-//            [ "%0.42f", [1e-42], "0.000000000000000000000000000000000000000001" ],
             [ "%042d", [1], "000000000000000000000000000000000000000001" ],
             [ "%.f", [1.23], "1" ],
             [ "%-.f", [1.23], "1" ],
@@ -340,6 +337,24 @@ module.exports = {
         for (var i=0; i<tests.length; i++) {
             t.equal(vsprintf(tests[i][0], tests[i][1]), tests[i][2]);
         }
+        t.done();
+    },
+
+    'should handle very large numbers': function(t) {
+        // expect at least 16 digits of precision
+        var v = sprintf("%.0f", 1e42);
+        t.ok(+v > 0);
+        t.ok(v >= 1e42 - 1e25 && v <= 1e42 + 1e25);
+        t.ok(v.length, 43);
+
+        var v = sprintf("%.42f", 1e-42);
+        t.ok(+v > 0);
+        t.ok(v >= 1e-42 - 1e-25 && v <= 1e-42 + 1e-25);
+        t.ok(v.length, 44);
+
+        var v = sprintf("%.40f", 3e-15);
+        t.ok(/^0.[0-9]{40}$/.test(v));
+        t.equal(v.length, 42);
         t.done();
     },
 
