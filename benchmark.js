@@ -76,6 +76,6 @@ if (0)
     qtimeit.bench.timeGoal = 0.4;
     qtimeit.bench(bench1);
     console.log("");
-//    qtimeit.bench(bench2);
+    qtimeit.bench(bench2);
     console.log("");
 }

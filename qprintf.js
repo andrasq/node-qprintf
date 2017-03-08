@@ -61,26 +61,22 @@ function vsprintf( fmt, argv ) {
         argN: undefined,
     };
 
-    var p0 = 0, p = 0, argName, str = "";
+    var ch, p0 = 0, p = 0, str = "";
     var scanned = { end: undefined, val: undefined };
-    var ch;
 
     while (p < fmt.length) {
         if (fmt.charCodeAt(p) != 0x25) { p++; continue; }       // scan until %
         if (p > p0) str += fmt.slice(p0, p);
         p++;
-
+        // reset format for each conversion
         resetargN(argz);
+        var padChar = ' ', rightPad = false, plusSign = '';
+        var padWidth = undefined, precision = undefined;
 
         //
         // parse the conversion spec
         // `% [argNum$] [(argName)] [flags +|-| |0] [width][.precision] [modifier l|ll|h|hh|L] conversion`,
         //
-
-        // reset format for each conversion
-        // var format = { padWidth: undefined, precision: undefined, padChar: ' ', rightPad: false, plusSign: '' };
-        var padChar = ' ', rightPad = false, plusSign = '';
-        var padWidth = undefined, precision = undefined;
 
         var flag = fmt.charCodeAt(p);
         if (flag === CH_LEFTPAREN) {
@@ -88,15 +84,21 @@ function vsprintf( fmt, argv ) {
             flag = fmt.charCodeAt(p);
         }
         var checkForWidth = true;
+        var ch;
 
         // runs faster if hexcode tests are at front, followed by vars
         if (flag >= 0x30 && flag <= 0x39 || flag === 0x2a || flag === CH_DOT || flag === CH_MINUS || flag === CH_PLUS || flag === CH_SPACE) {
             scanDigits(fmt, p, scanned);
             if (fmt.charCodeAt(scanned.end) === CH_DOLLAR) {
                 // found an N$ arg specifier, but might also have width
+                if (scanned.val === undefined) throw new Error("missing $ argument at offset " + p);
                 setargN(argz, scanned.val, p);
                 p = scanned.end + 1;
                 if (fmt.charCodeAt(p) === CH_LEFTPAREN) p = scanAndSetArgName(argz, fmt, p);
+            }
+            else if (ch === CH_LEFTPAREN) {
+                p = scanAndSetArgName(argz, fmt, p);
+                flag = fmt.charCodeAt(p);
             }
             else if (scanned.end > p) {
                 // found field width, with at most a numeric '0' flag
