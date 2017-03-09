@@ -35,8 +35,8 @@ Traditional conversions:
 
 - `%s` - interpolate a string into the output
 - `%c` - the character (1-char string) represented by the given unicode code point
-- `%d` - a decimal base 10 integer.
-- `%i` - a decimal integer.  The integer conversions truncate the value toward zero (like php).
+- `%d` - a decimal base 10 integer.  The integer conversions truncate toward zero (like php).
+- `%i` - a decimal base 10 integer.
 - `%x` - a hexadecimal integer printed using lowercase [0-9a-f]
 - `%X` - a hexadecimal integer printed using uppercase [0-9A-F]
 - `%o` - an octal integer
@@ -107,6 +107,8 @@ Unlike C, `%0` zero padding pads with zeroes on the right as well, both numbers 
 
 Unlike C, the `%n` conversion takes a callback `cb(int)` and not a pointer to `int`.
 
+Numeric overflow and Infinity are converted to `"Infinity"`.
+
 
 ## Examples
 
@@ -149,9 +151,9 @@ speed of each relative to `printf`.  Extra whitespace was used to align the colu
 
 ## Related Work
 
-- [printf](https://npmjs.org/package/printf) is a complete printf with extensions, but slow
-- [sprintf-js](https://npmjs.org/package/sprintf-js) is a complete printf with extensions, also slow
-- [extsprintf](https://npmjs.org/package/extsprintf) a limited printf, also slow
+- [printf](https://npmjs.org/package/printf) claimed complete, but slow
+- [sprintf-js](https://npmjs.org/package/sprintf-js) claimed complete, slow
+- [extsprintf](https://npmjs.org/package/extsprintf) no float support, slow
 - [qprintf](https://github.com/andrasq/node-qprintf) this one
 
 
