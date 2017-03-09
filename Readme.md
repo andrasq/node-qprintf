@@ -150,7 +150,8 @@ speed of each relative to `printf`.  Extra whitespace was used to align the colu
 
 ## Change Log
 
-- 1.0.0 - `%g` working, %d truncates, l, ll, h, hh modifiers, *.* widths
+- 1.0.0 - `%g` fixes, truncating %d (breaking change), l, ll, h, hh modifiers, *.* widths,
+        large numbers
 - 0.10.0 - e E g G conversions
 - 0.4.1 - simple version with the basics, d i x o f A O conversions
 

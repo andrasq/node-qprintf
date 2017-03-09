@@ -9,6 +9,9 @@
     "url": "git://github.com/andrasq/node-qprintf",
     "type": "git"
   },
+  "engines": {
+    "node": ">=0.10"
+  },
   "keywords": [
     "fast",
     "sprintf",
@@ -20,7 +23,5 @@
     "coverage": "nyc --version && nyc --reporter text --reporter lcov qnit test* || echo nyc not installed",
     "clean": "rm -rf .nyc_output coverage out",
     "distclean": "rm -rf .nyc_output coverage out t.c a.out"
-  },
-  "devDependencies": {
   }
 }
