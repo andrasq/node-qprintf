@@ -140,20 +140,19 @@ speed of each relative to `printf`.  Extra whitespace was used to align the colu
     // var z = sprintf(fmt1, "Hello", 123, "world");
 
     qtimeit=0.15.0 platform=linux kernel=3.16.0-4-amd64 cpuCount=8
-    node=6.7.0 v8=5.1.281.83 arch=ia32 mhz=4523 cpu="Intel(R) Core(TM) i7-6700K CPU @ 4.00GHz" up_threshold=false
+    node=6.7.0 v8=5.1.281.83 arch=ia32 mhz=4522 cpu="Intel(R) Core(TM) i7-6700K CPU @ 4.00GHz" up_threshold=false
     name  speed  (stats)  rate
-    printf-0.2.5      203,259 ops/sec (2 runs of 50k calls in 0.492 out of 0.528 sec, +/- 0.33%)   1000
-    sprintfjs-1.0.3   238,435 ops/sec (2 runs of 50k calls in 0.419 out of 0.448 sec, +/- 0.03%)   1173
-    extsprintf-1.3.0  295,572 ops/sec (3 runs of 50k calls in 0.507 out of 0.531 sec, +/- 0.06%)   1454
-    sprintf-0.1.5     352,508 ops/sec (3 runs of 50k calls in 0.426 out of 0.446 sec, +/- 0.39%)   1734
-    qprintf-0.12.0  7,452,214 ops/sec (3 runs of 1000k calls in 0.403 out of 0.448 sec, +/- 0.07%) 36664
+    printf-0.2.5     200,511 ops/sec (2 runs of 50k calls in 0.499 out of 0.534 sec, +/- 0.03%)    1000
+    sprintfjs-1.0.3  246,976 ops/sec (2 runs of 50k calls in 0.405 out of 0.433 sec, +/- 0.04%)    1232
+    sprintf-0.1.5    379,575 ops/sec (4 runs of 50k calls in 0.527 out of 0.546 sec, +/- 0.04%)    1893
+    qprintf-1.0.0  8,088,512 ops/sec (4 runs of 1000k calls in 0.495 out of 0.544 sec, +/- 0.05%) 40339
 
 
 ## Related Work
 
-- [printf](https://npmjs.org/package/printf) claimed complete, but slow
-- [sprintf-js](https://npmjs.org/package/sprintf-js) claimed complete, slow
-- [extsprintf](https://npmjs.org/package/extsprintf) no float support, slow
+- [printf](https://npmjs.org/package/printf) claimed complete
+- [sprintf-js](https://npmjs.org/package/sprintf-js) claimed complete
+- [extsprintf](https://npmjs.org/package/extsprintf) no float support
 - [qprintf](https://github.com/andrasq/node-qprintf) this one
 
 
