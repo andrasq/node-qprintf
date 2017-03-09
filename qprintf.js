@@ -339,7 +339,7 @@ function _normalizeExp( v ) {
         while (v > 10000) { exp += 4; v *= .0001 }
         while (v >= 10) { exp += 1; v *= .1 }
     }
-    else if (v < 1) {
+    else if (v && v < 1) {
         while (v < .0001) { exp -= 4; v *= 10000 }
         while (v < 1) { exp -= 1; v *= 10 }
     }
@@ -352,22 +352,38 @@ function _normalizeExp( v ) {
 // convert to %e exponential notation
 function convertFloatExp( width, padChar, rightPad, signChar, v, precision, eSym ) {
     if (v < 0) { signChar = "-"; v = -v }
+    if (precision === undefined) precision = 6;
     var ve = _normalizeExp(v);
     return padNumber(width, padChar, rightPad, signChar, 0, formatFloat(ve.val, precision) + _formatExp(ve.exp, eSym));
 }
 
 // convert to either %f float or %e exponential notation, depending on magnitude
 // if the exponent is >= -4 and < precision, format as a float %f, else %g
+// The %g precision is the number of digits to print, ie ("%.3g", 1234) => "1.23e+03"
+// (but: %e precision controls the number of decimals)
+// Also, leading zeroes in very small numbers are ok, ie .00123456 => "0.00123456" and not 1.23456e-03.
 function convertFloatG( width, padChar, rightPad, signChar, v, precision, eSym ) {
     if (v < 0) { signChar = "-"; v = -v }
-    if (v >= .0001 && (v < 10 || v < pow10(precision))) {
-        var s = formatFloatMinimal(v, precision, true);
-        return padNumber(width, padChar, rightPad, signChar, 0, s);
-    } else {
-        var ve = _normalizeExp(v);
-        var s = formatFloatMinimal(ve.val, precision, true) + _formatExp(ve.exp, eSym);
+    if (precision === undefined) precision = 6;
+    else if (precision === 0) precision = 1;
+    if (v >= .0001 && v < pow10(precision)) {
+        if (v < 1) {
+            precision += countLeadingZeros(v);
+            var s = formatFloatMinimal(v, precision, true);
+        }
+        else {
+            var digits = countDigits(v, pow10(precision));
+            precision -= digits;
+            var s = formatFloatMinimal(v, precision, true);
+        }
         return padNumber(width, padChar, rightPad, signChar, 0, s);
     }
+    else if (v) {
+        var ve = _normalizeExp(v);
+        var s = formatFloatMinimal(ve.val, precision-1, true) + _formatExp(ve.exp, eSym);
+        return padNumber(width, padChar, rightPad, signChar, 0, s);
+    }
+    else return "0";
 }
 
 // apply sign, left/right space/zero padding to the string
@@ -453,6 +469,30 @@ function formatNumber( n ) {
 var _pow10 = new Array(40); for (var i=0; i<_pow10.length; i++) _pow10[i] = Math.pow(10, i);
 function pow10( n ) {
     return _pow10[n] ? _pow10[n] : Math.pow(10, n);
+}
+
+// return the count of leading zeros in numbers .00..000NNN
+// expects to be called only with numbers N., .N, .0N, .00N and .000N
+function countLeadingZeros( v ) {
+    var n = 0;
+    if (v >= .0001) {
+        return (v >= .01)
+            ? (v >= .1 ? 0 : 1)
+            : (v >= .001 ? 2 : 3)
+    }
+    throw new Error("countLeadingZeros: unsupported value " + v);
+}
+
+// return the count of digits in v
+// Used to find how many decimals to include in %g converions.
+// expects to be called only with v < power
+function countDigits( v, power ) {
+    var n = 0;
+    // TODO: not the most efficient, but simple
+    while (v >= 1e6) { v *= 1e-6; n += 6 }
+    while (v >= 1e3) { v *= 1e-3; n += 3 }
+    while (v >= 1) { v *= 1e-1; n += 1 }
+    return n;
 }
 
 function formatObject( obj, elementLimit, depth ) {
