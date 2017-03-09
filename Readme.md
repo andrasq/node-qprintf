@@ -44,9 +44,15 @@ Traditional conversions:
          a 32-bit two's-complement unsigned integer with `>>>` and printed as %i.
 - `%f` - a floating-point value "1.23" with integer part, decimal point, and fraction.
          This conversion never generates exponential notation; use `%g` for that.
-- `%e` - a number in exponential notation, eg "1.23e+02".
+- `%e` - a number in exponential notation, eg "1.23e+02".  The precision specified
+         for the `%e` conversion is the number of digits to show to the right of the
+         decimal point.
 - `%E` - like %e but printed with a capital E, "1.23E+02"
-- `%g` - a number in either %f or %e notation, depending on its size
+- `%g` - a number in either %f or %e notation, depending on its size.  Values between
+         0.0001 and 10^(precision) are converted as `%f`, values outside
+         this range as `%e`.  The precision specified for the `%g` conversion is
+         the number of significant digits to show, _not_ the number of decimal
+         places.
 - `%G` - like %g but in %f or %E notation
 - `%%` - the `%` escape character itself
 - `%n` - consumes an argument that must be a callback `cb(int)`, and calls it with
