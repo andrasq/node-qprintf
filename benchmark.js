@@ -4,11 +4,10 @@ var util = require('util');
 
 var qsprintf = require('./qprintf').sprintf;
 var sprintfjs = require('sprintf-js').sprintf;
+var sprintf = require('sprintf').sprintf;
 //var sprintfjs = require('/home/andras/src/sprintf-js.git/').sprintf;
 var printf = require('printf');
 var extsprintf = require('extsprintf');
-
-console.log("forever loop, kill with ^C...");
 
 for (var loop=0; loop<10; loop++) {
     var z;
@@ -16,6 +15,7 @@ for (var loop=0; loop<10; loop++) {
         extsprintf: extsprintf.sprintf,
         printf: printf,
         sprintfjs: sprintfjs,
+        sprintf: sprintf,
         qsprintf: qsprintf,
         util_format: util.format,
     };
@@ -28,4 +28,5 @@ for (var loop=0; loop<10; loop++) {
         var t2 = Date.now();
         console.log("%s 100k '%s' ms: ", callName, z, t2-t1);
     }
+    console.log("");
 }

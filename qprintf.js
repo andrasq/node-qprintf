@@ -3,7 +3,7 @@
  *
  * Implements a basic subset of C printf conversions, including field widths.
  *
- * Copyright (C) 2015-2016 Andras Radics
+ * Copyright (C) 2015-2017 Andras Radics
  * Licensed under the Apache License, Version 2.0
  *
  * 2015-02-24 - AR.
@@ -17,57 +17,60 @@ module.exports.sprintf = sprintf;
 
 var util = require('util');
 
+// ascii char codes
+var CH_0 = '0'.charCodeAt(0);
+var CH_9 = '9'.charCodeAt(0);
+var CH_MINUS = '-'.charCodeAt(0);
+var CH_PLUS = '+'.charCodeAt(0);
+var CH_SPACE = ' '.charCodeAt(0);
+var CH_DOT = '.'.charCodeAt(0);
+var CH_DOLLAR = '$'.charCodeAt(0);
 
 function printf( fmt ) {
-    var argv = new Array();
-    for (var i=1; i<arguments.length; i++) argv.push(arguments[i]);
-    process.stdout.write(vsprintf(fmt, argv));
+    var args = new Array(arguments.length - 1);
+    for (var i=1; i<arguments.length; i++) args[i - 1] = arguments[i];
+    process.stdout.write(vsprintf(fmt, args));
 }
 
 function sprintf( fmt ) {
-    var args = new Array();
-    for (var i=1; i<arguments.length; i++) args.push(arguments[i]);
+    var args = new Array(arguments.length - 1);
+    for (var i=1; i<arguments.length; i++) args[i - 1] = arguments[i];
     return vsprintf(fmt, args);
 }
 
 function vsprintf( fmt, argv ) {
-    var argi = 0, nargs = argv.length;
-    var argN = undefined;
-    function getarg( p ) {
-        if (argN !== undefined) return argN;
-        if (argi >= nargs) throw new Error("missing argument for %" + fmt[p] + " conversion");
-        return argv[argi++];
-    }
-    function getargN( n ) {
-        if (n > nargs) throw new Error("missing argument for % conversion");
-        // negative not possible, scanDigits does not handle minus sign
-        // if (n < 1) throw new Error("invalid $ argument specifier for % conversion");
-        return argv[n-1];
-    }
+    var argz = {
+        fmt: fmt,
+        argv: argv,
+        argi: 0,
+        nargs: argv.length,
+        argN: undefined,
+    };
 
     var p0 = 0, p = 0, str = "";
     var scanned = { end: undefined, val: undefined };
+
     while (p < fmt.length) {
         if (fmt.charCodeAt(p) != 0x25) { p++; continue; }       // scan until %
         if (p > p0) str += fmt.slice(p0, p);
         p++;
 
         // parse the conversion spec
-        argN = undefined;
+        argz.argN = undefined;
         var padChar = ' ', padWidth = undefined, rightPad = false, precision = undefined, plusSign = '';
-        var flag = fmt[p];
+        var flag = fmt.charCodeAt(p);
         var checkForWidth = true;
-        if (flag >= '0' && flag <= '9' || flag === '-' || flag === '+' || flag === ' ') {
+        if (flag >= CH_0 && flag <= CH_9 || flag === CH_MINUS || flag === CH_PLUS || flag === CH_SPACE) {
             scanDigits(fmt, p, scanned);
-            if (fmt[scanned.end] === '$') {
-                // found an N$ arg specifier, might also have width
-                argN = getargN(scanned.val);
+            if (fmt.charCodeAt(scanned.end) === CH_DOLLAR) {
+                // found an N$ arg specifier, but might also have width
+                setargN(argz, scanned.val);
                 checkForWidth = true;
                 p = scanned.end + 1;
             }
             else if (scanned.end > p) {
                 // found field width, with at most a numeric '0' flag
-                if (fmt[p] === '0') padChar = '0';
+                if (fmt.charCodeAt(p) === CH_0) padChar = '0';
                 padWidth = scanned.val;
                 checkForWidth = false;
                 p = scanned.end;
@@ -75,17 +78,20 @@ function vsprintf( fmt, argv ) {
             if (checkForWidth) {
                 // look for both flags and width
                 while (true) {
-                    if (fmt[p] === '-') { rightPad = true; p++; }
-                    else if (fmt[p] === '0') { padChar = '0'; p++; }
+                    // this switch is faster with charcodes
+                    switch (fmt.charCodeAt(p)) {
+                    case CH_MINUS: rightPad = true; p++; continue;
+                    case CH_0: padChar = '0'; p++; continue;
                     // '+' to always print sign, ' ' to print - for neg and ' ' for positive
-                    else if (fmt[p] === '+') { plusSign = '+'; p++; }
-                    else if (fmt[p] === ' ') { plusSign = ' '; p++; }
-                    else break;
+                    case CH_PLUS: plusSign = '+'; p++; continue;
+                    case CH_SPACE: plusSign = ' '; p++; continue;
+                    }
+                    break;
                 }
                 scanDigits(fmt, p, scanned);
                 padWidth = scanned.val;
             }
-            if (fmt[scanned.end] === '.') {
+            if (fmt.charCodeAt(scanned.end) === CH_DOT) {
                 // gather precision if included with width
                 scanDigits(fmt, scanned.end+1, scanned);
                 precision = scanned.val;
@@ -97,32 +103,33 @@ function vsprintf( fmt, argv ) {
             // TODO: time .match( /^%((\d+)\$)?((\d+)([.](\d+)?))/ )
         }
 
+        // this switch is faster with chars, not charcodes
         switch (fmt[p]) {
         // integer types
-        case 'd': str += convertNumber(padWidth, padChar, rightPad, plusSign, getarg(p)); break;
-        case 'i': str += convertIntegerBase(padWidth, padChar, rightPad, plusSign, getarg(p), 10); break;
-        case 'x': str += convertIntegerBase(padWidth, padChar, rightPad, plusSign, getarg(p), 16); break;
-        case 'o': str += convertIntegerBase(padWidth, padChar, rightPad, plusSign, getarg(p), 8); break;
-        case 'b': str += convertIntegerBase(padWidth, padChar, rightPad, plusSign, getarg(p), 2); break;
-        case 'c': str += String.fromCharCode(getarg(p)); break;
+        case 'd': str += convertNumber(padWidth, padChar, rightPad, plusSign, getarg(argz, p)); break;
+        case 'i': str += convertIntegerBase(padWidth, padChar, rightPad, plusSign, getarg(argz, p), 10); break;
+        case 'x': str += convertIntegerBase(padWidth, padChar, rightPad, plusSign, getarg(argz, p), 16); break;
+        case 'o': str += convertIntegerBase(padWidth, padChar, rightPad, plusSign, getarg(argz, p), 8); break;
+        case 'b': str += convertIntegerBase(padWidth, padChar, rightPad, plusSign, getarg(argz, p), 2); break;
+        case 'c': str += String.fromCharCode(getarg(argz, p)); break;
         // we truncate %i toward zero like php, ie -1.9 prints as -1
         // note that C prints hex and octal as unsigned, while we print as signed
 
         // float types
-        case 'f': str += convertFloat(padWidth, padChar, rightPad, plusSign, getarg(p), precision >= 0 ? precision : 6); break;
+        case 'f': str += convertFloat(padWidth, padChar, rightPad, plusSign, getarg(argz, p), precision >= 0 ? precision : 6); break;
 
         // string types
         case 's':
-            if (precision !== undefined) str += padValue(padWidth, padChar, rightPad, (getarg(p) + "").slice(0, precision));
-            else str += padValue(padWidth, padChar, rightPad, getarg(p));
+            if (precision !== undefined) str += padValue(padWidth, padChar, rightPad, (getarg(argz, p) + "").slice(0, precision));
+            else str += padValue(padWidth, padChar, rightPad, getarg(argz, p));
             break;
 
         // the escape character itself
         case '%': str += padValue(padWidth, padChar, rightPad, '%'); break;
 
         // qnit extensions
-        case 'A': str += formatArray(getarg(p), padWidth, 6); break;
-        case 'O': str += formatObject(getarg(p), padWidth); break;
+        case 'A': str += formatArray(getarg(argz, p), padWidth, 6); break;
+        case 'O': str += formatObject(getarg(argz, p), padWidth); break;
 
         default:
             if (p >= fmt.length) { str += '%'; break; }
@@ -131,11 +138,25 @@ function vsprintf( fmt, argv ) {
         }
         p0 = ++p;
     }
-    if (p0 < fmt.length) str += fmt.slice(p0);
+    return (p0 === 0) ? fmt : (p0 < fmt.length) ? str + fmt.slice(p0) : str;
     return str;
 }
 
 
+function getarg( argz, p ) {
+    if (argz.argN !== undefined) return argz.argN;
+    if (argz.argi >= argz.nargs) throw new Error("missing argument for %" + argz.fmt[p] + " conversion");
+    return argz.argv[argz.argi++];
+}
+
+function setargN( argz, n ) {
+    if (n > argz.nargs) throw new Error("missing argument $" + n + " for % conversion");
+    // negative n never passed in, scanDigits does not handle minus sign
+    // if (n < 1) throw new Error("invalid $ argument specifier for % conversion");
+    return argz.argN = argz.argv[n-1];
+}
+
+// it is faster to not return anything from this function
 function scanDigits( str, p, ret ) {
     var ch, val = 0;
     for (var p2=p; (ch = str.charCodeAt(p2)) >= 0x30 && ch <= 0x39; p2++) {
@@ -213,7 +234,7 @@ function formatFloat( v, precision ) {
 // 10^n optimized for small integer values of n
 var _pow10 = new Array(40); for (var i=0; i<_pow10.length; i++) _pow10[i] = Math.pow(10, i);
 function pow10( n ) {
-    return _pow10[n] || Math.pow(10, n);
+    return _pow10[n] ? _pow10[n] : Math.pow(10, n);
 }
 
 function formatObject( obj, depth ) {
