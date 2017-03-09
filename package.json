@@ -2,7 +2,7 @@
   "name": "qprintf",
   "version": "1.0.0",
   "main": "qprintf.js",
-  "description": "very quick printf",
+  "description": "fast standard C compatible printf",
   "author": "andras@andrasq.com",
   "license": "Apache-2.0",
   "repository": {
