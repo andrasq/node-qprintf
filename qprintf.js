@@ -332,15 +332,15 @@ var _ve = { val: 0, exp: 0 };
 function _normalizeExp( v ) {
     var exp = 0;
 
-    // TODO: find a faster way of computing the exponent, maybe Math.log10
-    // eg something like Math.log(v) / Math.log(10), except .1 => -0.999...998
-    // TODO: double-check the possible error with this approach
+    // TODO: check the numerical stability of this approach
     if (v >= 10) {
-        while (v > 10000) { exp += 4; v *= .0001 }
-        while (v >= 10) { exp += 1; v *= .1 }
+        while (v >= 1e8) { exp += 8; v *= 1e-8 }
+        while (v >= 1e4) { exp += 4; v *= 1e-4 }
+        while (v >= 10) { exp += 1; v *= 0.1 }
     }
     else if (v && v < 1) {
-        while (v < .0001) { exp -= 4; v *= 10000 }
+        while (v < 1e-8) { exp -= 8; v *= 1e8 }
+        while (v < 1e-4) { exp -= 4; v *= 1e4 }
         while (v < 1) { exp -= 1; v *= 10 }
     }
 
@@ -366,21 +366,42 @@ function convertFloatG( width, padChar, rightPad, signChar, v, precision, eSym )
     if (v < 0) { signChar = "-"; v = -v }
     if (precision === undefined) precision = 6;
     else if (precision === 0) precision = 1;
-    if (v >= .0001 && v < pow10(precision)) {
-        if (v < 1) {
+
+    // pre-round v for magnitude test to know when to convert as a float.
+    // Since rouding is expensive, only round here if likely to be needed
+    var roundv;
+    if (!v) return "0";
+    if (v >= 1 && v < pow10(precision)) {
+        var ndigits = countDigits(v);
+        roundv = (precision > ndigits)
+            ? roundv = v + npow10(precision - ndigits) / 2
+            : roundv = v + pow10(ndigits - precision) / 2;
+    }
+    else if (v < 1 && v >= .000004) {
+        var zeros = countLeadingZeros(v);
+        roundv = v + npow10(precision + zeros) / 2;
+    }
+    // else will be converted as exponential, which is rounded below
+
+    if (roundv >= .0001 && roundv < pow10(precision)) {
+        if (roundv && roundv < 1) {
             precision += countLeadingZeros(v);
-            var s = formatFloatMinimal(v, precision, true);
+            var s = formatFloatTruncate(roundv, precision, true, false);
         }
         else {
-            var digits = countDigits(v, pow10(precision));
-            precision -= digits;
-            var s = formatFloatMinimal(v, precision, true);
+            precision -= countDigits(roundv);
+            var s = formatFloatTruncate(roundv, precision, true, false);
         }
         return padNumber(width, padChar, rightPad, signChar, 0, s);
     }
     else if (v) {
+        // exponential notation, round once converted, correct any overflow
         var ve = _normalizeExp(v);
-        var s = formatFloatMinimal(ve.val, precision-1, true) + _formatExp(ve.exp, eSym);
+        ve.val += npow10(precision - 1) / 2;
+        if (ve.val >= 10) { ve.val /= 10; ve.exp += 1 }
+
+        // keep the leading digit and precision-1 following, truncate the rest
+        var s = formatFloatTruncate(ve.val, precision-1, true, false) + _formatExp(ve.exp, eSym);
         return padNumber(width, padChar, rightPad, signChar, 0, s);
     }
     else return "0";
@@ -427,21 +448,32 @@ function formatFloatMinimal( v, precision, minimal ) {
     return s;
 }
 
-// streamlined version of the above, to fit into 600 chars
-// works for positive values only, but thats all we use
-function formatFloat( v, precision ) {
-    if (precision <= 0) return v < 1e20 ? Math.floor(v + 0.5).toString(10) : formatNumber(Math.floor(v + 0.5));
-
+// format a %g float that has been rounded at the right decimal place
+// %g expects trailing zeros to be dropped, so truncation is the default
+function formatFloatTruncate( v, precision, trim, round ) {
+    if (precision <= 0) { if (round) v += 0.5;
+        return v < 1e20 ? Math.floor(v).toString(10) : formatNumber(Math.floor(v));
+    }
     var scale = pow10(precision);
-    v += (0.5 / scale);  // round
-    var i = Math.floor(v);  // all digits of integer part
-    var f = Math.floor((v - i) * scale);  // first `precision` digits of the fraction
+    if (round) v += 0.5 / scale;
+    var i = Math.floor(v);
+    var f = Math.floor((v - i) * scale);
 
+    if (trim) while (f && f % 10 === 0) { f = Math.floor(f / 10); precision -= 1; }
+    
     if (i > 1e20) i = formatNumber(i);
+    if (trim && !f) return i.toString();
+
     if (precision > 20) f = formatNumber(f);
 
     var s = i + "." + padValue(precision, '0', false, f + '');
     return s;
+}
+
+// streamlined version of the above, to fit into 600 chars
+// works for positive values only, but thats all we use
+function formatFloat( v, precision ) {
+    return formatFloatTruncate(v, precision, false, true);
 }
 
 // convert a very large number to a string.  Note that a 64-bit float
@@ -470,17 +502,24 @@ var _pow10 = new Array(40); for (var i=0; i<_pow10.length; i++) _pow10[i] = Math
 function pow10( n ) {
     return _pow10[n] ? _pow10[n] : Math.pow(10, n);
 }
+// 10^-n for small integer values of n
+var _npow10 = new Array(40); for (var i=0; i<_npow10.length; i++) _npow10[i] = 1 / pow10(i);
+function npow10( n ) {
+    return _npow10[n] ? _npow10[n] : Math.pow(10, -n);
+}
 
-// return the count of leading zeros in numbers .00..000NNN
-// expects to be called only with numbers N., .N, .0N, .00N and .000N
+// return the count of zeros to the right of the decimal point in numbers less than 1.
+// Enumerates up to 4 leading zeros; if more than 4 it always returns 5.
 function countLeadingZeros( v ) {
-    var n = 0;
-    if (v >= .0001) {
-        return (v >= .01)
-            ? (v >= .1 ? 0 : 1)
-            : (v >= .001 ? 2 : 3)
+    if (v >= .001) {
+        if (v >= .1) return 0;
+        if (v >= .01) return 1;
+        return 2;
+    } else {
+        if (v >= .0001) return 3;
+        if (v >= .00001) return 4;
+        return 5;
     }
-    throw new Error("countLeadingZeros: unsupported value " + v);
 }
 
 // return the count of digits in v
