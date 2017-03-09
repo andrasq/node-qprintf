@@ -33,21 +33,21 @@ for (var loop=0; loop<10; loop++) {
     var calls = {
         'printf-0.2.5': printf,
         'sprintfjs-1.0.3': sprintfjs,
-        'extsprintf-1.3.0': extsprintf,         // does not handle floating-point or %4$
+        //'extsprintf-1.3.0': extsprintf,         // does not handle floating-point or %4$
         'sprintf-0.1.5': sprintf,
         'qprintf-0.12.0': qsprintf,
-//        'util_format': util.format,             // does not handle %04 or %4$
+        //'util_format': util.format,             // does not handle %04 or %4$
     };
 
     for (var f=0; f<2; f++) {
-if (0)
+//if (0)
     for (var nloops=0; nloops<3; nloops++) {
         for (var callName in calls) {
             var call = calls[callName];
             var t1 = Date.now();
             switch (f) {
-            case 0: for (var i=0; i<100000; i++) z = call("%s %04d %s", "Hello", 123, "world"); break;
-            case 1: for (var i=0; i<100000; i++) z = call("%s %04d %s %f %4$5.2f", "Hello", 123, "world", 1.25, 12.345); break;
+            case 0: for (var i=0; i<100000; i++) z = call(fmt1, "Hello", 123, "world"); break;
+            case 1: for (var i=0; i<100000; i++) z = call(fmt2, "Hello", 123, "world", 1.25, 12.345); break;
             }
             var t2 = Date.now();
             console.log("%s 100k '%s' ms: ", callName, z, t2-t1);
@@ -59,7 +59,7 @@ if (0)
     var bench1 = {
         'printf-0.2.5': function(){ z = printf(fmt1, "Hello", 123, "world") },
         'sprintfjs-1.0.3': function(){ z = sprintfjs(fmt1, "Hello", 123, "world") },
-        'extsprintf-1.3.0': function(){ z = extsprintf(fmt1, "Hello", 123, "world") },
+        //'extsprintf-1.3.0': function(){ z = extsprintf(fmt1, "Hello", 123, "world") },
         'sprintf-0.1.5': function(){ z = sprintf(fmt1, "Hello", 123, "world") },
         'qprintf-0.12.0': function(){ z = qsprintf(fmt1, "Hello", 123, "world") },
         //'util_format': function(){ util.format(fmt1, "Hello", 123, "world") },
@@ -67,7 +67,7 @@ if (0)
     var bench2 = {
         'printf-0.2.5': function(){ z = printf(fmt2, "Hello", 123, "world", 12.345) },
         'sprintfjs-1.0.3': function(){ z = sprintfjs(fmt2, "Hello", 123, "world", 12.345) },
-        'extsprintf-1.3.0': function(){ z = extsprintf(fmt2, "Hello", 123, "world", 12.345) },
+        //'extsprintf-1.3.0': function(){ z = extsprintf(fmt2, "Hello", 123, "world", 12.345) },
         'sprintf-0.1.5': function(){ z = sprintf(fmt2, "Hello", 123, "world", 12.345) },
         'qprintf-0.12.0': function(){ z = qsprintf(fmt2, "Hello", 123, "world", 12.345) },
         //'util_format': function(){ util.format(fmt2, "Hello", 123, "world", 12.345) },
