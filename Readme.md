@@ -148,6 +148,12 @@ speed of each relative to `printf`.  Extra whitespace was used to align the colu
     qprintf-1.0.0  8,088,512 ops/sec (4 runs of 1000k calls in 0.495 out of 0.544 sec, +/- 0.05%) 40339
 
 
+## Change Log
+
+- 1.0.0 - `%g` working, %d truncates, l, ll, h, hh modifiers, *.* widths
+- 0.10.0 - e E g G conversions
+- 0.4.1 - simple version with the basics, d i x o f A O conversions
+
 ## Related Work
 
 - [printf](https://npmjs.org/package/printf) claimed complete
@@ -161,3 +167,4 @@ speed of each relative to `printf`.  Extra whitespace was used to align the colu
 - support js-only operation without losing 100% test coverage
 - factor out the low-level formatting into a separate file
 - invoke formatting via a global singleton, to simplify testing
+- flesh out change log
