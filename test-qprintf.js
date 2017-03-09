@@ -264,12 +264,17 @@ module.exports = {
             [ "%-20.4e", -.01234, "-1.2340e-02         " ],
             [ "%.4e", .00000000000123, "1.2300e-12" ],
 
-            // TODO: %g should omit trailing zeros, even the decimal point if no fraction
             [ "%g", 123, "123" ],
             [ "%g", 1230000, "1.23e+06" ],
             [ "%0.2g", 123, "1.23e+02" ],
             [ "%.3G", 123, "123" ],
             [ "%G", 123.5, "123.5" ],
+            [ "%.0g", 1.1, "1" ],
+            [ "%.0g", 9.1, "9" ],
+            [ "%.0g", 10.1, "1e+01" ],
+            [ "%.10g", 2.5, "2.5" ],
+            [ "%.10g", 2.5e10, "2.5e+10" ],
+            [ "%.10g", 2.5e-08, "2.5e-08" ],
         ];
         t.expect(data.length);
         this.runTests(t, data);
@@ -376,6 +381,21 @@ module.exports = {
             try { sprintf("%d %d", 1); t.fail() }
             catch (err) { t.ok(err.message.indexOf("missing argument") >= 0); t.done() }
         },
+
+        'should error on missing argument': function(t) {
+            t.throws(function(){ sprintf("%d %d", 1), /argument/ });
+            t.done();
+        },
+
+        'should error on missing * width': function(t) {
+            t.throws(function(){ sprintf("%*d") }, /width/);
+            t.done();
+        },
+
+        'should error on missing * precision': function(t) {
+            t.throws(function(){ sprintf("%*d") }, /precision/);
+            t.done();
+        },
     },
 
     'edge cases': {
@@ -418,21 +438,28 @@ module.exports = {
             t.done();
         },
 
-        'should handle very large numbers': function(t) {
+        'should handle extreme numbers': function(t) {
             // expect at least 16 digits of precision
             var v = sprintf("%.0f", 1e42);
-            t.ok(+v > 0);
-            t.ok(v >= 1e42 - 1e25 && v <= 1e42 + 1e25);
+            t.ok(+v > 1e41);
+            t.equal(parseFloat(v), 1e42);
             t.ok(v.length, 43);
 
             var v = sprintf("%.42f", 1e-42);
-            t.ok(+v > 0);
-            t.ok(v >= 1e-42 - 1e-25 && v <= 1e-42 + 1e-25);
+            t.ok(+v > 0 && +v < 1e-41);
+            t.equal(parseFloat(v), 1e-42);
             t.ok(v.length, 44);
 
             var v = sprintf("%.40f", 3e-15);
             t.ok(/^0.[0-9]{40}$/.test(v));
-            t.equal(v.length, 42);
+            t.equal(parseFloat(v), 3e-15);
+
+            var v = sprintf("%d", 1e42);
+            t.equal(parseInt(v), 1e42);
+            t.done();
+
+            var v = sprintf("%o", 1e42);
+            var n = parseInt(v, 8);
             t.done();
         },
     },
@@ -457,7 +484,7 @@ module.exports = {
     },
 
     'formatNumber': {
-        'should convert numbers': function(t) {
+        'should format numbers': function(t) {
             var tests = [
                 [ 0, "0" ],
                 [ 1, "1" ],
@@ -468,10 +495,61 @@ module.exports = {
                 [ 11111111111111111111111111111111, "11111111111111111111111111111111" ],
                 [ 1e42, "1000000000000000000000000000000000000000000" ],
                 [ 1e77, "100000000000000000000000000000000000000000000000000000000000000000000000000000" ],
+                [ 1e999, "Infinity" ],          // overflow
+                [ Infinity, "Infinity" ],
             ];
             for (var i=0; i<tests.length; i++) {
                 var v = qprintf.lib.formatNumber(tests[i][0]);
                 t.ok(v == tests[i][1] || v-v*1e-16 <= v && v <= v+v*1e-16);
+            }
+            t.done();
+        },
+    },
+
+    'formatFloat': {
+        'should format floats': function(t) {
+            var tests = [
+                [ 1.25, 0, "1" ],
+                [ 1.25, -1, "1" ],
+                [ 1, 3, "1.000" ],
+                [ 1.5, 60, "1.500000000000000000000000000000000000000000000000000000000000" ],
+                [ 1, 30, "1.000000000000000000000000000000" ],
+                [ 1e10, 3, "10000000000.000" ],
+                [ 1e42, 0, "1000000000000000000000000000000000000000000" ],
+                [ 1e42, 1, "1000000000000000000000000000000000000000000.0" ],
+            ];
+            for (var i=0; i<tests.length; i++) {
+                // since most of these floats cannot be represented exactly,
+                // test that the difference is less than 1 part in 1e16 (1 in 16 digits)
+                var v = qprintf.lib.formatFloat(tests[i][0], tests[i][1]);
+                t.ok(v == tests[i][1] || v-v*1e-16 <= v && v <= v+v*1e-16);
+                var v = qprintf.lib.formatFloatMinimal(tests[i][0], tests[i][1]);
+                t.ok(v == tests[i][1] || v-v*1e-16 <= v && v <= v+v*1e-16);
+            }
+            t.done();
+        },
+    },
+
+    'formatFloatMinimal': {
+        'should format floats': function(t) {
+            var tests = [
+                [ 10, 2, "10" ],
+                [ 1.1, 0, "1" ],        // glic formats ("%4.0g", 1.1) as "1", which is right
+                [ .001, 0, "0" ],       // glibc and php format ("%4.0g", .001) as "0.001", which seems wrong; precision is 0!  We do "0"
+                [ 1.5, 3, "1.5" ],
+                [ 1.5001, 3, "1.5" ],
+                [ 1.5, 15, "1.5" ],
+                [ 1.5001, 15, "1.5001" ],
+                [ 1.5, 25, "1.5000000000000000000000000" ],
+                [ 1e15, 1, "1000000000000000" ],
+                [ 1e25, 1, "10000000000000000000000000" ],
+                [ 1e25, 25, "10000000000000000000000000" ],
+            ];
+            for (var i=0; i<tests.length; i++) {
+                var v = qprintf.lib.formatFloatMinimal(tests[i][0], tests[i][1], true);
+                t.equal(String(v).length, tests[i][2].length, "line " + i);
+                t.equal(v.slice(0, 16), tests[i][2].slice(0, 16), "line " + i);
+                t.ok(v == tests[i][1] || v-v*1e-16 <= v && v <= v+v*1e-16, "line " + i);
             }
             t.done();
         },

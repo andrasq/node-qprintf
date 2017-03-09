@@ -17,6 +17,8 @@ module.exports.printf = printf;
 module.exports.sprintf = sprintf;
 module.exports.lib = {
     formatNumber: formatNumber,
+    formatFloat: formatFloat,
+    formatFloatMinimal: formatFloatMinimal,
 };
 
 if (typeof require === 'function') {
@@ -358,7 +360,7 @@ function convertFloatExp( width, padChar, rightPad, signChar, v, precision, eSym
 // if the exponent is >= -4 and < precision, format as a float %f, else %g
 function convertFloatG( width, padChar, rightPad, signChar, v, precision, eSym ) {
     if (v < 0) { signChar = "-"; v = -v }
-    if (v >= .0001 && v < pow10(precision)) {
+    if (v >= .0001 && (v < 10 || v < pow10(precision))) {
         var s = formatFloatMinimal(v, precision, true);
         return padNumber(width, padChar, rightPad, signChar, 0, s);
     } else {
@@ -398,10 +400,11 @@ function formatFloatMinimal( v, precision, minimal ) {
         f = Math.floor(f / 10);
         precision -= 1;
     }
-    if (minimal && f === 0) return i;
 
     if (i > 1e20) i = formatNumber(i);
-    if (precision > 1e20) f = formatNumber(f);
+    if (minimal && f === 0) return i.toString();
+
+    if (precision > 20) f = formatNumber(f);
 
     var s = i + "." + padValue(precision, '0', false, f + '');
 //    return neg ? ("-" + s) : s;
@@ -414,11 +417,9 @@ function formatFloat( v, precision ) {
     if (precision <= 0) return v < 1e20 ? Math.floor(v + 0.5).toString(10) : formatNumber(Math.floor(v + 0.5));
 
     var scale = pow10(precision);
-    v += (0.5 / scale);                   // round
-    var i = Math.floor(v);                // all digits of integer part
+    v += (0.5 / scale);  // round
+    var i = Math.floor(v);  // all digits of integer part
     var f = Math.floor((v - i) * scale);  // first `precision` digits of the fraction
-
-    if (precision <= 0) return i;
 
     if (i > 1e20) i = formatNumber(i);
     if (precision > 20) f = formatNumber(f);
