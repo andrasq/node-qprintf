@@ -16,9 +16,29 @@ module.exports.vsprintf = vsprintf;
 module.exports.printf = printf;
 module.exports.sprintf = sprintf;
 module.exports.lib = {
+    scanDigits: scanDigits,
+    scanAndSetArgName: scanAndSetArgName,
+
+    str_repeat: str_repeat,
+    padString: padString,
+    padLeft: padLeft,
+
+    convertIntegerBase10: convertIntegerBase10,
+    convertIntegerBase: convertIntegerBase,
+    convertFloat: convertFloat,
+    convertFloatG: convertFloatG,
+    convertFloatExp: convertFloatExp,
+
     formatNumber: formatNumber,
     formatFloat: formatFloat,
     formatFloatMinimal: formatFloatMinimal,
+
+    pow10: pow10,
+    pow10n: pow10n,
+    _normalizeExp: _normalizeExp,
+    _formatExp: _formatExp,
+    countLeadingZeros: countLeadingZeros,
+    countDigits: countDigits,
 };
 
 if (typeof require === 'function') {
