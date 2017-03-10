@@ -32,6 +32,7 @@ module.exports.lib = {
     formatNumber: formatNumber,
     formatFloat: formatFloat,
     formatFloatMinimal: formatFloatMinimal,
+    formatFloatTruncate: formatFloatTruncate,
 
     pow10: pow10,
     pow10n: pow10n,
@@ -485,6 +486,7 @@ function formatFloatMinimal( v, precision, minimal ) {
 
 // format a %g float that has been rounded at the right decimal place
 // %g expects trailing zeros to be dropped, so truncation is the default
+// 24m/s small, 10m/s large, 2.5m/s (limit is formatNumber)
 function formatFloatTruncate( v, precision, trim, round ) {
     if (precision <= 0) { if (round) v += 0.5;
         return v < 1e20 ? Math.floor(v).toString(10) : formatNumber(Math.floor(v));
@@ -526,7 +528,7 @@ function formatNumber( n ) {
     if (n === Infinity) return "Infinity";
     var parts = new Array();
     while (n > 1e6) {
-        parts.push(padLeft((Math.floor(n) % 1e6).toString(10) + '', '0', 6));
+        parts.push(padLeft((Math.floor(n) % 1e6) + '', '0', 6));
         n *= 1e-6;
     }
     if (n > 0) parts.push(Math.floor(n).toString(10));
