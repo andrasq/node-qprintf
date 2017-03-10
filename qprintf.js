@@ -458,7 +458,7 @@ function formatFloatMinimal( v, precision, minimal ) {
 
     if (precision > 20) f = formatNumber(f);
 
-    var s = i + "." + padString(precision, '0', false, f + '');
+    var s = i + "." + padLeft(f + '', '0', precision);
 //    return neg ? ("-" + s) : s;
     return s;
 }
@@ -481,7 +481,7 @@ function formatFloatTruncate( v, precision, trim, round ) {
 
     if (precision > 20) f = formatNumber(f);
 
-    var s = i + "." + padString(precision, '0', false, f + '');
+    var s = i + "." + padLeft(f + '', '0', precision);
     return s;
 }
 
@@ -506,7 +506,7 @@ function formatNumber( n ) {
     if (n === Infinity) return "Infinity";
     var parts = new Array();
     while (n > 1e6) {
-        parts.push(padString(6, '0', false, (Math.floor(n) % 1e6).toString(10)));
+        parts.push(padLeft((Math.floor(n) % 1e6).toString(10) + '', '0', 6));
         n *= 1e-6;
     }
     if (n > 0) parts.push(Math.floor(n).toString(10));
