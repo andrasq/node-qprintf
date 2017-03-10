@@ -193,12 +193,12 @@ function vsprintf( fmt, argv ) {
         // string types
         case 'c': str += String.fromCharCode(getarg(argz, p)); break;
         case 's':
-            if (precision !== undefined) str += padValue(padWidth, padChar, rightPad, (getarg(argz, p) + "").slice(0, precision));
-            else str += padValue(padWidth, padChar, rightPad, getarg(argz, p));
+            if (precision !== undefined) str += padString(padWidth, padChar, rightPad, (getarg(argz, p) + "").slice(0, precision));
+            else str += padString(padWidth, padChar, rightPad, getarg(argz, p));
             break;
 
         // the escape character itself
-        case '%': str += padValue(padWidth, padChar, rightPad, '%'); break;
+        case '%': str += padString(padWidth, padChar, rightPad, '%'); break;
 
         case 'n':
             var cb = getarg(argz, p);
@@ -291,11 +291,17 @@ function str_repeat( str, n ) {
     return ret;
 }
 
-function padValue( padWidth, padChar, rightPad, str ) {
+function padString( padWidth, padChar, rightPad, str ) {
     if (!padWidth) return str;
     var n = padWidth - str.length;
     if (n <= 0) return str;
     return rightPad ? str + str_repeat(padChar, n) : str_repeat(padChar, n) + str;
+}
+function padLeft( str, ch, width ) {
+    return padString(width, ch, false, str);
+}
+function padRight( str, ch, width ) {
+    return padString(width, ch, true, str);
 }
 
 function convertIntegerBase10( width, padChar, rightPad, signChar, v ) {
@@ -385,6 +391,8 @@ function convertFloatG( width, padChar, rightPad, signChar, v, precision, eSym )
     }
     // else will be converted as exponential, which is rounded below
 
+    // values between .0001 and 10^precision are converted as %f float
+    // with trailing zeros omitted
     if (roundv >= .0001 && roundv < pow10(precision)) {
         // 123.4567 prec=4 at 12.6m/s
         // (123.4567e5).toPrecision(4) 5.8m/s
@@ -398,6 +406,8 @@ function convertFloatG( width, padChar, rightPad, signChar, v, precision, eSym )
         }
         return padNumber(width, padChar, rightPad, signChar, 0, s);
     }
+    // values outside the range .0001 to 10^precision are converted as %e exponential
+    // with trailing zeros omitted
     else if (v) {
         // 123.4567 prec=2 at 10.6m/s
         // exponential notation, round once converted, correct any overflow
@@ -416,8 +426,8 @@ function convertFloatG( width, padChar, rightPad, signChar, v, precision, eSym )
 function padNumber( width, padChar, rightPad, signChar, v, numberString ) {
     if (v < 0) signChar = '-';
     return (signChar && padChar === '0')
-        ? signChar + padValue(width - 1, padChar, rightPad, numberString)
-        : padValue(width, padChar, rightPad, signChar + numberString);
+        ? signChar + padString(width - 1, padChar, rightPad, numberString)
+        : padString(width, padChar, rightPad, signChar + numberString);
 }
 
 // note: both C and PHP render ("%5.2f", 1.275) as "1.27", because of the IEEE representation
@@ -448,7 +458,7 @@ function formatFloatMinimal( v, precision, minimal ) {
 
     if (precision > 20) f = formatNumber(f);
 
-    var s = i + "." + padValue(precision, '0', false, f + '');
+    var s = i + "." + padString(precision, '0', false, f + '');
 //    return neg ? ("-" + s) : s;
     return s;
 }
@@ -471,13 +481,14 @@ function formatFloatTruncate( v, precision, trim, round ) {
 
     if (precision > 20) f = formatNumber(f);
 
-    var s = i + "." + padValue(precision, '0', false, f + '');
+    var s = i + "." + padString(precision, '0', false, f + '');
     return s;
 }
 
 // streamlined version of the above, to fit into 600 chars
 // works for positive values only, but thats all we use
 function formatFloat( v, precision ) {
+    // hand-rolled convert is same speed and more consistent than v.toFixed()
     return formatFloatTruncate(v, precision, false, true);
 }
 
@@ -495,7 +506,7 @@ function formatNumber( n ) {
     if (n === Infinity) return "Infinity";
     var parts = new Array();
     while (n > 1e6) {
-        parts.push(padValue(6, '0', false, (Math.floor(n) % 1e6).toString(10)));
+        parts.push(padString(6, '0', false, (Math.floor(n) % 1e6).toString(10)));
         n *= 1e-6;
     }
     if (n > 0) parts.push(Math.floor(n).toString(10));
