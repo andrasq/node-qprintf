@@ -374,12 +374,12 @@ function convertFloatG( width, padChar, rightPad, signChar, v, precision, eSym )
     if (v >= 1 && v < pow10(precision)) {
         var ndigits = countDigits(v);
         roundv = (precision > ndigits)
-            ? roundv = v + npow10(precision - ndigits) / 2
+            ? roundv = v + pow10n(precision - ndigits) / 2
             : roundv = v + pow10(ndigits - precision) / 2;
     }
     else if (v < 1 && v >= .000004) {
         var zeros = countLeadingZeros(v);
-        roundv = v + npow10(precision + zeros) / 2;
+        roundv = v + pow10n(precision + zeros) / 2;
     }
     // else will be converted as exponential, which is rounded below
 
@@ -397,7 +397,7 @@ function convertFloatG( width, padChar, rightPad, signChar, v, precision, eSym )
     else if (v) {
         // exponential notation, round once converted, correct any overflow
         var ve = _normalizeExp(v);
-        ve.val += npow10(precision - 1) / 2;
+        ve.val += pow10n(precision - 1) / 2;
         if (ve.val >= 10) { ve.val /= 10; ve.exp += 1 }
 
         // keep the leading digit and precision-1 following, truncate the rest
@@ -455,7 +455,7 @@ function formatFloatTruncate( v, precision, trim, round ) {
         return v < 1e20 ? Math.floor(v).toString(10) : formatNumber(Math.floor(v));
     }
     var scale = pow10(precision);
-    if (round) v += 0.5 / scale;
+    if (round) v += 0.5 * pow10n(precision);
     var i = Math.floor(v);
     var f = Math.floor((v - i) * scale);
 
@@ -503,9 +503,9 @@ function pow10( n ) {
     return _pow10[n] ? _pow10[n] : Math.pow(10, n);
 }
 // 10^-n for small integer values of n
-var _npow10 = new Array(40); for (var i=0; i<_npow10.length; i++) _npow10[i] = 1 / pow10(i);
-function npow10( n ) {
-    return _npow10[n] ? _npow10[n] : Math.pow(10, -n);
+var _pow10n = new Array(40); for (var i=0; i<_pow10n.length; i++) _pow10n[i] = 1 / pow10(i);
+function pow10n( n ) {
+    return _pow10n[n] ? _pow10n[n] : Math.pow(10, -n);
 }
 
 // return the count of zeros to the right of the decimal point in numbers less than 1.
