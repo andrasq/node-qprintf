@@ -314,8 +314,8 @@ function convertIntegerBase( width, padChar, rightPad, signChar, v, base ) {
 
 // convert to %f notation
 function convertFloat( width, padChar, rightPad, signChar, v, precision ) {
-    var s = (v < 0 ? formatFloat(-v, precision) : formatFloat(v, precision))
-    return padNumber(width, padChar, rightPad, signChar, v, s);
+    if (v < 0) { signChar = '-'; v = -v; }
+    return padNumber(width, padChar, rightPad, signChar, 0, formatFloat(v, precision));
 }
 
 function _formatExp( exp, e ) {
@@ -333,6 +333,7 @@ function _normalizeExp( v ) {
     var exp = 0;
 
     // TODO: check the numerical stability of this approach
+    // this hand-rolled code is 3-5x faster than using v.toExponential()
     if (v >= 10) {
         while (v >= 1e8) { exp += 8; v *= 1e-8 }
         while (v >= 1e4) { exp += 4; v *= 1e-4 }
@@ -353,6 +354,7 @@ function _normalizeExp( v ) {
 function convertFloatExp( width, padChar, rightPad, signChar, v, precision, eSym ) {
     if (v < 0) { signChar = "-"; v = -v }
     if (precision === undefined) precision = 6;
+
     var ve = _normalizeExp(v);
     return padNumber(width, padChar, rightPad, signChar, 0, formatFloat(ve.val, precision) + _formatExp(ve.exp, eSym));
 }
@@ -384,6 +386,8 @@ function convertFloatG( width, padChar, rightPad, signChar, v, precision, eSym )
     // else will be converted as exponential, which is rounded below
 
     if (roundv >= .0001 && roundv < pow10(precision)) {
+        // 123.4567 prec=4 at 12.6m/s
+        // (123.4567e5).toPrecision(4) 5.8m/s
         if (roundv && roundv < 1) {
             precision += countLeadingZeros(v);
             var s = formatFloatTruncate(roundv, precision, true, false);
@@ -395,6 +399,7 @@ function convertFloatG( width, padChar, rightPad, signChar, v, precision, eSym )
         return padNumber(width, padChar, rightPad, signChar, 0, s);
     }
     else if (v) {
+        // 123.4567 prec=2 at 10.6m/s
         // exponential notation, round once converted, correct any overflow
         var ve = _normalizeExp(v);
         ve.val += pow10n(precision - 1) / 2;
@@ -497,12 +502,13 @@ function formatNumber( n ) {
     return parts.length > 1 ? parts.reverse().join('') : parts.length ? parts[0] : '0';
 }
 
-// 10^n optimized for small integer values of n
-var _pow10 = new Array(40); for (var i=0; i<_pow10.length; i++) _pow10[i] = Math.pow(10, i);
+// 10^n optimized for small integer powers n
+// note: initializing as [i] = [i-1] * 10 breaks the unit tests
+var _pow10 = new Array(40); _pow10[0] = 1; for (var i=1; i<_pow10.length; i++) _pow10[i] = Math.pow(10, i);
 function pow10( n ) {
     return _pow10[n] ? _pow10[n] : Math.pow(10, n);
 }
-// 10^-n for small integer values of n
+// 10^-n for small integer powers n
 var _pow10n = new Array(40); for (var i=0; i<_pow10n.length; i++) _pow10n[i] = 1 / pow10(i);
 function pow10n( n ) {
     return _pow10n[n] ? _pow10n[n] : Math.pow(10, -n);
