@@ -535,41 +535,45 @@ function formatNumber( n ) {
     return parts.length > 1 ? parts.reverse().join('') : parts.length ? parts[0] : '0';
 }
 
-// 10^n optimized for small integer powers n
-// note: initializing as [i] = [i-1] * 10 breaks the unit tests
-var _pow10 = new Array(40); _pow10[0] = 1; for (var i=1; i<_pow10.length; i++) _pow10[i] = Math.pow(10, i);
+// 10^n for integer powers n.  Values >= 10^309 are Infinity.
+// note: cannot initialize with *= 10, the cumulative rounding errors break the unit tests
+var _pow10 = new Array(310); _pow10[0] = 1; for (var i=1; i<_pow10.length; i++) _pow10[i] = Math.pow(10, i);
 function pow10( n ) {
     return _pow10[n] ? _pow10[n] : Math.pow(10, n);
 }
-// 10^-n for small integer powers n
-var _pow10n = new Array(40); for (var i=0; i<_pow10n.length; i++) _pow10n[i] = 1 / pow10(i);
+// 10^-n for integer powers n.  Values <= 2.5e-324 are zero.
+var _pow10n = new Array(325); for (var i=0; i<_pow10n.length; i++) _pow10n[i] = Math.pow(10, -i);
 function pow10n( n ) {
     return _pow10n[n] ? _pow10n[n] : Math.pow(10, -n);
 }
 
 // return the count of zeros to the right of the decimal point in numbers less than 1.
-// Enumerates up to 4 leading zeros; if more than 4 it always returns 5.
+// 170m/s if 0-2 zeros, 80m/s if more.
 function countLeadingZeros( v ) {
-    if (v >= .001) {
-        if (v >= .1) return 0;
-        if (v >= .01) return 1;
-        return 2;
-    } else {
-        if (v >= .0001) return 3;
-        if (v >= .00001) return 4;
-        return 5;
+    if (v >= .001) return (v >= .1) ? 0 : (v >= .01) ? 1 : 2;
+    if (v) {
+        var n = 3;
+        while (v < _pow10n[n + 6]) n += 6;
+        while (v < _pow10n[n + 3]) n += 3;
+        while (v < _pow10n[n]) n += 1;
+        // fix transition 1e-323 to zeros
+        if (n === 323 && !_pow10n[n]) n++;
+        return n - 1;
     }
+    // 1e-324 (ie 323 leading zeros) is indinstinguishable from 0
+    else return 323;
 }
 
-// return the count of digits in v
-// Used to find how many decimals to include in %g converions.
-// expects to be called only with v < power
+// Count of digits in the integer part of v.
+// Used to find how many decimal digits to include in %g converions.
+// Counts by comparing against known powers of ten, much faster
+// than using v.toExponential().  64m/s.
 function countDigits( v, power ) {
+    //if (v < 1000 && v > 1) return (v < 10) ? 1 : (v < 100) ? 2 : 3;
     var n = 0;
-    // TODO: not the most efficient, but simple
-    while (v >= 1e6) { v *= 1e-6; n += 6 }
-    while (v >= 1e3) { v *= 1e-3; n += 3 }
-    while (v >= 1) { v *= 1e-1; n += 1 }
+    while (_pow10[n + 6] <= v) n += 6;
+    while (_pow10[n + 3] <= v) n += 3;
+    while (_pow10[n] <= v) n += 1;
     return n;
 }
 

@@ -7,6 +7,8 @@ qprintf = require('./qprintf');
 vsprintf = qprintf.vsprintf;
 sprintf = qprintf.sprintf;
 
+var lib = qprintf.lib;
+
 module.exports = {
     before: function(done) {
         this.runTests = function( t, data ) {
@@ -603,6 +605,59 @@ module.exports = {
                 t.equal(String(v).length, tests[i][2].length, "line " + i);
                 t.equal(v.slice(0, 16), tests[i][2].slice(0, 16), "line " + i);
                 t.ok(v == tests[i][1] || v-v*1e-16 <= v && v <= v+v*1e-16, "line " + i);
+            }
+            t.done();
+        },
+    },
+
+    'tools': {
+        'pow10 should return powers of 10': function(t) {
+            for (var i=0; i<400; i++) {
+                t.equal(lib.pow10(i), Math.pow(10, i));
+            }
+            t.done();
+        },
+
+        'pow10n should return negative powers of 10': function(t) {
+            for (var i=0; i<400; i++) {
+                t.equal(lib.pow10n(i), Math.pow(10, -i));
+            }
+            t.done();
+        },
+
+        'countLeadingZeros should count leading decimal zeros': function(t) {
+            t.equal(lib.countLeadingZeros(11), 0);
+            t.equal(lib.countLeadingZeros(1), 0);
+            t.equal(lib.countLeadingZeros(.1), 0);
+            t.equal(lib.countLeadingZeros(.01), 1);
+            t.equal(lib.countLeadingZeros(.001), 2);
+            t.equal(lib.countLeadingZeros(.0001), 3);
+            t.equal(lib.countLeadingZeros(.00001), 4);
+            for (var i=0; i<324; i++) {
+                // breaks at i=324+: counts 323 zeros (1e-324 === 0)
+                var val = Math.pow(10, -i-1);
+                t.equal(Math.pow(10, -lib.countLeadingZeros(val)-1), val, "10^-"+(i+1));
+                t.equal(lib.countLeadingZeros(Math.pow(10, -i-1)), i, "10^-" + (i+1));
+            }
+            t.equal(lib.countLeadingZeros(1e-322), 321);
+            t.equal(lib.countLeadingZeros(1e-323), 322);
+            t.notEqual(1e-323, 0);
+            t.equal(lib.countLeadingZeros(1e-324), 323);
+            t.equal(1e-324, 0);
+            t.equal(lib.countLeadingZeros(1e-325), 323);
+            t.equal(lib.countLeadingZeros(1e-326), 323);
+            t.done();
+        },
+
+        'countDigits should count digits in positive integer part': function(t) {
+            t.equal(lib.countDigits(0.0), 0);
+            t.equal(lib.countDigits(0.1), 0);
+            t.equal(lib.countDigits(1.0), 1);
+            t.equal(lib.countDigits(1.1), 1);
+            for (var i=0; i<300; i++) {
+                var val = Math.pow(10, i);
+                t.equal(lib.countDigits(val), i+1, "countDigits " + val);
+                t.equal(lib.countDigits(val + val/10), i+1, "countDigits " + (val * 1.1));
             }
             t.done();
         },
