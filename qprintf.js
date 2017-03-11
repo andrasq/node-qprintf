@@ -355,25 +355,26 @@ function _formatExp( exp, e ) {
     );
 }
 
+// Convert the number into exponential notation.  40m/s
+// Populates and returns the _ve struct with the value >= 1 (unless 0) and exponent.
+// TODO: check whether using just a single multiplication avoids rounding errors.
+// (old version looped multiplies by powers of 10, but that introduces rounding errors)
 var _ve = { val: 0, exp: 0 };
 function _normalizeExp( v ) {
-    var exp = 0;
-
-    // TODO: check the numerical stability of this approach
-    // this hand-rolled code is 3-5x faster than using v.toExponential()
-    if (v >= 10) {
-        while (v >= 1e8) { exp += 8; v *= 1e-8 }
-        while (v >= 1e4) { exp += 4; v *= 1e-4 }
-        while (v >= 10) { exp += 1; v *= 0.1 }
+    if (v >= 1) {
+        var shiftDecimal = countDigits(v) - 1;
+        _ve.exp = shiftDecimal;
+        _ve.val = v * pow10n(shiftDecimal);
     }
-    else if (v && v < 1) {
-        while (v < 1e-8) { exp -= 8; v *= 1e8 }
-        while (v < 1e-4) { exp -= 4; v *= 1e4 }
-        while (v < 1) { exp -= 1; v *= 10 }
+    else if (v) {
+        var shiftDecimal = countLeadingZeros(v) + 1;
+        _ve.exp = -shiftDecimal;
+        _ve.val = v * pow10(shiftDecimal);
     }
-
-    _ve.val = v;
-    _ve.exp = exp;
+    else {
+        _ve.exp = 0;
+        _ve.val = 0;
+    }
     return _ve;
 }
 
@@ -548,9 +549,9 @@ function pow10n( n ) {
 }
 
 // return the count of zeros to the right of the decimal point in numbers less than 1.
-// 170m/s if 0-2 zeros, 80m/s if more.
+// 175m/s if 0-3 zeros, 75m/s if more.
 function countLeadingZeros( v ) {
-    if (v >= .001) return (v >= .1) ? 0 : (v >= .01) ? 1 : 2;
+    if (v >= .0001) return (v >= .01) ? ((v >= .1) ? 0 : 1) : ((v >= .001) ? 2 : 3);
     if (v) {
         var n = 3;
         while (v < _pow10n[n + 6]) n += 6;
@@ -567,9 +568,9 @@ function countLeadingZeros( v ) {
 // Count of digits in the integer part of v.
 // Used to find how many decimal digits to include in %g converions.
 // Counts by comparing against known powers of ten, much faster
-// than using v.toExponential().  64m/s.
+// than using v.toExponential().  105m/s if <1000, else 48m/s
 function countDigits( v, power ) {
-    //if (v < 1000 && v > 1) return (v < 10) ? 1 : (v < 100) ? 2 : 3;
+    if (v < 1000 && v > 1) return (v < 10) ? 1 : (v < 100) ? 2 : 3;
     var n = 0;
     while (_pow10[n + 6] <= v) n += 6;
     while (_pow10[n + 3] <= v) n += 3;
