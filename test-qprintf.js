@@ -555,7 +555,7 @@ module.exports = {
             ];
             for (var i=0; i<tests.length; i++) {
                 var v = qprintf.lib.formatNumber(tests[i][0]);
-                t.ok(v == tests[i][1] || v-v*1e-16 <= v && v <= v+v*1e-16);
+                t.ok(v == tests[i][1] || v-v*1e-16 <= v && v <= v+v*1e-16, "line " + i);
             }
             t.done();
         },
@@ -659,7 +659,57 @@ module.exports = {
                 t.equal(lib.countDigits(val), i+1, "countDigits " + val);
                 t.equal(lib.countDigits(val + val/10), i+1, "countDigits " + (val * 1.1));
             }
+            t.equal(Math.pow(10, lib.countDigits(Infinity)), Infinity);
             t.done();
+        },
+
+        'countTrailingZeros ...': function(t) {
+            t.skip();
+        },
+
+        'normalizeExp should convert to exponential form': function(t) {
+            var _ve = { val: 0, exp: 0 };
+            var precision = 6;  // works 10e6 for 8 digits, sometimes works 10e5 for 9, always errors out 10e5 for 12
+            function splitExp(v) {
+                var s = v.toExponential(precision);
+                var p = s.indexOf('+');
+                if (p < 0) p = s.indexOf('-');
+                _ve.val = parseFloat(s.slice(0, p));
+                _ve.exp = parseInt(s.slice(p));
+                return _ve;
+            }
+            function makeFloat() {
+                var scale = (Math.random() * 600) - 300;
+                var val = Math.random();
+                val = (scale >= 0) ? (val * lib.pow10(scale)) : (val * lib.pow10n(-scale));
+                return val;
+            }
+            // fuzz test with random floating-point values
+            for (var i=0; i<10e6; i++) {
+                var val = makeFloat();
+                ve1 = lib._normalizeExp(val);
+                ve2 = splitExp(val);
+                t.equal(ve1.exp, ve2.exp, "exp mismatch, v = " + val);
+                t.equal(ve1.val.toFixed(precision), ve2.val.toFixed(precision), "val mismatch, v = " + val);
+            }
+            t.done();
+        },
+    },
+
+    'accuracy': {
+        'formatNumber powers of 10': function(t) {
+            var limit = 1e21;
+            // powers of 10 0..21
+            for (var v=1; v<limit; v*=10) {
+                t.strictEqual(lib.formatNumber(v), String(v));
+                t.strictEqual(lib.formatNumber(v-.1), String(Math.floor(v-.1)));
+                t.strictEqual(lib.formatNumber(v+.1), String(Math.floor(v+.1)));
+            }
+            t.done();
+        },
+
+        'formatFloat powers of 10': function(t) {
+            t.skip();
         },
     },
 
