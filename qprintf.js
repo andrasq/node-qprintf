@@ -40,6 +40,7 @@ module.exports.lib = {
     _formatExp: _formatExp,
     countLeadingZeros: countLeadingZeros,
     countDigits: countDigits,
+    countTrailingZeros: countTrailingZeros,
 };
 
 if (typeof require === 'function') {
@@ -350,26 +351,28 @@ function _formatExp( exp, e ) {
         (exp <= -10) ? e+"-" + -exp :
         (exp < 0)    ? e+"-0" + -exp :
         (exp >= 10)  ? e+"+" + exp :
-        (exp > 0)    ? e+"+0" + exp :
-        e+"+00"
+                       e+"+0" + exp
     );
 }
 
-// Convert the number into exponential notation.  40m/s
+// Convert the number into exponential notation.  90m/s
 // Populates and returns the _ve struct with the value >= 1 (unless 0) and exponent.
-// TODO: check whether using just a single multiplication avoids rounding errors.
 // (old version looped multiplies by powers of 10, but that introduces rounding errors)
 var _ve = { val: 0, exp: 0 };
 function _normalizeExp( v ) {
-    if (v >= 1) {
-        var shiftDecimal = countDigits(v) - 1;
-        _ve.exp = shiftDecimal;
-        _ve.val = v * pow10n(shiftDecimal);
+    if (v >= 10) {
+        var shiftDecimals = countDigits(v) - 1;
+        _ve.exp = shiftDecimals;
+        _ve.val = shift10r(v, shiftDecimals);
+    }
+    else if (v >= 1) {
+        _ve.exp = 0;
+        _ve.val = v;
     }
     else if (v) {
-        var shiftDecimal = countLeadingZeros(v) + 1;
-        _ve.exp = -shiftDecimal;
-        _ve.val = v * pow10(shiftDecimal);
+        var shiftDecimals = countLeadingZeros(v) + 1;
+        _ve.exp = -shiftDecimals;
+        _ve.val = shift10l(v, shiftDecimals);
     }
     else {
         _ve.exp = 0;
@@ -488,17 +491,31 @@ function formatFloatMinimal( v, precision, minimal ) {
 // format a %g float that has been rounded at the right decimal place
 // %g expects trailing zeros to be dropped, so truncation is the default
 // 24m/s small, 10m/s large, 2.5m/s (limit is formatNumber)
+// Split into two half-functions for better v8 optimization and inlining.
+// Note: in node, 2.10 + 5e-17 === 2.10
+//       (ie, 2.10000000000000008882 + 0.00000000000000005000 === 2.10000000000000008882)
 function formatFloatTruncate( v, precision, trim, round ) {
     if (precision <= 0) { if (round) v += 0.5;
         return v < 1e20 ? Math.floor(v).toString(10) : formatNumber(Math.floor(v));
     }
     var scale = pow10(precision);
-    if (round) v += 0.5 * pow10n(precision);
     var i = Math.floor(v);
-    var f = Math.floor((v - i) * scale);
+    var f = ((v - i) * scale);
+// FIXME: 0.30 = 0.30000000000000004441, *1e20 is ...00004096.00, but *1e16 is ...0000.500 (rounds wrong)
+    var f = round ? Math.floor(f + 0.5) : Math.floor(f);
+    if (f >= scale) { f -= scale; i += 1 }
 
-    if (trim) while (f && f % 10 === 0) { f = Math.floor(f / 10); precision -= 1; }
-    
+    return constructFixed(i, f, precision, trim);
+}
+function constructFixed( i, f, precision, trim ) {
+    if (f && trim && !(f % 10)) {
+        var n = countTrailingZeros(f);
+        if (n) {
+            f = shift10r(f, n);
+            precision -= n;
+        }
+    }
+
     if (i > 1e20) i = formatNumber(i);
     if (trim && !f) return i.toString();
 
@@ -522,9 +539,22 @@ function formatFloat( v, precision ) {
 // ours => 1000000000000000000222784838656961984549312 (1e6, both as /= 1e6 and *= 1e-6)
 // (actual difference bounces all over depending on the value, eg)
 //         69999999999999991808402112386240906176108672 (7e43 with 1e6)
+// 7e43 nodejs => 700000000000000131072xxxxxxxxxxxxxxxxxxxxxxx
+// 7e43 php    => 70000000000000002213544858001278968814108672
 // TODO: find a more accurate way of converting to decimal,
 // this has 10x the error of C/php.  Perhaps could toString(20) and
-// convert base 20 to 10 with carry-outs.
+// convert base 20 to 10 with carry-outs.  Or use toFixed() for
+// the first 15 digits and zero-pad the rest.
+// Note:  node 1e42 / 1e22 => 100000000000000020000. (20 dig prec)
+function formatNumber_2( n ) {
+    var digits = countDigits(n);
+    if (digits <= 20) return n.toFixed(0);
+    if (digits >= 310) return "Infinity";
+    var omitDigits = digits - 1 - 15;
+    n = n * pow10n(omitDigits);
+    return Math.floor(n).toFixed(0) + str_repeat('0', omitDigits);
+}
+///** old version:
 function formatNumber( n ) {
     if (n === Infinity) return "Infinity";
     var parts = new Array();
@@ -535,6 +565,7 @@ function formatNumber( n ) {
     if (n > 0) parts.push(Math.floor(n).toString(10));
     return parts.length > 1 ? parts.reverse().join('') : parts.length ? parts[0] : '0';
 }
+/**/
 
 // 10^n for integer powers n.  Values >= 10^309 are Infinity.
 // note: cannot initialize with *= 10, the cumulative rounding errors break the unit tests
@@ -547,6 +578,48 @@ var _pow10n = new Array(325); for (var i=0; i<_pow10n.length; i++) _pow10n[i] = 
 function pow10n( n ) {
     return _pow10n[n] ? _pow10n[n] : Math.pow(10, -n);
 }
+// find n for the largest 2^n that's smaller than cap
+function pow2cap( cap ) {
+    if (!cap) return 0;
+    var i=0, p, p2;
+    if (cap >= 1e6) i = 9;
+    for ( ; (p = Math.pow(2, i)) <= cap; i++) {
+        if (p === Infinity) break;
+        p2 = p;
+    }
+    return p2;
+}
+
+// shift left/right by a power of 2 s.t. _shift10[n] * _shift10_adj[n] === _pow10[n]
+var _shift10 = new Array(310);          var _shift10n = new Array(325);
+var _shift10_adj = new Array(310);      var _shift10n_adj = new Array(325);
+_shift10[0] = 1;                        _shift10n[0] = 1;
+_shift10_adj[0] = 1;                    _shift10n_adj[0] = 1;
+// mpy by 10^N by doing a mpy by 2^M then adjusting by mpy K s.t. 2^M * adj === 10^N.
+// Should preserve more bits with less rounding error.
+// TODO: populate the tables with optimal values
+for (var i=1; i<_shift10.length; i++) {
+    _shift10[i] = Math.pow(10, i);
+    _shift10_adj[i] = 1;
+    _shift10[i] = pow2cap(_pow10[i]);
+    _shift10_adj[i] = _pow10[i] / _shift10[i];
+}
+for (var i=1; i<_shift10n.length; i++) {
+    // FIXME: these are not powers of 10
+    _shift10n[i] = Math.pow(2, -3*i);
+    _shift10n_adj[i] = _pow10n[i] / _shift10n[i];
+}
+// shift v by n decimal places to the left (make bigger)
+function shift10l( v, n ) {
+    if (n > 323) return 0;
+    return v * _shift10[n] * _shift10_adj[n];
+}
+// shift v by n decimal places to the right (make smaller)
+function shift10r( v, n ) {
+    if (n > 310) return Infinity;
+    return v * _shift10n[n] * _shift10n_adj[n];
+}
+
 
 // return the count of zeros to the right of the decimal point in numbers less than 1.
 // 175m/s if 0-3 zeros, 75m/s if more.
@@ -575,6 +648,19 @@ function countDigits( v, power ) {
     while (_pow10[n + 6] <= v) n += 6;
     while (_pow10[n + 3] <= v) n += 3;
     while (_pow10[n] <= v) n += 1;
+    return n;
+}
+
+// Count how many decimal zeros are at the end of the integer v.
+// 90m/s
+function countTrailingZeros( v ) {
+    if (v < 10) return 0;
+    if (v >= 1e309) return 308;
+    var n = 0, e6 = _pow10n[6], e3 = _pow10n[3], e1 = 0.1;
+    // TODO: rounding errors?
+    while (Math.floor(v * e6) === Math.floor((v + 999999) * e6)) { n += 6; v *= e6 }
+    while (Math.floor(v * e3) === Math.floor((v + 999) * e3)) { n += 3; v *= e3 }
+    while (Math.floor(v * e1) === Math.floor((v + 9) * e1)) { n += 1; v *= e1 }
     return n;
 }
 

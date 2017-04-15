@@ -685,7 +685,7 @@ module.exports = {
                 return val;
             }
             // fuzz test with random floating-point values
-            for (var i=0; i<10e6; i++) {
+            for (var i=0; i<10e4; i++) {
                 var val = makeFloat();
                 ve1 = lib._normalizeExp(val);
                 ve2 = splitExp(val);
