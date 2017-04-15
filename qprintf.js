@@ -355,21 +355,24 @@ function _formatExp( exp, e ) {
     );
 }
 
-// Convert the number into exponential notation.  40m/s
+// Convert the number into exponential notation.  90m/s
 // Populates and returns the _ve struct with the value >= 1 (unless 0) and exponent.
-// TODO: check whether using just a single multiplication avoids rounding errors.
 // (old version looped multiplies by powers of 10, but that introduces rounding errors)
 var _ve = { val: 0, exp: 0 };
 function _normalizeExp( v ) {
-    if (v >= 1) {
-        var shiftDecimal = countDigits(v) - 1;
-        _ve.exp = shiftDecimal;
-        _ve.val = v * pow10n(shiftDecimal);
+    if (v >= 10) {
+        var shiftDecimals = countDigits(v) - 1;
+        _ve.exp = shiftDecimals;
+        _ve.val = shift10r(v, shiftDecimals);
+    }
+    else if (v >= 1) {
+        _ve.exp = 0;
+        _ve.val = v;
     }
     else if (v) {
-        var shiftDecimal = countLeadingZeros(v) + 1;
-        _ve.exp = -shiftDecimal;
-        _ve.val = v * pow10(shiftDecimal);
+        var shiftDecimals = countLeadingZeros(v) + 1;
+        _ve.exp = -shiftDecimals;
+        _ve.val = shift10l(v, shiftDecimals);
     }
     else {
         _ve.exp = 0;
