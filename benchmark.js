@@ -14,6 +14,7 @@ var extsprintf = require('extsprintf').sprintf;
 
 var x, z;
 qtimeit.bench.timeGoal = 0.4;
+qtimeit.bench.visualize = true;
 var fmt1 = "%s %d %s";
 var fmt2 = "%s %04d %s %4$5.2f";
 var fmt20 = "%20s %20d %20s";
@@ -60,7 +61,7 @@ if (0)
         'printf-0.2.5': function(){ z = printf(fmt1, "Hello", 123, "world") },
         'sprintfjs-1.0.3': function(){ z = sprintfjs(fmt1, "Hello", 123, "world") },
         //'extsprintf-1.3.0': function(){ z = extsprintf(fmt1, "Hello", 123, "world") },
-        'sprintf-0.1.5': function(){ z = sprintf(fmt1, "Hello", 123, "world") },
+        //'sprintf-0.1.5': function(){ z = sprintf(fmt1, "Hello", 123, "world") },
         'qprintf-1.0.0': function(){ z = qsprintf(fmt1, "Hello", 123, "world") },
         //'util_format': function(){ util.format(fmt1, "Hello", 123, "world") },
     };
@@ -68,7 +69,7 @@ if (0)
         'printf-0.2.5': function(){ z = printf(fmt2, "Hello", 123, "world", 12.345) },
         'sprintfjs-1.0.3': function(){ z = sprintfjs(fmt2, "Hello", 123, "world", 12.345) },
         //'extsprintf-1.3.0': function(){ z = extsprintf(fmt2, "Hello", 123, "world", 12.345) },
-        'sprintf-0.1.5': function(){ z = sprintf(fmt2, "Hello", 123, "world", 12.345) },
+        //'sprintf-0.1.5': function(){ z = sprintf(fmt2, "Hello", 123, "world", 12.345) },
         'qprintf-1.0.0': function(){ z = qsprintf(fmt2, "Hello", 123, "world", 12.345) },
         //'util_format': function(){ util.format(fmt2, "Hello", 123, "world", 12.345) },
     };
