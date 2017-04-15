@@ -36,7 +36,10 @@ Traditional conversions:
 - `%s` - interpolate a string into the output
 - `%c` - the character (1-char string) represented by the given unicode code point
 - `%d` - a decimal base 10 integer.  The integer conversions truncate toward zero (like php).
-- `%i` - a decimal base 10 integer.
+         NOTE: qprintf 0.10.0 and earlier converted `%d` with the nodejs built-in `String()`,
+         either as an integer, a float, or an exponential.  As of qprintf 0.13.0, `%d`
+         converts like traditional C/C++ printf, as a truncated integer same as `%i`.
+- `%i` - a decimal base 10 integer.  The integer conversions truncate toward zero (like php).
 - `%x` - a hexadecimal integer printed using lowercase [0-9a-f]
 - `%X` - a hexadecimal integer printed using uppercase [0-9A-F]
 - `%o` - an octal integer
