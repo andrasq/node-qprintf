@@ -20,8 +20,9 @@
   ],
   "scripts": {
     "test": "qnit --version && qnit test*",
-    "coverage": "nyc --version && nyc --reporter text --reporter lcov qnit test* || echo nyc not installed",
+    "coverage": "nyc --reporter text --reporter lcov npm test",
     "clean": "rm -rf .nyc_output coverage out",
-    "distclean": "rm -rf .nyc_output coverage out t.c a.out"
+    "distclean": "rm -rf .nyc_output coverage out t.c a.out",
+    "coveralls": "nyc --reporter text-lcov npm test | coveralls"
   }
 }
