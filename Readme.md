@@ -1,6 +1,9 @@
 qprintf
 =======
 
+[![Build Status](https://travis-ci.org/andrasq/node-qprintf.svg?branch=master)](https://travis-ci.org/andrasq/node-qprintf)
+[![Coverage Status](https://coveralls.io/repos/github/andrasq/node-qprintf/badge.svg?branch=master)](https://coveralls.io/github/andrasq/node-qprintf?branch=master)
+
 Qprintf is a very fast standard C `printf` compatible output formatter, supporting
 the full set of integer, float, and string conversions with field width, alignment
 and precision, along with some extensions.
