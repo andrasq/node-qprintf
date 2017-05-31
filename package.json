@@ -1,9 +1,9 @@
 {
   "name": "qprintf",
-  "version": "0.13.1",
+  "version": "0.13.2",
   "main": "qprintf.js",
   "description": "fast standard C compatible printf",
-  "author": "andras@andrasq.com",
+  "author": "Andras",
   "license": "Apache-2.0",
   "repository": {
     "url": "git://github.com/andrasq/node-qprintf",
@@ -22,7 +22,6 @@
     "test": "qnit test*",
     "coverage": "nyc --reporter text --reporter lcov npm test",
     "clean": "rm -rf .nyc_output coverage out",
-    "distclean": "rm -rf .nyc_output coverage out t.c a.out",
-    "codecov": "nyc --reporter lcov npm test && codecov"
+    "distclean": "rm -rf .nyc_output coverage out t.c a.out"
   }
 }

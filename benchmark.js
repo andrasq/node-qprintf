@@ -13,14 +13,16 @@ var printf = require('printf');
 var extsprintf = require('extsprintf').sprintf;
 
 var x, z;
-qtimeit.bench.timeGoal = 0.4;
-qtimeit.bench.visualize = true;
 var fmt1 = "%s %d %s";
 var fmt2 = "%s %04d %s %4$5.2f";
 var fmt20 = "%20s %20d %20s";
 //fmt1 = fmt20;
 
-qtimeit.bench([
+// NOTE: without this pre-test, qsprintf runs half speed with node-v8.0.0
+// and node 7.8.0.  node-v6.10.2, v5.8.0, v4.4.0 and v0.10.42 are not affected.
+// The test runs at full speed with node-v8.0.0 too if run standalone.
+qtimeit.bench.timeGoal = 0.4;
+if (1) qtimeit.bench([
     function(){ z = qsprintf(fmt1, "Hello", 123, "world") },
     // using a string constant format runs 25% slower
 //    function(){ z = qsprintf("%s %04d %s", "Hello", 123, "world") },
@@ -29,7 +31,15 @@ qtimeit.bench([
     function(){ z = qsprintf(fmt1, "Hello", 123, "world") },
 ]);
 
-for (var loop=0; loop<10; loop++) {
+// first run:
+qtimeit.bench.timeGoal = 0.4;
+qtimeit.bench.visualize = true;
+qtimeit.bench.showSource = true;
+qtimeit.bench.baselineAvg = 1000000;
+//qtimeit.bench.forkTests = true;
+qtimeit.bench.showRunDetails = false;
+
+// for (var loop=0; loop<40; loop++) {
     var z;
     var calls = {
         'printf-0.2.5': printf,
@@ -62,21 +72,24 @@ if (0)
         'sprintfjs-1.0.3': function(){ z = sprintfjs(fmt1, "Hello", 123, "world") },
         //'extsprintf-1.3.0': function(){ z = extsprintf(fmt1, "Hello", 123, "world") },
         //'sprintf-0.1.5': function(){ z = sprintf(fmt1, "Hello", 123, "world") },
-        'qprintf-1.0.0': function(){ z = qsprintf(fmt1, "Hello", 123, "world") },
-        //'util_format': function(){ util.format(fmt1, "Hello", 123, "world") },
+        'qprintf-0.13.2': function(){ z = qsprintf(fmt1, "Hello", 123, "world") },
+        //'qprintf-0.13.2-const': function(){ z = qsprintf("%s %d %s", "Hello", 123, "world") },
+        'util_format': function(){ util.format(fmt1, "Hello", 123, "world") },
     };
     var bench2 = {
         'printf-0.2.5': function(){ z = printf(fmt2, "Hello", 123, "world", 12.345) },
         'sprintfjs-1.0.3': function(){ z = sprintfjs(fmt2, "Hello", 123, "world", 12.345) },
         //'extsprintf-1.3.0': function(){ z = extsprintf(fmt2, "Hello", 123, "world", 12.345) },
         //'sprintf-0.1.5': function(){ z = sprintf(fmt2, "Hello", 123, "world", 12.345) },
-        'qprintf-1.0.0': function(){ z = qsprintf(fmt2, "Hello", 123, "world", 12.345) },
+        'qprintf-0.13.2': function(){ z = qsprintf(fmt2, "Hello", 123, "world", 12.345) },
         //'util_format': function(){ util.format(fmt2, "Hello", 123, "world", 12.345) },
     };
 
-    qtimeit.bench.timeGoal = 0.4;
     qtimeit.bench(bench1);
     console.log("");
-//    qtimeit.bench(bench2);
-    console.log("");
-}
+    //qtimeit.bench(bench2);
+    //console.log("");
+
+    // subsequent runs:
+    qtimeit.bench.showRunDetails = false;
+// }

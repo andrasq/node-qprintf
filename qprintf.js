@@ -307,10 +307,16 @@ var _pads = {
 }
 function str_repeat( str, n ) {
     if (n <= 8 && _pads[str]) return _pads[str][n];
-    var ret = "";
-    while (n >= 3) { ret += str + str + str; n -= 3; }
-    while (n > 0) { ret += str; n -= 1; }
-    return ret;
+
+    switch (n) {
+    case 2: return str + str; break;
+    case 1: return str; break;
+    case 0: return ''; break;
+    default:
+        var half = Math.floor(n / 2);
+        var s2 = str_repeat(str, half);
+        return (half + half < n) ? s2 + s2 + str : s2 + s2;
+    }
 }
 
 function padString( padWidth, padChar, rightPad, str ) {
