@@ -423,7 +423,7 @@ function convertFloatG( width, padChar, rightPad, signChar, v, precision, eSym )
     // else will be converted as exponential, which is rounded below
 
     // values between .0001 and 10^precision are converted as %f float
-    // with trailing zeros omitted
+    // with trailing zeros to the right of the decimal point omitted
     if (roundv >= .0001 && roundv < pow10(precision)) {
         // 123.4567 prec=4 at 12.6m/s
         // (123.4567e5).toPrecision(4) 5.8m/s
@@ -494,6 +494,8 @@ function formatFloatMinimal( v, precision, minimal ) {
     return s;
 }
 
+// streamlined version of the above, to fit into 600 chars
+// works for positive values only, but thats all we use
 // format a %g float that has been rounded at the right decimal place
 // %g expects trailing zeros to be dropped, so truncation is the default
 // 24m/s small, 10m/s large, 2.5m/s (limit is formatNumber)
@@ -531,10 +533,11 @@ function constructFixed( i, f, precision, trim ) {
     return s;
 }
 
-// streamlined version of the above, to fit into 600 chars
-// works for positive values only, but thats all we use
 function formatFloat( v, precision ) {
-    // hand-rolled convert is same speed and more consistent than v.toFixed()
+    // toFixed is not subject to our rounding errors (3m/s)
+    if (v < 1e20 && precision >= 0 && precision <= 20) return v.toFixed(precision);
+
+    // hand-rolled convert is same speed and more consistent than v.toFixed() (3m/s)
     return formatFloatTruncate(v, precision, false, true);
 }
 

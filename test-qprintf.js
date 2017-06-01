@@ -711,14 +711,32 @@ module.exports = {
         'formatFloat powers of 10': function(t) {
             t.skip();
         },
+
+        'formatFloat rounding cases': function(t) {
+            var tests = [
+                1.234, "1.23399999999999998579",
+                1.1,   "1.10000000000000008882",
+                1.01,  "1.01000000000000000888",
+                1.001, "1.00099999999999988987",
+                1.001e-10, "0.00000000010010000000",
+                1.234e+2, "123.40000000000000568434",
+            ];
+            for (var i=0; i<tests.length; i+=2) {
+                t.strictEqual(lib.formatFloat(tests[i], 20), tests[i+1], "test " + i/2);
+            }
+            t.done();
+        },
     },
 
     'speed of 10k string+num': function(t) {
-        for (var i=0; i<10000; i++) {
+        var t1 = Date.now();
+        for (var i=0; i<100000; i++) {
             var s = sprintf("String %s num %05d\n", "some string", 123, {a: 1, b: 2.5, c: 'c'});
         }
-        // 1.28m/s
-        // 70k/s with +obj
+        var t2 = Date.now();
+        //console.log("AR: %d sprintf in %d ms (got \"%s\")", i, t2 - t1, s);
+        // 100k in 33ms, ie 3.0 m/s
+        // 73k/s with +obj %O
         t.done();
     },
 };
