@@ -162,7 +162,7 @@ speed of each relative to `printf`.
 
 ## Change Log
 
-- 0.13.2 - update benchmarks for node-v8, faster str_repeat
+- 0.13.2 - update benchmarks for node-v8, faster str_repeat, try to avoid %f rounding errors
 - 0.13.0 - `%g` fixes, truncating %d (breaking change), l, ll, h, hh modifiers, *.* widths,
         large numbers
 - 0.10.0 - e E g G conversions
