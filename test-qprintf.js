@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015-2017 Andras Radics
+ * Copyright (C) 2015-2018 Andras Radics
  * Licensed under the Apache License, Version 2.0
  */
 
@@ -511,7 +511,6 @@ module.exports = {
 
             var v = sprintf("%d", 1e42);
             t.equal(parseInt(v), 1e42);
-            t.done();
 
             var v = sprintf("%o", 1e42);
             var n = parseInt(v, 8);
