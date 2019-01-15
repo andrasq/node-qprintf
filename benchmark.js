@@ -31,6 +31,16 @@ if (1) qtimeit.bench([
     function(){ z = qsprintf(fmt1, "Hello", 123, "world") },
 ]);
 
+console.log("");
+console.log("package versions:");
+console.log("qprintf %s", require('./package').version);
+console.log("printf %s", require('printf/package').version);
+console.log("sprintf %s", require('sprintf/package').version);
+console.log("sprintf-js %s", require('sprintf-js/package').version);
+
+console.log("");
+console.log("fmt1: '%s'", fmt1);
+
 // first run:
 qtimeit.bench.timeGoal = 0.4;
 qtimeit.bench.visualize = true;
