@@ -33,10 +33,11 @@ if (0) qtimeit.bench([
 
 console.log("");
 console.log("package versions:");
-console.log("qprintf %s", require('./package').version);
-console.log("printf %s", require('printf/package').version);
-console.log("sprintf %s", require('sprintf/package').version);
+console.log("printf %s", require('printf/package').version)
 console.log("sprintf-js %s", require('sprintf-js/package').version);
+//console.log("sprintf %s", require('sprintf/package').version);
+//console.log("extsprintf %s", require('extsprintf/package').version);
+console.log("qprintf %s", require('./package').version);
 
 console.log("");
 console.log("fmt1: '%s'", fmt1);
@@ -84,7 +85,7 @@ if (0)
         //'sprintf': function(){ z = sprintf(fmt1, "Hello", 123, "world") },
         'qprintf': function(){ z = qsprintf(fmt1, "Hello", 123, "world") },
         //'qprintf-0.13.2-const': function(){ z = qsprintf("%s %d %s", "Hello", 123, "world") },
-        'util_format': function(){ util.format(fmt1, "Hello", 123, "world") },
+        'util_format': function(){ z = util.format(fmt1, "Hello", 123, "world") },
     };
     var bench2 = {
         'printf': function(){ z = printf(fmt2, "Hello", 123, "world", 12.345) },
@@ -92,7 +93,7 @@ if (0)
         //'extsprintf-1.3.0': function(){ z = extsprintf(fmt2, "Hello", 123, "world", 12.345) },
         //'sprintf': function(){ z = sprintf(fmt2, "Hello", 123, "world", 12.345) },
         'qprintf': function(){ z = qsprintf(fmt2, "Hello", 123, "world", 12.345) },
-        //'util_format': function(){ util.format(fmt2, "Hello", 123, "world", 12.345) },
+        //'util_format': function(){ z = util.format(fmt2, "Hello", 123, "world", 12.345) },
     };
 
     qtimeit.bench(bench1);
