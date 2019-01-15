@@ -151,13 +151,18 @@ speed of each relative to `printf`.
     // var fmt1 = "%s %d %s";
     // var z = sprintf(fmt1, "Hello", 123, "world");
 
-    qtimeit=0.19.0 node=8.0.0 v8=5.8.283.41 platform=linux kernel=3.16.0-4-amd64 up_threshold=11
-    arch=ia32 mhz=4417 cpuCount=8 cpu="Intel(R) Core(TM) i7-6700K CPU @ 4.00GHz"
-    name                    speed           rate
-    printf-0.2.5          232,644 ops/sec    233 >
-    sprintfjs-1.0.3       654,420 ops/sec    654 >>>
-    qprintf-0.13.2      8,061,792 ops/sec   8062 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-    util_format        11,643,642 ops/sec  11644 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    package versions:
+    printf 0.5.1
+    sprintf-js 1.1.2
+    qprintf 0.13.3
+
+    qtimeit=0.21.0 node=10.15.0 v8=6.8.275.32-node.45 platform=linux kernel=4.9.0-0.bpo.4-amd64 up_threshold=false
+    arch=ia32 mhz=4184 cpuCount=8 cpu="Intel(R) Core(TM) i7-6700K CPU @ 4.00GHz"
+    name                speed           rate
+    printf            443,445 ops/sec    443 >>
+    sprintfjs       2,056,528 ops/sec   2057 >>>>>>>>>>
+    qprintf         9,712,094 ops/sec   9712 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    util_format     9,198,162 ops/sec   9198 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 
 ## Change Log
