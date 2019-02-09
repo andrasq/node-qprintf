@@ -5,19 +5,11 @@
   "description": "fast standard C compatible printf",
   "author": "Andras",
   "license": "Apache-2.0",
-  "repository": {
-    "url": "git://github.com/andrasq/node-qprintf",
-    "type": "git"
-  },
-  "engines": {
-    "node": ">=0.10"
-  },
-  "keywords": [
-    "fast",
-    "sprintf",
-    "Andras",
-    "printf"
-  ],
+  "readme": "see README.md in the repo",
+  "repository": { "type": "git", "url": "git://github.com/andrasq/node-qprintf" },
+  "engines": { "node": ">=0.10" },
+  "keywords": [ "fast", "sprintf", "Andras", "printf" ],
+
   "scripts": {
     "test": "qnit test*",
     "coverage": "nyc --reporter text --reporter lcov npm test",
