@@ -10,7 +10,7 @@ var sprintfjs = require('sprintf-js').sprintf;
 var sprintf = require('sprintf').sprintf;
 //var sprintfjs = require('/home/andras/src/sprintf-js.git/').sprintf;
 var printf = require('printf');
-var extsprintf = require('extsprintf').sprintf;
+//var extsprintf = require('extsprintf').sprintf;
 
 var x, z;
 var fmt1 = "%s %d %s";

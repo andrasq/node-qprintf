@@ -157,13 +157,13 @@ speed of each relative to `printf`.
     sprintf-js 1.1.2
     qprintf 0.13.3
 
-    qtimeit=0.21.0 node=10.15.0 v8=6.8.275.32-node.45 platform=linux kernel=4.9.0-0.bpo.4-amd64 up_threshold=false
-    arch=ia32 mhz=4184 cpuCount=8 cpu="Intel(R) Core(TM) i7-6700K CPU @ 4.00GHz"
+    qtimeit=0.21.0 node=12.9.1 v8=7.6.303.29-node.15 platform=linux kernel=4.9.0-0.bpo.4-amd64 up_threshold=false
+    arch=ia32 mhz=3998 cpuCount=12 cpu="AMD Ryzen 5 2600X Six-Core Processor"
     name                speed           rate
-    printf            443,445 ops/sec    443 >>
-    sprintfjs       2,056,528 ops/sec   2057 >>>>>>>>>>
-    qprintf         9,712,094 ops/sec   9712 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-    util_format     9,198,162 ops/sec   9198 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    printf            348,816 ops/sec    349 >>
+    sprintfjs       1,613,889 ops/sec   1614 >>>>>>>>
+    qprintf         8,019,524 ops/sec   8020 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    util_format     5,799,629 ops/sec   5800 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 
 ## Change Log
