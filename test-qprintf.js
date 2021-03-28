@@ -3,7 +3,7 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-qprintf = require('./qprintf');
+qprintf = require('./');
 vsprintf = qprintf.vsprintf;
 sprintf = qprintf.sprintf;
 
@@ -803,6 +803,69 @@ module.exports = {
             for (var i=0; i<tests.length; i+=2) {
                 t.strictEqual(lib.formatFloat(tests[i], 20), tests[i+1], "test " + i/2);
             }
+            t.done();
+        },
+    },
+
+    'should work with node-v0.8': {
+        before: function(done) {
+            this.nodeVersion = process.versions.node;
+            // delete first, assignment does not overwrite
+            delete process.versions.node;
+            Object.defineProperty(process.versions, 'node', {value: '0.8.28'});
+            process.versions.node = '0.8.28';
+            done();
+        },
+
+        after: function(done) {
+            process.versions.node = this.nodeVersion;
+            done();
+        },
+
+        'formatFloat uses native precision': function(t) {
+            // verify manually by looking at code coverage
+            t.disrequire('./');
+            var qprintf = require('./');
+            t.equal(qprintf.lib.formatFloat(1.25, 5), '1.25000');
+            t.done();
+        },
+
+        'can format an object': function(t) {
+            t.disrequire('./');
+            var qprintf = require('./');
+            t.equal(qprintf.sprintf("%2.1O", {a: 1, b: {c: {d: 2}}}), '{ a: 1, b: { c: [Object] } }');
+            t.done();
+        },
+
+        'can format an array': function(t) {
+            t.disrequire('./');
+            var qprintf = require('./');
+            t.equal(qprintf.sprintf("%2.1A", [1, 2, 3]), '[ 1, 2, ... ]');
+            t.done();
+        },
+    },
+
+    'should work without util': {
+        setUp: function(done) {
+            process.env.TEST_WITHOUT_UTIL = '1';
+            done();
+        },
+        tearDown: function(done) {
+            delete process.env.TEST_WITHOUT_UTIL;
+            done();
+        },
+
+        'can format an object': function(t) {
+            t.disrequire('./');
+            var qprintf = require('./');
+            t.equal(qprintf.sprintf("%2.1O", {a: 1, b: {c: {d: 2}}}), '[Object]');
+            t.done();
+        },
+
+        'can format an array': function(t) {
+            t.disrequire('./');
+            var qprintf = require('./');
+            t.equal(qprintf.sprintf("%2.1A", [1, 2, 3]), '[Array]');
             t.done();
         },
     },

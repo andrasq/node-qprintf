@@ -40,7 +40,7 @@ module.exports.lib = {
     countTrailingZeros: countTrailingZeros,
 };
 
-var util = tryCall(function() { return require("util") });
+var util = tryCall(function() { return !process.env.TEST_WITHOUT_UTIL && require("util") });
 
 var nodeVersion = parseFloat(process.versions.node);
 var maxToFixedPrecision = tryCall(function() { return (1).toFixed(100) && 100 }) || 20;
@@ -335,6 +335,7 @@ function convertFloat( width, padChar, rightPad, signChar, v, precision ) {
     return padNumber(width, padChar, rightPad, signChar, formatFloat(v, precision));
 }
 
+// format the exponent like C: "e+00" with 'e' or 'E', sign, and at least two digits
 function _formatExp( exp, e ) {
     return (
         (exp <= -10) ? e+"-" + -exp :
@@ -452,7 +453,7 @@ function formatFloat( v, precision ) {
 }
 
 /*
- * format a %N.Mg float with optional rounding and trailing zero-decimal trimming
+ * format a %N.Mg float with optional trailing decimal-zero trimming and optional rounding
  *
  * note: both C and PHP render ("%5.2f", 1.275) as "1.27", because of the IEEE representation
  * works for positive values only, but thats all we use
