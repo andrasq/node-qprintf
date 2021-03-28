@@ -4,7 +4,7 @@
  * Implements all traditional C printf conversions, including field widths,
  * precision, and very large numbers.
  *
- * Copyright (C) 2015-2017 Andras Radics
+ * Copyright (C) 2015-2017,2021 Andras Radics
  * Licensed under the Apache License, Version 2.0
  *
  * 2015-02-24 - AR.
@@ -46,6 +46,8 @@ module.exports.lib = {
 if (typeof require === 'function') {
     var util = require('util');
 }
+
+var nodeVersion = parseFloat(process.versions.node);
 
 // ascii char codes
 var CH_0 = '0'.charCodeAt(0);
@@ -542,7 +544,7 @@ function formatFloat( v, precision ) {
 }
 
 // convert a very large number to a string.  Note that a 64-bit float
-// has only about 16 digits (53 bits) precision.    
+// has only about 16 digits (53 bits) precision.
 // C    => 1000000000000000044885712678075916785549312
 // php  => 1000000000000000044885712678075916785549312
 // ours => 1000000000000000000222784838656961984549312 (1e6, both as /= 1e6 and *= 1e-6)
@@ -676,32 +678,25 @@ function countTrailingZeros( v ) {
 function formatObject( obj, elementLimit, depth ) {
     if (elementLimit === undefined) elementLimit = Infinity;
     if (depth === undefined) depth = 6;
-    if (util) {
-        var options = { depth: depth, breakLength: Infinity };
-        return util.inspect(obj, options);
-    }
-    else {
-        return inspectObject(obj, elementLimit, depth);
-    }
+    return inspectObject(obj, elementLimit, depth);
 }
 
 function formatArray( arr, elementLimit, depth ) {
     if (elementLimit === undefined) elementLimit = 40;
     if (depth === undefined) depth = 2;
-    if (util) {
-        var options = { depth: depth, breakLength: Infinity };
-        if (arr.length <= elementLimit) return util.inspect(arr, options);
-        else return util.inspect(arr.slice(0, elementLimit), options).slice(0, -2) + ", ... ]";
-    }
-    else {
-        return inspectArray(arr, elementLimit, depth);
-    }
+    return inspectArray(arr, elementLimit, depth);
 }
 
 function inspectObject( obj, elementLimit, depth ) {
-    return "[Object]";
+    if (!util) return "[Object]";
+    return (nodeVersion > 0.8) ? util.inspect(obj, { depth: depth, breakLength: Infinity }) : util.inspect(obj, false, depth);
 }
 
 function inspectArray( arr, elementLimit, depth ) {
-    return "'[Array]'";
+    if (!util) return "'[Array]'";
+    var isOverlong = (arr.length > elementLimit);
+    arr = isOverlong ? arr.slice(0, elementLimit) : arr;
+    var str = (nodeVersion <= 0.8) ? util.inspect(arr, false, depth) : util.inspect(arr, { depth: depth, breakLength: Infinity });
+    if (isOverlong) str = str.slice(0, -2) + ', ... ]';
+    return str;
 }

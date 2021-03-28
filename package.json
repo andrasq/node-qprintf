@@ -1,13 +1,15 @@
 {
   "name": "qprintf",
-  "version": "0.13.3",
+  "version": "0.13.4",
   "main": "qprintf.js",
   "description": "fast standard C compatible printf",
   "author": "Andras",
   "license": "Apache-2.0",
-  "readme": "see README.md in the repo",
+
+  "files": ["README.md", "LICENSE", "qprintf.js"],
   "repository": { "type": "git", "url": "git://github.com/andrasq/node-qprintf" },
-  "engines": { "node": ">=0.10" },
+  "readme": "see README.md in the repo",
+  "engines": { "node": ">=0.6" },
   "keywords": [ "fast", "sprintf", "Andras", "printf" ],
 
   "scripts": {
