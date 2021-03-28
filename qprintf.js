@@ -370,18 +370,16 @@ function _formatExp( exp, e ) {
 var _ve = { val: 0, exp: 0 };
 function _normalizeExp( v ) {
     if (v >= 10) {
-        var shiftDecimals = countDigits(v) - 1;
-        _ve.exp = shiftDecimals;
-        _ve.val = shift10r(v, shiftDecimals);
+        _ve.exp = countDigits(v) - 1;
+        _ve.val = v * pow10n(_ve.exp);
     }
     else if (v >= 1) {
         _ve.exp = 0;
         _ve.val = v;
     }
     else if (v) {
-        var shiftDecimals = countLeadingZeros(v) + 1;
-        _ve.exp = -shiftDecimals;
-        _ve.val = shift10l(v, shiftDecimals);
+        _ve.exp = -(countLeadingZeros(v) + 1);
+        _ve.val = v * pow10(-_ve.exp);
     }
     else {
         _ve.exp = 0;
@@ -507,7 +505,7 @@ function formatFloatMinimal( v, precision, minimal ) {
 //       (ie, 2.10000000000000008882 + 0.00000000000000005000 === 2.10000000000000008882)
 function formatFloatTruncate( v, precision, trim, round ) {
     if (precision <= 0) { if (round) v += 0.5;
-        return v < 1e20 ? Math.floor(v).toString(10) : formatNumber(Math.floor(v));
+        return v < maxFormattedIntValue ? Math.floor(v).toString(10) : formatNumber(v);
     }
     var scale = pow10(precision);
     var i = Math.floor(v);
@@ -521,10 +519,7 @@ function formatFloatTruncate( v, precision, trim, round ) {
 function constructFixed( i, f, precision, trim ) {
     if (f && trim && !(f % 10)) {
         var n = countTrailingZeros(f);
-        if (n) {
-            f = shift10r(f, n);
-            precision -= n;
-        }
+        if (n) { f /= pow10(n); precision -= n }
     }
 
     if (i > 1e20) i = formatNumber(i);
@@ -552,11 +547,11 @@ function formatFloat( v, precision ) {
 // convert a very large number to a string without using scientific notation.
 // format an unsigned integer truncated into "%Nd" format
 // Note that a 64-bit float has not quite 16 digits (53 bits) precision (9,007,199,254,740,992).
+// Format 18 native digits of precision and zero-pad the rest.
 function formatNumber( n ) {
     if (n <= maxFormattedIntValue) return (n - n % 1) + '';
     if (n === Infinity) return "Infinity";
     var digs = countDigits(n);
-    if (digs <= 18) return (n - n % 1) + '';
     var str = Math.floor(n / pow10(digs - 18)) + '' + str_repeat('0', digs - 18);
     return str;
 }
@@ -571,47 +566,6 @@ function pow10( n ) {
 var _pow10n = new Array(325); for (var i=0; i<_pow10n.length; i++) _pow10n[i] = Math.pow(10, -i);
 function pow10n( n ) {
     return _pow10n[n] ? _pow10n[n] : Math.pow(10, -n);
-}
-// find n for the largest 2^n that's smaller than cap
-function pow2cap( cap ) {
-    if (!cap) return 0;
-    var i=0, p, p2;
-    if (cap >= 1e6) i = 9;
-    for ( ; (p = Math.pow(2, i)) <= cap; i++) {
-        if (p === Infinity) break;
-        p2 = p;
-    }
-    return p2;
-}
-
-// shift left/right by a power of 2 s.t. _shift10[n] * _shift10_adj[n] === _pow10[n]
-var _shift10 = new Array(310);          var _shift10n = new Array(325);
-var _shift10_adj = new Array(310);      var _shift10n_adj = new Array(325);
-_shift10[0] = 1;                        _shift10n[0] = 1;
-_shift10_adj[0] = 1;                    _shift10n_adj[0] = 1;
-// mpy by 10^N by doing a mpy by 2^M then adjusting by mpy K s.t. 2^M * adj === 10^N.
-// Should preserve more bits with less rounding error.
-// TODO: populate the tables with optimal values
-for (var i=1; i<_shift10.length; i++) {
-    _shift10[i] = Math.pow(10, i);
-    _shift10_adj[i] = 1;
-    _shift10[i] = pow2cap(_pow10[i]);
-    _shift10_adj[i] = _pow10[i] / _shift10[i];
-}
-for (var i=1; i<_shift10n.length; i++) {
-    // FIXME: these are not powers of 10
-    _shift10n[i] = Math.pow(2, -3*i);
-    _shift10n_adj[i] = _pow10n[i] / _shift10n[i];
-}
-// shift v by n decimal places to the left (make bigger)
-function shift10l( v, n ) {
-    if (n > 323) return 0;
-    return v * _shift10[n] * _shift10_adj[n];
-}
-// shift v by n decimal places to the right (make smaller)
-function shift10r( v, n ) {
-    if (n > 310) return Infinity;
-    return v * _shift10n[n] * _shift10n_adj[n];
 }
 
 
