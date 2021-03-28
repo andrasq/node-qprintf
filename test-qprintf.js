@@ -495,7 +495,7 @@ module.exports = {
         },
 
         'should handle extreme numbers': function(t) {
-            // expect at least 15 digits of precision for integers
+            // expect at least 15 digits of precision
             var precision = 15;
             for (var i = 1; i < 200; i+=1) {
                 var v = Math.pow(10, i), delta = v / Math.pow(10, precision);
@@ -504,9 +504,6 @@ module.exports = {
                 t.within(parseInt(s), Math.floor(v), delta, "failed int 10^" + i);
                 t.ok(+v > Math.pow(10, i - 1), "failed magnitude 10^" + i);
             }
-
-            // TODO: large numbers are converted with fewer digits decimal precision
-            var precision = 12;
             for (var i = 1; i < 200; i+=.002) {
                 var v = Math.pow(10, i), delta = v / Math.pow(10, precision);
                 var s = sprintf("%.30f", v);

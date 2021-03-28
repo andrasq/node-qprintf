@@ -553,20 +553,12 @@ function formatFloat( v, precision ) {
 // convert a very large number to a string without using scientific notation.
 // format an unsigned integer truncated into "%Nd" format
 // Note that a 64-bit float has not quite 16 digits (53 bits) precision (9,007,199,254,740,992).
-// TODO: find a more accurate way of converting to decimal
-// TODO: this approach is so-so, groups of 8 digits works for the tests but really only 12 digits precision
-// note: prone to rounding error, repeatedly divides by 1e6
-// note: toString(20) never uses scientific notation, but converting to base 10
-//   older node < v8 inserts a decimal point after 138 digits ??
 function formatNumber( n ) {
     if (n <= maxFormattedIntValue) return (n - n % 1) + '';
     if (n === Infinity) return "Infinity";
-    var str = '';
-    while (n >= 1e8) {
-        str = padLeft((Math.floor(n) % 1e8) + '', '0', 8) + str;
-        n *= 1e-8;
-    }
-    if (n > 0) str = Math.floor(n).toString(10) + str;
+    var digs = countDigits(n);
+    if (digs <= 18) return (n - n % 1) + '';
+    var str = Math.floor(n / pow10(digs - 18)) + '' + str_repeat('0', digs - 18);
     return str;
 }
 
