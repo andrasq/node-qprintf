@@ -399,6 +399,12 @@ module.exports = {
         t.done();
     },
 
+    'should throw if N-th argument missing': function(t) {
+        t.throws(function() { vsprintf("%7$d", [1, 2, 3]) }, /missing i-th argument/);
+        t.throws(function() { vsprintf("%0$d", [1, 2, 3]) }, /missing \$ argument/);
+        t.done();
+    },
+
     'should interpolate named argument': function(t) {
         var tests = [
             [ "%(a1)d %(a2)d", [{a1: 1, a2: 2}], "1 2" ],
@@ -614,6 +620,20 @@ module.exports = {
                 t.equal(v.slice(0, 16), tests[i][2].slice(0, 16), "line " + i);
                 t.ok(v == tests[i][1] || v-v*1e-16 <= v && v <= v+v*1e-16, "line " + i);
             }
+            t.done();
+        },
+
+        'adds to integer part the  carry-out from rounding': function(t) {
+            // NOTE: 9.995 does not work, internally is 9.99499999999999921840
+            var s = lib.formatFloatTruncate(9.996, 2, false, true);
+            t.equal(s, '10.00');
+            t.done();
+        },
+
+        'trims trailing decimal zeros': function(t) {
+            t.equal(lib.formatFloatTruncate(2.5000, 4, true, false), '2.5');
+            t.equal(lib.formatFloatTruncate(1.2500, 2, true, false), '1.25');
+            t.equal(lib.formatFloatTruncate(1.2500, 1, true, true), '1.3');
             t.done();
         },
     },

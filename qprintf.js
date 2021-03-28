@@ -109,22 +109,20 @@ function vsprintf( fmt, argv ) {
         if (ch < CH_A) {
             if (ch >= 0x30 && ch <= 0x39) {
                 scanDigits(fmt, p, scanned);
-                if (scanned.end > p) {
-                    if (fmt.charCodeAt(scanned.end) === CH_DOLLAR) {
-                        // found an N$ arg specifier, but might also have width
-                        if (!scanned.val) throw new Error("missing $ argument at offset " + p);
-                        setargN(argz, scanned.val, p);
-                        p = scanned.end + 1;
-                        if (fmt.charCodeAt(p) === CH_LEFTPAREN) p = scanAndSetArgName(argz, fmt, p);
-                    }
-                    else {
-                        // found field width, with at most a numeric '0' flag
-                        // nb: a 0 flag always sets both padChar and padWidth
-                        if (fmt.charCodeAt(p) === CH_0) padChar = '0';
-                        padWidth = scanned.val;
-                        p = scanned.end;
-                        if (fmt.charCodeAt(p) >= CH_A) checkForWidth = false; // 'A' or above is conversion spec
-                    }
+                if (fmt.charCodeAt(scanned.end) === CH_DOLLAR) {
+                    // found an N$ arg specifier, but might also have width
+                    if (!scanned.val) throw new Error("missing $ argument at offset " + p);
+                    setargN(argz, scanned.val, p);
+                    p = scanned.end + 1;
+                    if (fmt.charCodeAt(p) === CH_LEFTPAREN) p = scanAndSetArgName(argz, fmt, p);
+                }
+                else {
+                    // found field width, with at most a numeric '0' flag
+                    // nb: a 0 flag always sets both padChar and padWidth
+                    if (fmt.charCodeAt(p) === CH_0) padChar = '0';
+                    padWidth = scanned.val;
+                    p = scanned.end;
+                    if (fmt.charCodeAt(p) >= CH_A) checkForWidth = false; // 'A' or above is conversion spec
                 }
             }
             else if (ch === CH_LEFTPAREN) {
@@ -471,7 +469,8 @@ function formatFloatTruncate( v, precision, trim, round ) {
     if (f >= scale) { f -= scale; i += 1 }
     if (f && trim && !(f % 10)) { // optionally trim trailing decimal zeros
         var nz = countTrailingZeros(f);
-        if (nz) { f /= pow10(nz); precision -= nz }
+        f /= pow10(nz);
+        precision -= nz;
     }
 
     if (trim && !f) return formatInteger(i);
