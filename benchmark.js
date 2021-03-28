@@ -11,12 +11,15 @@ var sprintf = require('sprintf').sprintf;
 //var sprintfjs = require('/home/andras/src/sprintf-js.git/').sprintf;
 var printf = require('printf');
 //var extsprintf = require('extsprintf').sprintf;
+var vinterpolate = require('qibl').vinterpolate;
 
 var x, z;
 var fmt1 = "%s %d %s";
 var fmt2 = "%s %04d %s %4$5.2f";
 var fmt20 = "%20s %20d %20s";
 //fmt1 = fmt20;
+var fmt1s = "%s %s %s";
+var compinterpolate = require('qibl').compileVinterpolate(fmt1s, '%s');
 
 // NOTE: without this pre-test, qsprintf runs half speed with node-v8.0.0
 // and node 7.8.0.  node-v6.10.2, v5.8.0, v4.4.0 and v0.10.42 are not affected.
@@ -58,6 +61,7 @@ qtimeit.bench.showRunDetails = false;
         //'extsprintf-1.3.0': extsprintf,         // does not handle floating-point or %4$
         'sprintf': sprintf,
         'qprintf': qsprintf,
+        //'vinterpolate': vinterpolate,
         //'util_format': util.format,             // does not handle %04 or %4$
     };
 
@@ -86,6 +90,8 @@ if (0)
         'qprintf': function(){ z = qsprintf(fmt1, "Hello", 123, "world") },
         //'qprintf-0.13.2-const': function(){ z = qsprintf("%s %d %s", "Hello", 123, "world") },
         'util_format': function(){ z = util.format(fmt1, "Hello", 123, "world") },
+        'vinterpolate': function(){ z = vinterpolate(fmt1s, '%s', ["Hello", 123, "world"]) },
+        // 'compinterpolate': function(){ z = compinterpolate(["Hello", 123, "world"]) },
     };
     var bench2 = {
         'printf': function(){ z = printf(fmt2, "Hello", 123, "world", 12.345) },
