@@ -14,8 +14,6 @@
 
   "scripts": {
     "test": "qnit test*",
-    "prepublishOnly": "tar --remove-files -cvf .git/ar/hide.tar ar node_modules benchmark* test-*.js",
-    "postpublish": "tar xvf .git/ar/hide.tar",
     "coverage": "nyc --reporter text --reporter lcov npm test",
     "clean": "rm -rf .nyc_output coverage out",
     "distclean": "rm -rf .nyc_output coverage out t.c a.out"
