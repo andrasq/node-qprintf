@@ -8,6 +8,7 @@ vsprintf = qprintf.vsprintf;
 sprintf = qprintf.sprintf;
 
 var lib = qprintf.lib;
+var nodeVersion = parseFloat(process.versions.node);
 
 module.exports = {
     before: function(done) {
@@ -494,26 +495,26 @@ module.exports = {
         },
 
         'should handle extreme numbers': function(t) {
-            // expect at least 16 digits of precision
-            var v = sprintf("%.0f", 1e42);
-            t.ok(+v > 1e41);
-            t.equal(parseFloat(v), 1e42);
-            t.ok(v.length, 43);
+            // expect at least 15 digits of precision for integers
+            var precision = 15;
+            for (var i = 1; i < 200; i+=1) {
+                var v = Math.pow(10, i), delta = v / Math.pow(10, precision);
+                var s = sprintf("%.0f", v);
+                t.within(parseFloat(s), v, delta, "failed float 10^" + i);
+                t.within(parseInt(s), Math.floor(v), delta, "failed int 10^" + i);
+                t.ok(+v > Math.pow(10, i - 1), "failed magnitude 10^" + i);
+            }
 
-            var v = sprintf("%.42f", 1e-42);
-            t.ok(+v > 0 && +v < 1e-41);
-            t.equal(parseFloat(v), 1e-42);
-            t.ok(v.length, 44);
+            // TODO: large numbers are converted with fewer digits decimal precision
+            var precision = 12;
+            for (var i = 1; i < 200; i+=.002) {
+                var v = Math.pow(10, i), delta = v / Math.pow(10, precision);
+                var s = sprintf("%.30f", v);
+                t.within(parseFloat(s), v, delta, "failed float 10^" + i);
+                t.within(parseInt(s), Math.floor(v), delta, "failed int 10^" + i);
+                t.ok(+v > Math.pow(10, i - 1), "failed magnitude 10^" + i);
+            }
 
-            var v = sprintf("%.40f", 3e-15);
-            t.ok(/^0.[0-9]{40}$/.test(v));
-            t.equal(parseFloat(v), 3e-15);
-
-            var v = sprintf("%d", 1e42);
-            t.equal(parseInt(v), 1e42);
-
-            var v = sprintf("%o", 1e42);
-            var n = parseInt(v, 8);
             t.done();
         },
     },
@@ -571,6 +572,7 @@ module.exports = {
                 [ 1e10, 3, "10000000000.000" ],
                 [ 1e42, 0, "1000000000000000000000000000000000000000000" ],
                 [ 1e42, 1, "1000000000000000000000000000000000000000000.0" ],
+                [ 3e42, 0, "3000000000000000000000000000000000000000000" ],
             ];
             for (var i=0; i<tests.length; i++) {
                 // since most of these floats cannot be represented exactly,

@@ -48,6 +48,8 @@ if (typeof require === 'function') {
 }
 
 var nodeVersion = parseFloat(process.versions.node);
+var maxToFixedPrecision = tryCall(function() { return (1).toFixed(100) && 100 }) || 20;
+var maxFormattedIntValue = 9.999999999999999e20;        // largest value before toString() returns scientific notation
 
 // ascii char codes
 var CH_0 = '0'.charCodeAt(0);
@@ -336,16 +338,16 @@ function padRight( str, ch, width ) {
 
 function convertIntegerBase10( width, padChar, rightPad, signChar, v ) {
     if (v < 0) { signChar = '-'; v = -v; }
-    return (v <= 1e-6 || v >= 1e20)
-        ? padNumber(width, padChar, rightPad, signChar, 0, formatNumber(v))
-        : padNumber(width, padChar, rightPad, signChar, 0, Math.floor(v) + "");
+    return (v > 1e-6 && v < maxFormattedIntValue)
+        ? padNumber(width, padChar, rightPad, signChar, 0, Math.floor(v) + '')
+        : padNumber(width, padChar, rightPad, signChar, 0, formatNumber(v));
 }
 
 function convertIntegerBase( width, padChar, rightPad, signChar, v, base ) {
     if (v < 0) { signChar = '-'; v = -v; }
-    return (base === 10 && (v <= 1e-6 || v >= 1e20))
-        ? padNumber(width, padChar, rightPad, signChar, 0, formatNumber(v))
-        : padNumber(width, padChar, rightPad, signChar, 0, Math.floor(v).toString(base));
+    return (base !== 10 || (v > 1e-6 && v < maxFormattedIntValue))
+        ? padNumber(width, padChar, rightPad, signChar, 0, Math.floor(v).toString(base))
+        : padNumber(width, padChar, rightPad, signChar, 0, formatNumber(v));
 }
 
 // convert to %f notation
@@ -535,48 +537,38 @@ function constructFixed( i, f, precision, trim ) {
     return s;
 }
 
+/*
+ * format an unsigned float into "%N.Mf" non-expontial notation
+ */
 function formatFloat( v, precision ) {
     // toFixed is not subject to our rounding errors (3m/s)
-    if (v < 1e20 && precision >= 0 && precision <= 20) return v.toFixed(precision);
+    // toFixed formats values < 1e21 as a plain number, >= 1e21 in exponential notation
+    if (v < 1e20 && precision >= 0 && precision <= maxToFixedPrecision) return v.toFixed(precision);
 
     // hand-rolled convert is same speed and more consistent than v.toFixed() (3m/s)
+    // and is needed to render values smaller than 1e-maxToFixedPrecision as other than 0.0000
     return formatFloatTruncate(v, precision, false, true);
 }
 
-// convert a very large number to a string.  Note that a 64-bit float
-// has only about 16 digits (53 bits) precision.
-// C    => 1000000000000000044885712678075916785549312
-// php  => 1000000000000000044885712678075916785549312
-// ours => 1000000000000000000222784838656961984549312 (1e6, both as /= 1e6 and *= 1e-6)
-// (actual difference bounces all over depending on the value, eg)
-//         69999999999999991808402112386240906176108672 (7e43 with 1e6)
-// 7e43 nodejs => 700000000000000131072xxxxxxxxxxxxxxxxxxxxxxx
-// 7e43 php    => 70000000000000002213544858001278968814108672
-// TODO: find a more accurate way of converting to decimal,
-// this has 10x the error of C/php.  Perhaps could toString(20) and
-// convert base 20 to 10 with carry-outs.  Or use toFixed() for
-// the first 15 digits and zero-pad the rest.
-// Note:  node 1e42 / 1e22 => 100000000000000020000. (20 dig prec)
-function formatNumber_2( n ) {
-    var digits = countDigits(n);
-    if (digits <= 20) return n.toFixed(0);
-    if (digits >= 310) return "Infinity";
-    var omitDigits = digits - 1 - 15;
-    n = n * pow10n(omitDigits);
-    return Math.floor(n).toFixed(0) + str_repeat('0', omitDigits);
-}
-///** old version:
+// convert a very large number to a string without using scientific notation.
+// format an unsigned integer truncated into "%Nd" format
+// Note that a 64-bit float has not quite 16 digits (53 bits) precision (9,007,199,254,740,992).
+// TODO: find a more accurate way of converting to decimal
+// TODO: this approach is so-so, groups of 8 digits works for the tests but really only 12 digits precision
+// note: prone to rounding error, repeatedly divides by 1e6
+// note: toString(20) never uses scientific notation, but converting to base 10
+//   older node < v8 inserts a decimal point after 138 digits ??
 function formatNumber( n ) {
+    if (n <= maxFormattedIntValue) return (n - n % 1) + '';
     if (n === Infinity) return "Infinity";
-    var parts = new Array();
-    while (n > 1e6) {
-        parts.push(padLeft((Math.floor(n) % 1e6) + '', '0', 6));
-        n *= 1e-6;
+    var str = '';
+    while (n >= 1e8) {
+        str = padLeft((Math.floor(n) % 1e8) + '', '0', 8) + str;
+        n *= 1e-8;
     }
-    if (n > 0) parts.push(Math.floor(n).toString(10));
-    return parts.length > 1 ? parts.reverse().join('') : parts.length ? parts[0] : '0';
+    if (n > 0) str = Math.floor(n).toString(10) + str;
+    return str;
 }
-/**/
 
 // 10^n for integer powers n.  Values >= 10^309 are Infinity.
 // note: cannot initialize with *= 10, the cumulative rounding errors break the unit tests
@@ -700,3 +692,5 @@ function inspectArray( arr, elementLimit, depth ) {
     if (isOverlong) str = str.slice(0, -2) + ', ... ]';
     return str;
 }
+
+function tryCall( fn ) { try { return fn() } catch (e) {} }
