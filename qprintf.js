@@ -19,7 +19,6 @@ module.exports.lib = {
     scanDigits: scanDigits,
     scanAndSetArgName: scanAndSetArgName,
 
-    str_repeat: str_repeat,
     padString: padString,
 
     convertIntegerBase10: convertIntegerBase10,
@@ -305,31 +304,16 @@ var _pads = {
   ' ': [ '', ' ', '  ', '   ', '    ', '     ', '      ', '       ', '        ' ],
   '0': [ '', '0', '00', '000', '0000', '00000', '000000', '0000000', '00000000' ],
 }
-function str_repeat( str, n ) {
-    if (n <= 8 && _pads[str]) return _pads[str][n];
-
-    switch (n) {
-    case 2: return str + str; break;
-    case 1: return str; break;
-    case 0: return ''; break;
-    default:
-        var half = Math.floor(n / 2);
-        var s2 = str_repeat(str, half);
-        return (half + half < n) ? s2 + s2 + str : s2 + s2;
-    }
+function repeatChar( ch, n ) {
+    if (n <= 8 && _pads[ch]) return _pads[ch][n];
+    return !n ? '' : n === 1 ? ch : repeatChar(ch, (n >>> 1)) + repeatChar(ch, ((n + 1) >>> 1));
 }
 
 function padString( padWidth, padChar, rightPad, str ) {
     if (!padWidth) return str;
     var n = padWidth - str.length;
     if (n <= 0) return str;
-    return rightPad ? str + str_repeat(padChar, n) : str_repeat(padChar, n) + str;
-}
-function padLeft( str, ch, width ) {
-    return padString(width, ch, false, str);
-}
-function padRight( str, ch, width ) {
-    return padString(width, ch, true, str);
+    return rightPad ? str + repeatChar(padChar, n) : repeatChar(padChar, n) + str;
 }
 
 function convertIntegerBase10( width, padChar, rightPad, signChar, v ) {
@@ -468,7 +452,7 @@ function formatInteger( n ) {
     if (n <= maxFormattedIntValue) return Math.floor(n) + '';
     if (n === Infinity) return "Infinity";
     var digs = countDigits(n);
-    return Math.floor(n / pow10(digs - 18)) + '' + str_repeat('0', digs - 18);
+    return Math.floor(n / pow10(digs - 18)) + '' + repeatChar('0', digs - 18);
 }
 
 /*

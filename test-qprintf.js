@@ -614,6 +614,29 @@ module.exports = {
     },
 
     'tools': {
+        'padString': {
+            'repeats the padding': function(t) {
+                t.equal(lib.padString(13, 'x', false, ''), 'xxxxxxxxxxxxx');
+                t.done();
+            },
+
+            'pads on left and right with spaces': function(t) {
+                t.equal(lib.padString(10, ' ', false, '1'), '         1');
+                t.equal(lib.padString(10, ' ', true, '1'), '1         ');
+                t.equal(lib.padString(40, ' ', false, '1'), '                                       1');
+                t.equal(lib.padString(40, ' ', true, '1'), '1                                       ');
+                t.done();
+            },
+
+            'pads on left and right with zeros': function(t) {
+                t.equal(lib.padString(10, '0', false, '1'), '0000000001');
+                t.equal(lib.padString(10, '0', true, '1'), '1000000000');
+                t.equal(lib.padString(40, '0', false, '1'), '0000000000000000000000000000000000000001');
+                t.equal(lib.padString(40, '0', true, '1'), '1000000000000000000000000000000000000000');
+                t.done();
+            },
+        },
+
         'pow10 should return powers of 10': function(t) {
             for (var i=0; i<400; i++) {
                 t.equal(lib.pow10(i), Math.pow(10, i));
