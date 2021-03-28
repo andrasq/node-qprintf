@@ -314,22 +314,27 @@ function padString( padWidth, padChar, rightPad, str ) {
     if (n <= 0) return str;
     return rightPad ? str + repeatChar(padChar, n) : repeatChar(padChar, n) + str;
 }
+function padNumber( padWidth, padChar, rightPad, signChar, numberString ) {
+    return (signChar && padChar === '0')
+        ? signChar + padString(padWidth - 1, padChar, rightPad, numberString)
+        : padString(padWidth, padChar, rightPad, signChar + numberString);
+}
 
 function convertIntegerBase10( width, padChar, rightPad, signChar, v ) {
     if (v < 0) { signChar = '-'; v = -v; }
-    return padNumber(width, padChar, rightPad, signChar, 0, formatInteger(v));
+    return padNumber(width, padChar, rightPad, signChar, formatInteger(v));
 }
 
 function convertIntegerBase( width, padChar, rightPad, signChar, v, base ) {
     if (v < 0) { signChar = '-'; v = -v; }
     // TODO: arbitrary-base conversions support only 20 digits precision, else convert to exponential notation
-    return padNumber(width, padChar, rightPad, signChar, 0, Math.floor(v).toString(base));
+    return padNumber(width, padChar, rightPad, signChar, Math.floor(v).toString(base));
 }
 
 // convert to %f notation
 function convertFloat( width, padChar, rightPad, signChar, v, precision ) {
     if (v < 0) { signChar = '-'; v = -v; }
-    return padNumber(width, padChar, rightPad, signChar, 0, formatFloat(v, precision));
+    return padNumber(width, padChar, rightPad, signChar, formatFloat(v, precision));
 }
 
 function _formatExp( exp, e ) {
@@ -370,7 +375,7 @@ function _normalizeExp( v ) {
 function convertFloatExp( width, padChar, rightPad, signChar, v, precision, eSym ) {
     if (v < 0) { signChar = "-"; v = -v }
     var ve = _normalizeExp(v);
-    return padNumber(width, padChar, rightPad, signChar, 0, formatFloat(ve.val, precision) + _formatExp(ve.exp, eSym));
+    return padNumber(width, padChar, rightPad, signChar, formatFloat(ve.val, precision) + _formatExp(ve.exp, eSym));
 }
 
 // convert to either %f float or %e exponential notation, depending on magnitude
@@ -411,7 +416,7 @@ function convertFloatG( width, padChar, rightPad, signChar, v, precision, eSym )
             precision -= countDigits(roundv);
             var s = formatFloatTruncate(roundv, precision, true, false);
         }
-        return padNumber(width, padChar, rightPad, signChar, 0, s);
+        return padNumber(width, padChar, rightPad, signChar, s);
     }
     // values outside the range .0001 to 10^precision are converted as %e exponential
     // with trailing zeros omitted
@@ -424,16 +429,8 @@ function convertFloatG( width, padChar, rightPad, signChar, v, precision, eSym )
 
         // keep the leading digit and precision-1 following, truncate the rest
         var s = formatFloatTruncate(ve.val, precision-1, true, false) + _formatExp(ve.exp, eSym);
-        return padNumber(width, padChar, rightPad, signChar, 0, s);
+        return padNumber(width, padChar, rightPad, signChar, s);
     }
-}
-
-// apply sign, left/right space/zero padding to the string
-function padNumber( width, padChar, rightPad, signChar, v, numberString ) {
-    if (v < 0) signChar = '-';
-    return (signChar && padChar === '0')
-        ? signChar + padString(width - 1, padChar, rightPad, numberString)
-        : padString(width, padChar, rightPad, signChar + numberString);
 }
 
 /*
