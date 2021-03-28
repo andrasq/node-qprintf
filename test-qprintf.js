@@ -280,6 +280,9 @@ module.exports = {
             [ "%20.4e", .1234, "          1.2340e-01" ],
             [ "%-20.4e", -.01234, "-1.2340e-02         " ],
             [ "%.4e", .00000000000123, "1.2300e-12" ],
+            [ "%0e", 1234, "1.234000e+03" ],
+            [ "%00e", 1234, "1.234000e+03" ],
+            [ "%01e", 1234, "1.234000e+03" ],
 
             // basics
             [ "%g", 0, "0" ],
@@ -360,6 +363,7 @@ module.exports = {
             [ "%200O", {a:1,b:{b1:2}}, "{ a: 1, b: { b1: 2 } }" ],
             [ "%.2O", {a:1,b:{c:{d:{e:{f:2}}}}}, "{ a: 1, b: { c: { d: [Object] } } }" ],
             [ "%.0O", {a:1,b:{c:{d:{e:{f:2}}}}}, "{ a: 1, b: [Object] }" ],
+            [ "%0O", {a:1,b:{b1:2}}, "{ a: 1, b: { b1: 2 } }" ],        // element limit not implemented
         ];
         t.expect(data.length);
         this.runTests(t, data);
@@ -373,6 +377,7 @@ module.exports = {
             [ "%2A", [[1,2,3]], "[ 1, 2, ... ]" ],
             [ "%02A", [[1,2,3]], "[ 1, 2, ... ]" ],
             [ "%2.1A", [[1,{a:{b:{c:2}}},3]], "[ 1, { a: [Object] }, ... ]" ],
+            [ "%0A", [[1,2,3]], "[Array]" ],
         ];
         t.expect(data.length);
         this.runTests(t, data);
@@ -616,7 +621,11 @@ module.exports = {
     'tools': {
         'padString': {
             'repeats the padding': function(t) {
-                t.equal(lib.padString(13, 'x', false, ''), 'xxxxxxxxxxxxx');
+                t.equal(lib.padString(0, 'x', false, '0'), '0');
+                t.equal(lib.padString(4, 'x', false, '0'), 'xxx0');
+                t.equal(lib.padString(4, 'x', true, '0'), '0xxx');
+                t.equal(lib.padString(4, 'x', false, 'foo'), 'xfoo');
+                t.equal(lib.padString(4, 'x', false, 'foobar'), 'foobar');
                 t.done();
             },
 

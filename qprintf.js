@@ -119,6 +119,7 @@ function vsprintf( fmt, argv ) {
                     }
                     else {
                         // found field width, with at most a numeric '0' flag
+                        // nb: a 0 flag always sets both padChar and padWidth
                         if (fmt.charCodeAt(p) === CH_0) padChar = '0';
                         padWidth = scanned.val;
                         p = scanned.end;
@@ -231,11 +232,9 @@ function vsprintf( fmt, argv ) {
             // the '0' in %0f and %0.3f is a field width, not a flag for zero padding
             // this matters for arrays and objects, but does not affect numbers
             // (because a zero-width field will have no padding)
-            if (padChar === '0' && padWidth === undefined) padWidth = 0;
             str += formatArray(getarg(argz, p), padWidth, precision);
             break;
         case 'O':
-            if (padChar === '0' && padWidth === undefined) padWidth = 0;
             str += formatObject(getarg(argz, p), padWidth, precision);
             break;
 
@@ -324,9 +323,7 @@ function convertIntegerBase10( width, padChar, rightPad, signChar, v ) {
 function convertIntegerBase( width, padChar, rightPad, signChar, v, base ) {
     if (v < 0) { signChar = '-'; v = -v; }
     // TODO: arbitrary-base conversions support only 20 digits precision, else convert to exponential notation
-    return (base !== 10 || v < maxFormattedIntValue)
-        ? padNumber(width, padChar, rightPad, signChar, 0, Math.floor(v).toString(base))
-        : padNumber(width, padChar, rightPad, signChar, 0, Math.floor(v).toString(base));
+    return padNumber(width, padChar, rightPad, signChar, 0, Math.floor(v).toString(base));
 }
 
 // convert to %f notation
@@ -372,8 +369,6 @@ function _normalizeExp( v ) {
 // convert to %e exponential notation
 function convertFloatExp( width, padChar, rightPad, signChar, v, precision, eSym ) {
     if (v < 0) { signChar = "-"; v = -v }
-    if (precision === undefined) precision = 6;
-
     var ve = _normalizeExp(v);
     return padNumber(width, padChar, rightPad, signChar, 0, formatFloat(ve.val, precision) + _formatExp(ve.exp, eSym));
 }
@@ -385,8 +380,7 @@ function convertFloatExp( width, padChar, rightPad, signChar, v, precision, eSym
 // Also, leading zeroes in very small numbers are ok, ie .00123456 => "0.00123456" and not 1.23456e-03.
 function convertFloatG( width, padChar, rightPad, signChar, v, precision, eSym ) {
     if (v < 0) { signChar = "-"; v = -v }
-    if (precision === undefined) precision = 6;
-    else if (precision === 0) precision = 1;
+    if (precision === 0) precision = 1;
 
     // pre-round v for magnitude test to know when to convert as a float.
     // Since rouding is expensive, only round here if likely to be needed
@@ -421,7 +415,7 @@ function convertFloatG( width, padChar, rightPad, signChar, v, precision, eSym )
     }
     // values outside the range .0001 to 10^precision are converted as %e exponential
     // with trailing zeros omitted
-    else if (v) {
+    else {
         // 123.4567 prec=2 at 10.6m/s
         // exponential notation, round once converted, correct any overflow
         var ve = _normalizeExp(v);
@@ -432,7 +426,6 @@ function convertFloatG( width, padChar, rightPad, signChar, v, precision, eSym )
         var s = formatFloatTruncate(ve.val, precision-1, true, false) + _formatExp(ve.exp, eSym);
         return padNumber(width, padChar, rightPad, signChar, 0, s);
     }
-    else return "0";
 }
 
 // apply sign, left/right space/zero padding to the string
@@ -562,7 +555,7 @@ function inspectObject( obj, elementLimit, depth ) {
 }
 
 function inspectArray( arr, elementLimit, depth ) {
-    if (!util) return "[Array]";
+    if (!util || !elementLimit) return "[Array]";
     var isOverlong = (arr.length > elementLimit);
     arr = isOverlong ? arr.slice(0, elementLimit) : arr;
     var str = (nodeVersion <= 0.8) ? util.inspect(arr, false, depth) : util.inspect(arr, { depth: depth, breakLength: Infinity });
