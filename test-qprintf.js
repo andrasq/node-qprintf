@@ -540,7 +540,7 @@ module.exports = {
         },
     },
 
-    'formatNumber': {
+    'formatInteger': {
         'should format numbers': function(t) {
             var tests = [
                 [ 0, "0" ],
@@ -556,7 +556,7 @@ module.exports = {
                 [ Infinity, "Infinity" ],
             ];
             for (var i=0; i<tests.length; i++) {
-                var v = qprintf.lib.formatNumber(tests[i][0]);
+                var v = qprintf.lib.formatInteger(tests[i][0]);
                 t.ok(v == tests[i][1] || v-v*1e-16 <= v && v <= v+v*1e-16, "line " + i);
             }
             t.done();
@@ -581,14 +581,14 @@ module.exports = {
                 // test that the difference is less than 1 part in 1e16 (1 in 16 digits)
                 var v = qprintf.lib.formatFloat(tests[i][0], tests[i][1]);
                 t.ok(v == tests[i][1] || v-v*1e-16 <= v && v <= v+v*1e-16);
-                var v = qprintf.lib.formatFloatMinimal(tests[i][0], tests[i][1]);
+                var v = qprintf.lib.formatFloatTruncate(tests[i][0], tests[i][1]);
                 t.ok(v == tests[i][1] || v-v*1e-16 <= v && v <= v+v*1e-16);
             }
             t.done();
         },
     },
 
-    'formatFloatMinimal': {
+    'formatFloatTruncate': {
         'should format floats': function(t) {
             var tests = [
                 [ 10, 2, "10" ],
@@ -604,7 +604,7 @@ module.exports = {
                 [ 1e25, 25, "10000000000000000000000000" ],
             ];
             for (var i=0; i<tests.length; i++) {
-                var v = qprintf.lib.formatFloatMinimal(tests[i][0], tests[i][1], true);
+                var v = qprintf.lib.formatFloatTruncate(tests[i][0], tests[i][1], true);
                 t.equal(String(v).length, tests[i][2].length, "line " + i);
                 t.equal(v.slice(0, 16), tests[i][2].slice(0, 16), "line " + i);
                 t.ok(v == tests[i][1] || v-v*1e-16 <= v && v <= v+v*1e-16, "line " + i);
@@ -672,7 +672,7 @@ module.exports = {
 
         'normalizeExp should convert to exponential form': function(t) {
             var _ve = { val: 0, exp: 0 };
-            var precision = 6;  // works 10e6 for 8 digits, sometimes works 10e5 for 9, always errors out 10e5 for 12
+            var precision = 18;  // works 10e6 for 8 digits, sometimes works 10e5 for 9, always errors out 10e5 for 12
             function splitExp(v) {
                 var s = v.toExponential(precision);
                 var p = s.indexOf('+');
@@ -693,20 +693,44 @@ module.exports = {
                 ve1 = lib._normalizeExp(val);
                 ve2 = splitExp(val);
                 t.equal(ve1.exp, ve2.exp, "exp mismatch, v = " + val);
-                t.equal(ve1.val.toFixed(precision), ve2.val.toFixed(precision), "val mismatch, v = " + val);
+                // NOTE: denormalized numbers have and fewer digits precision, so test with 1e-14
+                t.within(ve1.val, ve2.val, 1e-14, val + ": val mismatch " + (ve1.val - ve2.val));
+                // NOTE: toExponential() rounds to precision, eg 9.999999550272691e-108 to 1.000000e-107
+                // whereas qprintf rounds after converting to exponential form
+                // thus mismatch: 4.9120113703315e+85 (12 digits precision: 4.912011370331 vs 4.912011370332)
+                // t.equal(ve1.val.toFixed(12), ve2.val.toFixed(12), val + ": toFixed mismatch " + (ve1.val - ve2.val));
+            }
+            t.done();
+        },
+
+        'normalizeExp should convert test values': function(t) {
+            var tests = [
+                [ 9.999999550272691e-108, -108 ],
+                [ 9.99999999999e-108, -108 ],
+                [ 9.99999999999e+108, +108 ],
+                [ 9.99999999999e+98, +98 ],
+                [ 9.99999999999e+1, +1 ],
+                [ 4.9120113703315e+85, +85 ],
+                [ 6.210005551378974e-162, -162 ],
+            ];
+            for (var i=0; i< tests.length; i++) {
+                var v = tests[i][0];
+                var ve = lib._normalizeExp(v);
+// console.log("AR: v", v, '\n', v.toExponential(100), '\n', ve.val.toFixed(100));
+                t.equal(ve.exp, tests[i][1]);
             }
             t.done();
         },
     },
 
     'accuracy': {
-        'formatNumber powers of 10': function(t) {
+        'formatInteger powers of 10': function(t) {
             var limit = 1e21;
             // powers of 10 0..21
             for (var v=1; v<limit; v*=10) {
-                t.strictEqual(lib.formatNumber(v), String(v));
-                t.strictEqual(lib.formatNumber(v-.1), String(Math.floor(v-.1)));
-                t.strictEqual(lib.formatNumber(v+.1), String(Math.floor(v+.1)));
+                t.strictEqual(lib.formatInteger(v), String(v));
+                t.strictEqual(lib.formatInteger(v-.1), String(Math.floor(v-.1)));
+                t.strictEqual(lib.formatInteger(v+.1), String(Math.floor(v+.1)));
             }
             t.done();
         },

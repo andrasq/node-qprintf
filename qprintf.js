@@ -21,7 +21,6 @@ module.exports.lib = {
 
     str_repeat: str_repeat,
     padString: padString,
-    padLeft: padLeft,
 
     convertIntegerBase10: convertIntegerBase10,
     convertIntegerBase: convertIntegerBase,
@@ -29,9 +28,8 @@ module.exports.lib = {
     convertFloatG: convertFloatG,
     convertFloatExp: convertFloatExp,
 
-    formatNumber: formatNumber,
+    formatInteger: formatInteger,
     formatFloat: formatFloat,
-    formatFloatMinimal: formatFloatMinimal,
     formatFloatTruncate: formatFloatTruncate,
 
     pow10: pow10,
@@ -336,9 +334,7 @@ function padRight( str, ch, width ) {
 
 function convertIntegerBase10( width, padChar, rightPad, signChar, v ) {
     if (v < 0) { signChar = '-'; v = -v; }
-    return (v < maxFormattedIntValue)
-        ? padNumber(width, padChar, rightPad, signChar, 0, Math.floor(v) + '')
-        : padNumber(width, padChar, rightPad, signChar, 0, formatNumber(v));
+    return padNumber(width, padChar, rightPad, signChar, 0, formatInteger(v));
 }
 
 function convertIntegerBase( width, padChar, rightPad, signChar, v, base ) {
@@ -367,6 +363,7 @@ function _formatExp( exp, e ) {
 // Convert the number into exponential notation.  90m/s
 // Populates and returns the _ve struct with the value >= 1 (unless 0) and exponent.
 // (old version looped multiplies by powers of 10, but that introduces rounding errors)
+// [ val, exp ] = v.toExponential(maxToFixedPrecision).split('e');
 var _ve = { val: 0, exp: 0 };
 function _normalizeExp( v ) {
     if (v >= 10) {
@@ -462,99 +459,51 @@ function padNumber( width, padChar, rightPad, signChar, v, numberString ) {
         : padString(width, padChar, rightPad, signChar + numberString);
 }
 
-// note: both C and PHP render ("%5.2f", 1.275) as "1.27", because of the IEEE representation
-function formatFloatMinimal( v, precision, minimal ) {
-// never called with negative v, omit code handling negatives
-//    if (precision === undefined) return v.toString(10);
-
-    // 0 decimal digits also omits the decimal point
-    if (precision <= 0) return v < 1e20 ? Math.floor(v + 0.5).toString(10) : formatNumber(Math.floor(v + 0.5));
-
-    // avoid surprises, work with positive values
-//    var neg = (v < 0);
-//    if (v < 0) v = -v;
-
-    var scale = pow10(precision);
-    v += (0.5 / scale);                         // round to convert
-    var i = Math.floor(v);                      // all digits of the integer part
-    var f = Math.floor((v - i) * scale);        // first `precision` digits of the fraction
-
-    // if minimal, trim trailing decimal zeroes
-    if (minimal) while (f && f % 10 === 0) {
-        f = Math.floor(f / 10);
-        precision -= 1;
-    }
-
-    if (i > 1e20) i = formatNumber(i);
-    if (minimal && f === 0) return i.toString();
-
-    if (precision > 20) f = formatNumber(f);
-
-    var s = i + "." + padLeft(f + '', '0', precision);
-//    return neg ? ("-" + s) : s;
-    return s;
-}
-
-// streamlined version of the above, to fit into 600 chars
-// works for positive values only, but thats all we use
-// format a %g float that has been rounded at the right decimal place
-// %g expects trailing zeros to be dropped, so truncation is the default
-// 24m/s small, 10m/s large, 2.5m/s (limit is formatNumber)
-// Split into two half-functions for better v8 optimization and inlining.
-// Note: in node, 2.10 + 5e-17 === 2.10
-//       (ie, 2.10000000000000008882 + 0.00000000000000005000 === 2.10000000000000008882)
-function formatFloatTruncate( v, precision, trim, round ) {
-    if (precision <= 0) { if (round) v += 0.5;
-        return v < maxFormattedIntValue ? Math.floor(v).toString(10) : formatNumber(v);
-    }
-    var scale = pow10(precision);
-    var i = Math.floor(v);
-    var f = ((v - i) * scale);
-// FIXME: 0.30 = 0.30000000000000004441, *1e20 is ...00004096.00, but *1e16 is ...0000.500 (rounds wrong)
-    var f = round ? Math.floor(f + 0.5) : Math.floor(f);
-    if (f >= scale) { f -= scale; i += 1 }
-
-    return constructFixed(i, f, precision, trim);
-}
-function constructFixed( i, f, precision, trim ) {
-    if (f && trim && !(f % 10)) {
-        var n = countTrailingZeros(f);
-        if (n) { f /= pow10(n); precision -= n }
-    }
-
-    if (i > 1e20) i = formatNumber(i);
-    if (trim && !f) return i.toString();
-
-    if (precision > 20) f = formatNumber(f);
-
-    var s = i + "." + padLeft(f + '', '0', precision);
-    return s;
+/*
+ * convert a number to an integer string without using scientific notation
+ * A js number is a 64-bit float with 53 bits (not quite 16 digits) precision (9,007,199,254,740,992).
+ * Format up to 18 native digits of precision and zero-pad the rest.
+ */
+function formatInteger( n ) {
+    if (n <= maxFormattedIntValue) return Math.floor(n) + '';
+    if (n === Infinity) return "Infinity";
+    var digs = countDigits(n);
+    return Math.floor(n / pow10(digs - 18)) + '' + str_repeat('0', digs - 18);
 }
 
 /*
  * format an unsigned float into "%N.Mf" non-expontial notation
  */
 function formatFloat( v, precision ) {
-    // toFixed is not subject to our rounding errors (3m/s)
-    // toFixed formats values < 1e21 as a plain number, >= 1e21 in exponential notation
-    if (v < 1e20 && precision >= 0 && precision <= maxToFixedPrecision) return v.toFixed(precision);
-
-    // hand-rolled convert is same speed and more consistent than v.toFixed() (3m/s)
-    // and is needed to render values smaller than 1e-maxToFixedPrecision as other than 0.0000
-    return formatFloatTruncate(v, precision, false, true);
+    return (v < maxFormattedIntValue && precision >= 0 && precision <= maxToFixedPrecision)
+        ? v.toFixed(precision) : formatFloatTruncate(v, precision, false, true);
 }
 
-// convert a very large number to a string without using scientific notation.
-// format an unsigned integer truncated into "%Nd" format
-// Note that a 64-bit float has not quite 16 digits (53 bits) precision (9,007,199,254,740,992).
-// Format 18 native digits of precision and zero-pad the rest.
-function formatNumber( n ) {
-    if (n <= maxFormattedIntValue) return (n - n % 1) + '';
-    if (n === Infinity) return "Infinity";
-    var digs = countDigits(n);
-    var str = Math.floor(n / pow10(digs - 18)) + '' + str_repeat('0', digs - 18);
-    return str;
+/*
+ * format a %N.Mg float with optional rounding and trailing zero-decimal trimming
+ *
+ * note: both C and PHP render ("%5.2f", 1.275) as "1.27", because of the IEEE representation
+ * works for positive values only, but thats all we use
+ * Note: in node, 2.10 + 5e-17 === 2.10
+ *       (ie, 2.10000000000000008882 + 0.00000000000000005000 === 2.10000000000000008882)
+ * FIXME: 0.30 = 0.30000000000000004441, *1e20 is ...00004096.00, but *1e16 is ...0000.500 (rounds wrong)
+ */
+function formatFloatTruncate( v, precision, trim, round ) {
+    if (precision <= 0) { if (round) v += 0.5; return formatInteger(v) }
+    var scale = pow10(precision);
+    var i = Math.floor(v);
+    var f = ((v - i) * scale);
+    var f = round ? Math.floor(f + 0.5) : Math.floor(f);
+    if (f >= scale) { f -= scale; i += 1 }
+    if (f && trim && !(f % 10)) { // optionally trim trailing decimal zeros
+        var nz = countTrailingZeros(f);
+        if (nz) { f /= pow10(nz); precision -= nz }
+    }
+
+    if (trim && !f) return formatInteger(i);
+    return formatInteger(i) + "." + padString(precision, '0', false, formatInteger(f));
 }
+
 
 // 10^n for integer powers n.  Values >= 10^309 are Infinity.
 // note: cannot initialize with *= 10, the cumulative rounding errors break the unit tests
@@ -567,7 +516,6 @@ var _pow10n = new Array(325); for (var i=0; i<_pow10n.length; i++) _pow10n[i] = 
 function pow10n( n ) {
     return _pow10n[n] ? _pow10n[n] : Math.pow(10, -n);
 }
-
 
 // return the count of zeros to the right of the decimal point in numbers less than 1.
 // 175m/s if 0-3 zeros, 75m/s if more.
@@ -630,7 +578,7 @@ function inspectObject( obj, elementLimit, depth ) {
 }
 
 function inspectArray( arr, elementLimit, depth ) {
-    if (!util) return "'[Array]'";
+    if (!util) return "[Array]";
     var isOverlong = (arr.length > elementLimit);
     arr = isOverlong ? arr.slice(0, elementLimit) : arr;
     var str = (nodeVersion <= 0.8) ? util.inspect(arr, false, depth) : util.inspect(arr, { depth: depth, breakLength: Infinity });
