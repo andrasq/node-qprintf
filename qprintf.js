@@ -43,9 +43,7 @@ module.exports.lib = {
     countTrailingZeros: countTrailingZeros,
 };
 
-if (typeof require === 'function') {
-    var util = require('util');
-}
+var util = tryCall(function() { return require("util") });
 
 var nodeVersion = parseFloat(process.versions.node);
 var maxToFixedPrecision = tryCall(function() { return (1).toFixed(100) && 100 }) || 20;
@@ -199,7 +197,7 @@ function vsprintf( fmt, argv ) {
         // integer types
         // we truncate integers toward zero like php, ie -1.9 prints as -1
         case 'd': str += convertIntegerBase10(padWidth, padChar, rightPad, plusSign, getarg(argz, p)); break;
-        case 'i': str += convertIntegerBase(padWidth, padChar, rightPad, plusSign, getarg(argz, p), 10); break;
+        case 'i': str += convertIntegerBase10(padWidth, padChar, rightPad, plusSign, getarg(argz, p)); break;
         case 'x': str += convertIntegerBase(padWidth, padChar, rightPad, plusSign, getarg(argz, p), 16); break;
         case 'X': str += convertIntegerBase(padWidth, padChar, rightPad, plusSign, getarg(argz, p), 16).toUpperCase(); break;
         case 'o': str += convertIntegerBase(padWidth, padChar, rightPad, plusSign, getarg(argz, p), 8); break;
@@ -338,16 +336,17 @@ function padRight( str, ch, width ) {
 
 function convertIntegerBase10( width, padChar, rightPad, signChar, v ) {
     if (v < 0) { signChar = '-'; v = -v; }
-    return (v > 1e-6 && v < maxFormattedIntValue)
+    return (v < maxFormattedIntValue)
         ? padNumber(width, padChar, rightPad, signChar, 0, Math.floor(v) + '')
         : padNumber(width, padChar, rightPad, signChar, 0, formatNumber(v));
 }
 
 function convertIntegerBase( width, padChar, rightPad, signChar, v, base ) {
     if (v < 0) { signChar = '-'; v = -v; }
-    return (base !== 10 || (v > 1e-6 && v < maxFormattedIntValue))
+    // TODO: arbitrary-base conversions support only 20 digits precision, else convert to exponential notation
+    return (base !== 10 || v < maxFormattedIntValue)
         ? padNumber(width, padChar, rightPad, signChar, 0, Math.floor(v).toString(base))
-        : padNumber(width, padChar, rightPad, signChar, 0, formatNumber(v));
+        : padNumber(width, padChar, rightPad, signChar, 0, Math.floor(v).toString(base));
 }
 
 // convert to %f notation

@@ -168,7 +168,8 @@ speed of each relative to `printf`.
 
 ## Change Log
 
-- 0.13.4 - fix support for node-v0.8, allow more native decimal digits, more accurate extreme numbers
+- 0.13.4 - fix support for node-v0.8, allow more native decimal digits, more accurate extreme numbers,
+           support extreme value %i conversion, convert extreme base-N integers as base10 exponentials
 - 0.13.3 - fix breaking typo in test
 - 0.13.2 - update benchmarks for node-v8, faster str_repeat, try to avoid %f rounding errors
 - 0.13.0 - `%g` fixes, truncating %d (breaking change), l, ll, h, hh modifiers, *.* widths,
