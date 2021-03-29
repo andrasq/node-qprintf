@@ -448,7 +448,8 @@ function formatInteger( n ) {
  * format an unsigned float into "%N.Mf" non-expontial notation
  */
 function formatFloat( v, precision ) {
-    return (v < maxFormattedIntValue && precision >= 0 && precision <= maxToFixedPrecision)
+    if (precision < 0) precision = 0;
+    return (v < maxFormattedIntValue && precision <= maxToFixedPrecision)
         ? v.toFixed(precision) : formatFloatTruncate(v, precision, false, true);
 }
 
