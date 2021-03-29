@@ -16,6 +16,7 @@ var vinterpolate = require('qibl').vinterpolate;
 var x, z;
 var fmt1 = "%s %d %s";
 var fmt2 = "%s %04d %s %4$5.2f";
+var fmt2 = "%s %04d %s (%4$8.4g)";
 var fmt20 = "%20s %20d %20s";
 //fmt1 = fmt20;
 var fmt1s = "%s %s %s";
@@ -93,6 +94,9 @@ if (0)
         'vinterpolate': function(){ z = vinterpolate(fmt1s, '%s', ["Hello", 123, "world"]) },
         // 'compinterpolate': function(){ z = compinterpolate(["Hello", 123, "world"]) },
     };
+    //qtimeit.bench(bench1);
+    //console.log("");
+
     var bench2 = {
         'printf': function(){ z = printf(fmt2, "Hello", 123, "world", 12.345) },
         'sprintfjs': function(){ z = sprintfjs(fmt2, "Hello", 123, "world", 12.345) },
@@ -101,11 +105,8 @@ if (0)
         'qprintf': function(){ z = qsprintf(fmt2, "Hello", 123, "world", 12.345) },
         //'util_format': function(){ z = util.format(fmt2, "Hello", 123, "world", 12.345) },
     };
-
-    qtimeit.bench(bench1);
+    qtimeit.bench(bench2);
     console.log("");
-    //qtimeit.bench(bench2);
-    //console.log("");
 
     // subsequent runs:
     qtimeit.bench.showRunDetails = false;
