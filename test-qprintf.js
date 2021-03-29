@@ -313,6 +313,9 @@ module.exports = {
 
             // limited precision and rounding
             [ "%.3g", 123456, "1.23e+05" ],
+            [ "%.5g", 123456, "1.2346e+05" ],
+            [ "%.6g", 123456, "123456" ],
+            [ "%.8g", 123456, "123456" ],
             [ "%0.2g", 123, "1.2e+02" ],
             [ "%.3G", 123, "123" ],
             [ "%G", 123.5, "123.5" ],
@@ -811,6 +814,11 @@ module.exports = {
             }
             t.done();
         },
+
+        'convertFloatG': function(t) {
+            // t.equal(lib.convertFloatG(6, ' ', false, '', 999, 6, 'e'), '   999');
+            t.done();
+        },
     },
 
     'should work with node-v0.8': {
@@ -885,6 +893,16 @@ module.exports = {
         //console.log("AR: %d sprintf in %d ms (got \"%s\")", i, t2 - t1, s);
         // 100k in 33ms, ie 3.0 m/s
         // 73k/s with +obj %O
+        t.done();
+    },
+
+    'speed of 10k %g': function(t) {
+        var t1 = Date.now();
+        for (var i=0; i<100000; i++) {
+            var s = sprintf("Float %.10g\n", 123e5);
+        }
+        var t2 = Date.now();
+        // toPrecision() 48ms, hand-rolled loop 21ms
         t.done();
     },
 };

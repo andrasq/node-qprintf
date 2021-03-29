@@ -382,21 +382,23 @@ function convertFloatExp( width, padChar, rightPad, signChar, v, precision, eSym
 // The %g precision is the number of digits to print, ie ("%.3g", 1234) => "1.23e+03"
 // (but: %e precision controls the number of decimals)
 // Also, leading zeroes in very small numbers are ok, ie .00123456 => "0.00123456" and not 1.23456e-03.
+// NOTE: could maybe convert %g with v.toPrecision(precision), but it seems 2x slower
 function convertFloatG( width, padChar, rightPad, signChar, v, precision, eSym ) {
     if (v < 0) { signChar = "-"; v = -v }
     if (precision === 0) precision = 1;
 
     // pre-round v for magnitude test to know when to convert as a float.
-    // Since rouding is expensive, only round here if likely to be needed
+    // Since rouding is expensive, only round if likely to be needed
     var roundv;
     if (!v) return "0";
     if (v >= 1 && v < pow10(precision)) {
+        // between 1 and max digits
         var ndigits = countDigits(v);
         roundv = (precision > ndigits)
             ? roundv = v + pow10n(precision - ndigits) / 2
             : roundv = v + pow10(ndigits - precision) / 2;
     }
-    else if (v < 1 && v >= .000004) {
+    else if (v < 1 && v >= .000004) { // .0001 - .5 round - .1 guard
         var zeros = countLeadingZeros(v);
         roundv = v + pow10n(precision + zeros) / 2;
     }
@@ -405,26 +407,20 @@ function convertFloatG( width, padChar, rightPad, signChar, v, precision, eSym )
     // values between .0001 and 10^precision are converted as %f float
     // with trailing zeros to the right of the decimal point omitted
     if (roundv >= .0001 && roundv < pow10(precision)) {
-        // 123.4567 prec=4 at 12.6m/s
-        // (123.4567e5).toPrecision(4) 5.8m/s
-        if (roundv && roundv < 1) {
-            precision += countLeadingZeros(v);
-            var s = formatFloatTruncate(roundv, precision, true, false);
-        }
-        else {
-            precision -= countDigits(roundv);
-            var s = formatFloatTruncate(roundv, precision, true, false);
-        }
+        precision = (roundv && roundv < 1)
+            ? precision + countLeadingZeros(v)
+            : precision - countDigits(roundv);
+        var s = formatFloatTruncate(roundv, precision, true, false);
         return padNumber(width, padChar, rightPad, signChar, s);
     }
     // values outside the range .0001 to 10^precision are converted as %e exponential
-    // with trailing zeros omitted
+    // with trailing decimal zeros omitted
     else {
         // 123.4567 prec=2 at 10.6m/s
         // exponential notation, round once converted, correct any overflow
-        var ve = _normalizeExp(v);
-        ve.val += pow10n(precision - 1) / 2;
-        if (ve.val >= 10) { ve.val /= 10; ve.exp += 1 }
+        var ve = _normalizeExp(v);                      // normalize to exponential format
+        ve.val += pow10n(precision - 1) / 2;            // round the fraction
+        if (ve.val >= 10) { ve.val /= 10; ve.exp += 1 } // add overflow from rounding to the int
 
         // keep the leading digit and precision-1 following, truncate the rest
         var s = formatFloatTruncate(ve.val, precision-1, true, false) + _formatExp(ve.exp, eSym);
