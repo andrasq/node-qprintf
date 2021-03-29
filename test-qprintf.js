@@ -787,6 +787,12 @@ module.exports = {
             t.done();
         },
 
+        '%f decimal conversion uses native precision': function(t) {
+            for (var i=1; i < 10000; i++) t.equal(sprintf("%.18f", 1/i), (1/i).toFixed(18));
+            if (nodeVersion > 0.8) for (var i=1; i < 10000; i++) t.equal(sprintf("%.88f", 1/i), (1/i).toFixed(88));
+            t.done();
+        },
+
         'formatFloat powers of 10': function(t) {
             t.skip();
         },
