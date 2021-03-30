@@ -50,7 +50,7 @@ console.log("fmt1: '%s'", fmt1);
 qtimeit.bench.timeGoal = 0.4;
 qtimeit.bench.visualize = true;
 qtimeit.bench.showSource = true;
-qtimeit.bench.baselineAvg = 1000000;
+qtimeit.bench.baselineAvg = 100000;
 //qtimeit.bench.forkTests = true;
 qtimeit.bench.showRunDetails = false;
 
@@ -97,12 +97,18 @@ if (0)
     //qtimeit.bench(bench1);
     //console.log("");
 
+    function testPrintSpeed(sprintf) {
+        z = sprintf(fmt1, "Hello", 123, "world");
+        z = sprintf(fmt2, "hi", 456.7, "yall", 78);
+        z = sprintf(fmt2, "Hello", 123, "world", 12.345);
+    }
+
     var bench2 = {
-        'printf': function(){ z = printf(fmt2, "Hello", 123, "world", 12.345) },
-        'sprintfjs': function(){ z = sprintfjs(fmt2, "Hello", 123, "world", 12.345) },
+        'printf': function() { testPrintSpeed(printf) },
+        'sprintfjs': function() { testPrintSpeed(sprintf) },
         //'extsprintf-1.3.0': function(){ z = extsprintf(fmt2, "Hello", 123, "world", 12.345) },
         //'sprintf': function(){ z = sprintf(fmt2, "Hello", 123, "world", 12.345) },
-        'qprintf': function(){ z = qsprintf(fmt2, "Hello", 123, "world", 12.345) },
+        'qprintf': function() { testPrintSpeed(qsprintf) },
         //'util_format': function(){ z = util.format(fmt2, "Hello", 123, "world", 12.345) },
     };
     qtimeit.bench(bench2);
