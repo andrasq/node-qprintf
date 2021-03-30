@@ -459,7 +459,7 @@ function formatFloat( v, precision ) {
  * FIXME: 0.30 = 0.30000000000000004441, *1e20 is ...00004096.00, but *1e16 is ...0000.500 (rounds wrong)
  */
 function formatFloatTruncate( v, precision, trim, round ) {
-    if (precision <= 0) { if (round) v += 0.5; return formatInteger(v) }
+    if (precision <= 0) { return round ? formatInteger(v + 0.5) : formatInteger(v) }
     var scale = pow10(precision);
     var i = Math.floor(v);
     var f = ((v - i) * scale);
@@ -510,7 +510,7 @@ function countLeadingZeros( v ) {
 // Counts by comparing against known powers of ten, much faster
 // than using v.toExponential().  105m/s if <1000, else 48m/s
 function countDigits( v, power ) {
-    if (v < 1000 && v > 1) return (v < 10) ? 1 : (v < 100) ? 2 : 3;
+    if (v < 1000) return v < 1 ? 0 : v < 10 ? 1 : v < 100 ? 2 : 3;
     var n = 0;
     while (_pow10[n + 6] <= v) n += 6;
     while (_pow10[n + 3] <= v) n += 3;
