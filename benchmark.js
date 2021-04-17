@@ -16,7 +16,7 @@ var vinterpolate = require('qibl').vinterpolate;
 var x, z;
 var fmt1 = "%s %d %s";
 var fmt2 = "%s %04d %s %4$5.2f";
-var fmt2 = "%s %04d %s (%4$8.4g)";
+//var fmt2 = "%s %04d %s (%4$8.4g)";
 var fmt20 = "%20s %20d %20s";
 //fmt1 = fmt20;
 var fmt1s = "%s %s %s";
@@ -44,13 +44,12 @@ console.log("sprintf-js %s", require('sprintf-js/package').version);
 console.log("qprintf %s", require('./package').version);
 
 console.log("");
-console.log("fmt1: '%s'", fmt1);
 
 // first run:
 qtimeit.bench.timeGoal = 0.4;
 qtimeit.bench.visualize = true;
 qtimeit.bench.showSource = true;
-qtimeit.bench.baselineAvg = 100000;
+qtimeit.bench.baselineAvg = 200000;
 //qtimeit.bench.forkTests = true;
 qtimeit.bench.showRunDetails = false;
 
@@ -111,6 +110,7 @@ if (0)
         'qprintf': function() { testPrintSpeed(qsprintf) },
         //'util_format': function(){ z = util.format(fmt2, "Hello", 123, "world", 12.345) },
     };
+    console.log('AR: bench2: fmt1 = "%s", fmt2 = "%s"', fmt1, fmt2, "\n", "" + testPrintSpeed);
     qtimeit.bench(bench2);
     console.log("");
 
