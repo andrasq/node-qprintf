@@ -531,11 +531,10 @@ function countDigits( v, power ) {
 function countTrailingZeros( v ) {
     if (v < 10) return 0;
     if (v >= 1e309) return 308;
-    var n = 0, e6 = _pow10n[6], e3 = _pow10n[3], e1 = 0.1;
-    // TODO: rounding errors?
-    while (Math.floor(v * e6) === Math.floor((v + 999999) * e6)) { n += 6; v *= e6 }
-    while (Math.floor(v * e3) === Math.floor((v + 999) * e3)) { n += 3; v *= e3 }
-    while (Math.floor(v * e1) === Math.floor((v + 9) * e1)) { n += 1; v *= e1 }
+    var n = 0;
+    while (Math.floor(v / _pow10[n + 6]) * _pow10[n + 6] === v) n += 6;
+    while (Math.floor(v / _pow10[n + 3]) * _pow10[n + 3] === v) n += 3;
+    while (Math.floor(v / _pow10[n + 1]) * _pow10[n + 1] === v) n += 1;
     return n;
 }
 
