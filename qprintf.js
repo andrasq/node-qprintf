@@ -486,6 +486,7 @@ function formatFloatTruncate( v, precision, trim, round ) {
 
 // 10^n for integer powers n.  Values >= 10^309 are Infinity.
 // note: cannot initialize with *= 10, the cumulative rounding errors break the unit tests
+// NOTE: node-v0.6 computes 10^33 as 1.0000000000000001e+33, which is not equal to 1e+33
 var _pow10 = new Array(310); _pow10[0] = 1; for (var i=1; i<_pow10.length; i++) _pow10[i] = Math.pow(10, i);
 function pow10( n ) {
     return _pow10[n] ? _pow10[n] : Math.pow(10, n);
