@@ -4,7 +4,7 @@
  * Implements all traditional C printf conversions, including field widths,
  * precision, and very large numbers.
  *
- * Copyright (C) 2015-2017,2021 Andras Radics
+ * Copyright (C) 2015-2017,2021-2022 Andras Radics
  * Licensed under the Apache License, Version 2.0
  *
  * 2015-02-24 - AR.
@@ -43,7 +43,9 @@ module.exports.lib = {
 var util = tryCall(function() { return !process.env.TEST_WITHOUT_UTIL && require("util") });
 
 var nodeVersion = parseFloat(process.versions.node);
-var maxToFixedPrecision = tryCall(function() { return (1).toFixed(100) && 100 }) || 20;
+var maxToFixedPrecision = 20;
+maxToFixedPrecision = tryCall(function() { return (1).toFixed(100), 100 }, maxToFixedPrecision);
+maxToFixedPrecision = tryCall(function() { return (1).toFixed(200), 200 }, maxToFixedPrecision);
 var maxFormattedIntValue = 9.999999999999999e20;        // largest value before toString() returns scientific notation
 
 // ascii char codes
@@ -146,6 +148,7 @@ function vsprintf( fmt, argv ) {
                 }
                 // gather width, if any
                 if (ch === CH_STAR) {
+                    // read field width from args list
                     padWidth = getwidth(argz, p);
                     p++;
                 }
@@ -307,7 +310,6 @@ function repeatChar( ch, n ) {
 }
 
 function padString( padWidth, padChar, rightPad, str ) {
-    if (!padWidth) return str;
     var n = padWidth - str.length;
     if (n <= 0) return str;
     return rightPad ? str + repeatChar(padChar, n) : repeatChar(padChar, n) + str;
@@ -374,6 +376,12 @@ function _normalizeExp( v ) {
 function convertFloatExp( width, padChar, rightPad, signChar, v, precision, eSym ) {
     if (v < 0) { signChar = "-"; v = -v }
     var ve = _normalizeExp(v);
+/**
+    var str = v.toExponential(precision);
+    str = (str[str.length - 3] === 'e') ? str.slice(0, -3) : str.slice(0, -4);
+    return padNumber(width, padChar, rightPad, signChar, str + _formatExp(ve.exp, eSym));
+
+/**/
     return padNumber(width, padChar, rightPad, signChar, formatFloat(ve.val, precision) + _formatExp(ve.exp, eSym));
 }
 
@@ -497,8 +505,7 @@ function countLeadingZeros( v ) {
         while (v < _pow10n[n + 6]) n += 6;
         while (v < _pow10n[n + 3]) n += 3;
         while (v < _pow10n[n]) n += 1;
-        // fix transition 1e-323 to zeros
-        if (n === 323 && !_pow10n[n]) n++;
+        // 1e-324 is denormalized to zero
         return n - 1;
     }
     // 1e-324 (ie 323 leading zeros) is indinstinguishable from 0
@@ -557,4 +564,4 @@ function inspectArray( arr, elementLimit, depth ) {
     return str;
 }
 
-function tryCall( fn ) { try { return fn() } catch (e) {} }
+function tryCall( fn, _default ) { try { return fn() } catch (e) { return _default } }

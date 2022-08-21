@@ -1,6 +1,6 @@
 {
   "name": "qprintf",
-  "version": "0.13.5-dev",
+  "version": "0.13.5",
   "main": "qprintf.js",
   "description": "fast standard C compatible printf",
   "author": "Andras",

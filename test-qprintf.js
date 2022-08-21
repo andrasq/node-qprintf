@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015-2018,2021 Andras Radics
+ * Copyright (C) 2015-2018,2021-2022 Andras Radics
  * Licensed under the Apache License, Version 2.0
  */
 
@@ -645,6 +645,8 @@ module.exports = {
         'padString': {
             'repeats the padding': function(t) {
                 t.equal(lib.padString(0, 'x', false, '0'), '0');
+                t.equal(lib.padString(1, 'x', false, '0'), '0');
+                t.equal(lib.padString(2, 'x', false, '0'), 'x0');
                 t.equal(lib.padString(4, 'x', false, '0'), 'xxx0');
                 t.equal(lib.padString(4, 'x', true, '0'), '0xxx');
                 t.equal(lib.padString(4, 'x', false, 'foo'), 'xfoo');
@@ -691,6 +693,8 @@ module.exports = {
             t.equal(lib.countLeadingZeros(.001), 2);
             t.equal(lib.countLeadingZeros(.0001), 3);
             t.equal(lib.countLeadingZeros(.00001), 4);
+            t.equal(lib.countLeadingZeros(1e-323), 322);
+            t.equal(lib.countLeadingZeros(1e-324), 323);
             for (var i=0; i<324; i++) {
                 // breaks at i=324+: counts 323 zeros (1e-324 === 0)
                 var val = Math.pow(10, -i-1);
@@ -722,6 +726,18 @@ module.exports = {
         },
 
         'countTrailingZeros ...': function(t) {
+            t.equal(lib.countTrailingZeros(0), 0);
+            t.equal(lib.countTrailingZeros(1), 0);
+            t.equal(lib.countTrailingZeros(10), 1);
+            t.equal(lib.countTrailingZeros(100), 2);
+            t.equal(lib.countTrailingZeros(1e10), 10);
+            t.equal(lib.countTrailingZeros(1e309), 308);
+            /** FIXME:
+            t.equal(lib.countTrailingZeros(1e100), 100);
+            t.equal(lib.countTrailingZeros(1e300), 300);
+            t.equal(lib.countTrailingZeros(1e33), 33);
+            **/
+            t.equal(lib.countTrailingZeros(.1), 0);
             t.skip();
         },
 
